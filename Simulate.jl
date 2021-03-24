@@ -21,20 +21,24 @@ using CreateRunDirectory
 
 @inline @views function simulate()
 
-    L      = 50      # Number of grid pointsin each dimension
+    L      = 20      # Number of grid pointsin each dimension
     dx     = 1/(L-1) # Spatial separation of grid points
-    Δ      = 1.0
+    r      = 1.0     # Δ in paper renamed to r to avoid confusion with derivatives
     q      = 1.0
     ϕ₀     = 1.0
-    tMax   = 0.5
+    tMax   = 0.0001
     outInt = tMax/100.0
     tspan  = (0.0,tMax)   # Time span for solution
 
     # Create output files
-    folderName = createRunDirectory(L,dx,Δ,q,ϕ₀,tMax,outInt)
+    folderName = createRunDirectory(L,dx,r,q,ϕ₀,tMax,outInt)
 
     # Random initial distribution
-    u0 = rand(Float64,L,L)
+    u0             = rand(L,L)
+    uᵀ             = zeros(L,L)
+    firstDimTerm   = zeros(L,L)
+    secondDimTerm  = zeros(L,L)
+    secondDimTermᵀ = zeros(L,L)
 
     # Dirichlet boundary condition
     Q = Neumann0BC(dx,3)
@@ -44,7 +48,7 @@ using CreateRunDirectory
     ∇₄ = CenteredDifference{1}(4, 3, dx, L)
     ∇₆ = CenteredDifference{1}(6, 3, dx, L)
 
-    p = [∇₂,∇₄,∇₆,Q,Δ,q,ϕ₀]      # Array of parameters to pass to solver
+    p = [∇₂,∇₄,∇₆,Q,r,q,ϕ₀,uᵀ,firstDimTerm,secondDimTerm,secondDimTermᵀ]      # Array of parameters to pass to solver
 
     # Define ODE problem using discretised derivatives
     prob = ODEProblem(dϕ!, u0, tspan, p)

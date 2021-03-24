@@ -16,12 +16,17 @@ using LinearAlgebra
     # ϕ̇ = α∇²(rϕ + (q² + ∇²)²ϕ + 3ϕ₀ϕ² + ϕ³)
     # ϕ̇ = r∇²ϕ + ∇²q²ϕ + q²∇⁴ϕ + ∇⁶ϕ + 3ϕ₀∇²ϕ² + ∇²ϕ³
 
-    ∇₂,∇₄,∇₆,Q,r,q,ϕ₀ = p # Opening up parameters array argument
+    ∇₂,∇₄,∇₆,Q,r,q,ϕ₀,uᵀ,firstDimTerm,secondDimTerm,secondDimTermᵀ = p # Opening up parameters array argument
 
-    # ∇²u = ∇₂*Q*u .+ (∇₂*Q*u')'
-    # part1 = u.^3 .- u .- ∇²u
-    # du .= (∇₂*Q*part1 .+ (∇₂*Q*part1')')
-    du .= (r.*∇₂*Q*u .+ q².*∇₂*Q*u .+ q².*∇₄*Q*u .+ ∇₆*Q*u .+ 3.0*ϕ₀.*∇₂*Q*(u.^2) .+ ∇₂*Q*(ϕ.^3)) .+ (r.*∇₂*Q*u' .+ q².*∇₂*Q*u' .+ q².*∇₄*Q*u' .+ ∇₆*Q*u' .+ 3.0*ϕ₀.*∇₂*Q*(u.^2)' .+ ∇₂*Q*(ϕ.^3)')'
+    transpose!(uᵀ,u)
+
+    firstDimTerm .= ∇₂*Q*(r.*u) .+ ∇₂*Q*(q^2.0 .*u) .+ ∇₄*Q*(q^2.0 .*u) .+ ∇₆*Q*u .+ ∇₂*Q*(3.0*ϕ₀.*u.^2) .+ ∇₂*Q*(u.^3)
+
+    secondDimTerm .= ∇₂*Q*(r.*uᵀ) .+ ∇₂*Q*(q^2.0 .*uᵀ) .+ ∇₄*Q*(q^2.0 .*uᵀ) .+ ∇₆*Q*(uᵀ) .+ ∇₂*Q*(3.0*ϕ₀.*uᵀ.^2) .+ ∇₂*Q*(uᵀ.^3)
+
+    transpose!(secondDimTermᵀ,secondDimTerm)
+
+    du .=  firstDimTerm .+ secondDimTermᵀ
 
 end
 
