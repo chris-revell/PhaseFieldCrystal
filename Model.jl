@@ -8,18 +8,20 @@
 
 module Model
 
-using SparseArrays
+using DiffEqOperators
+using LinearAlgebra
 
-# Function for time derivative of Cahn-Hilliard using discretised derivatives
+# Function for conserved Swift-Hohenberg equation using discretised derivatives
 @inline @views function dϕ!(du, u, p, t)
+    # ϕ̇ = α∇²(rϕ + (q² + ∇²)²ϕ + 3ϕ₀ϕ² + ϕ³)
+    # ϕ̇ = r∇²ϕ + ∇²q²ϕ + q²∇⁴ϕ + ∇⁶ϕ + 3ϕ₀∇²ϕ² + ∇²ϕ³
 
-    Δ₁, Q, α, γ = p # Opening up parameters array argument to obtain: 2nd order derivative operator, boundary condition operator, diffusion coefficient, gamma coefficient
+    ∇₂,∇₄,∇₆,Q,r,q,ϕ₀ = p # Opening up parameters array argument
 
-    # Two components of C-H equation
-    ∇²u = Δ₁*Q*u .+ (Δ₁*Q*u')'
-    part1 = u.^3 .- u .- γ.*∇²u
-    # Combining the above components to obtain du/dt
-    du .= α.*(Δ₁*Q*part1 .+ (Δ₁*Q*part1')')
+    # ∇²u = ∇₂*Q*u .+ (∇₂*Q*u')'
+    # part1 = u.^3 .- u .- ∇²u
+    # du .= (∇₂*Q*part1 .+ (∇₂*Q*part1')')
+    du .= (r.*∇₂*Q*u .+ q².*∇₂*Q*u .+ q².*∇₄*Q*u .+ ∇₆*Q*u .+ 3.0*ϕ₀.*∇₂*Q*(u.^2) .+ ∇₂*Q*(ϕ.^3)) .+ (r.*∇₂*Q*u' .+ q².*∇₂*Q*u' .+ q².*∇₄*Q*u' .+ ∇₆*Q*u' .+ 3.0*ϕ₀.*∇₂*Q*(u.^2)' .+ ∇₂*Q*(ϕ.^3)')'
 
 end
 
