@@ -5,13 +5,12 @@
 #  Created by Christopher Revell on 22/03/2021.
 #
 #
-# Function for time derivative of heat equation using discretised derivatives
+# Function for time derivative of Cahn-Hilliard equation using discretised derivatives
 
 module Model
 
 # Julia packages
 using LinearAlgebra
-using Laplacian
 
 # Local modules
 using BoundaryConditions
@@ -19,13 +18,15 @@ using Laplacian
 
 @inline @views function CH!(du, u, p, t)
 
-    ∇²u, N, h, α = p
+    ∇²u, N, h, α, γ, part1 = p
 
-    boundaryConditions!(u,N)
+    boundaryConditions!(u,N,h)
 
-    ∇²!(∇²u,u,N,h)
+    ∇²!(∇²u,u,N,h,0)
 
-    du .= α.*∇²u
+    part1 .= α.*(u.^3 .- u .- γ.*∇²u)
+
+    ∇²!(du,part1,N,h,1)
 
 end
 

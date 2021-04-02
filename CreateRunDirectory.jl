@@ -23,7 +23,7 @@ function createRunDirectory(L,h,α,γ,outInt,tMax)
     # Store system parameters.
     open("output/$(foldername)/conditions.txt","w") do conditionsfile
         println(conditionsfile, "L,      $L     ")
-        println(conditionsfile, "h,     $h    ")
+        println(conditionsfile, "h,      $h     ")
         println(conditionsfile, "α,      $α     ")
         println(conditionsfile, "γ,      $γ     ")
         println(conditionsfile, "tMax,   $tMax  ")

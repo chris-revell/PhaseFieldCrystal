@@ -11,10 +11,10 @@ module Laplacian
 
 using LinearAlgebra
 
-@inline @views function ∇²!(∇²u, u, N, h)
+@inline @views function ∇²!(∇²u, u, N, h, a)
 
-    for i = 2:N+1
-        for j = 2:N+1
+    for i = 2+a:N+3-a
+        for j = 2+a:N+3-a
             ∇²u[i,j] = (u[i-1,j] + u[i+1,j] + u[i,j-1] + u[i,j+1] - 4*u[i,j])/h^2
         end
     end
