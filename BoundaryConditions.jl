@@ -14,29 +14,21 @@ using LinearAlgebra
 @inline function boundaryConditions!(u, N, h)
 
     # Set 1st derivative at boundary to be zero
-    # Set 1st ghost points [2,:] and [:,2] to equal penultimate internal points.
-    u[:,2] .= u[:,4]
-    u[:,N+3] .= u[:,N+1]
-    u[2,:] .= u[4,:]
-    u[N+3,:] .= u[N+1,:]
+    u[:,3] .= u[:,5]
+    u[:,N+4] .= u[:,N+2]
+    u[3,:] .= u[5,:]
+    u[N+4,:] .= u[N+2,:]
 
     # # Set 3rd derivative at boundary to be zero
-     u[:,1]   .= u[:,5]
-     u[1,:]   .= u[5,:]
-     u[:,N+4] .= u[:,N]
-     u[N+4,:] .= u[N,:]
+    u[:,2]   .= u[:,6]
+    u[2,:]   .= u[6,:]
+    u[:,N+5] .= u[:,N+1]
+    u[N+5,:] .= u[N+1,:]
 
-
-     # u[2,1]   = u[2,2]
-     # u[1,2]   = u[2,2]
-     # u[N+3,1] = u[N+3,2]
-     # u[N+4,2] = u[N+3,2]
-     # u[1,N+3] = u[2,N+3]
-     # u[2,N+4] = u[2,N+3]
-     # u[N+4,N+3] = u[N+3,N+3]
-     # u[N+3,N+4] = u[N+3,N+3]
-
-
+    u[:,1]   .= u[:,7]
+    u[1,:]   .= u[7,:]
+    u[:,N+6] .= u[:,N]
+    u[N+6,:] .= u[N,:]
 
     return nothing
 
