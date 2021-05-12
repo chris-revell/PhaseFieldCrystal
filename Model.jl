@@ -38,7 +38,6 @@ using Laplacian
     ∇²!(du, part2, N, h, 2)
 
     du .*= α
-    #display(du)
 
     return nothing
 
