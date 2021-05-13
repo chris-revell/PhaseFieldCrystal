@@ -18,6 +18,7 @@ using NumericalIntegration
 # Import local modules
 using Model
 using CreateRunDirectory
+using InitialConditions
 
 @inline @views function simulate(L, N ,r ,ϕ₀ ,α ,q ,tMax)
 
@@ -36,13 +37,8 @@ using CreateRunDirectory
     # Create output files
     folderName = createRunDirectory(N,h,r,ϕ₀,Δ,α,q,outInt,tMax)
 
-    # Random initial distribution
-    u0    = zeros(N+6,N+6) #(2.0.*rand(N+6,N+6).-1.0)
-    u0[N÷2-9+3:N÷2+10+3,N÷2-9+3:N÷2+10+3] .+= 0.01.*rand(20,20)
-    deriv = zeros(N+6,N+6)
-    part1 = zeros(N+6,N+6)
-    part2 = zeros(N+6,N+6)
-
+    u0,deriv,part1,part2 = initialConditions(N,L)
+    
     # Array of parameters to pass to solver
     p = [deriv, part1, part2, N, h, α, Δ, ϕ₀, q]
 

@@ -33,7 +33,7 @@ using Laplacian
 
     ∇²!(deriv, part1, N, h, 1)
 
-    part2 .= deriv .+ Δ.*u .+ 2.0*ϕ₀.*u.^2 + u.^3 .+ q^2
+    part2 .= deriv .+ Δ.*u .+ u.^3 .+ q^2# .+ 3.0*ϕ₀.*u.^2 
 
     ∇²!(du, part2, N, h, 2)
 
