@@ -14,6 +14,8 @@ using LinearAlgebra
 # Local modules
 using BoundaryConditions
 using Laplacian
+using Grad
+using Div
 
 # ϕ̃ₜ = α∇²(Δϕ̃ + (q+∇²)²ϕ̃ + 3ϕ₀ϕ̃² + ϕ̃³)
 # ϕ̃ₜ = α∇²(Δϕ̃ + ∇²(∇²ϕ̃ + qϕ̃) + q² + 3ϕ₀ϕ̃² + ϕ̃³)
@@ -23,21 +25,22 @@ using Laplacian
 
 @inline @views function PFC!(du, u, p, t)
 
-    deriv, part1, part2, N, h, α, Δ, ϕ₀, q = p
+    deriv, part1, part2, N, h, αᵢ, αⱼ, Δ, ϕ₀, q, graduᵢ, graduⱼ = p
 
     boundaryConditions!(u,N,h)
 
     ∇²!(deriv,u,N,h,0)
 
-    part1 .= deriv.+q.*u
+    part1 .= deriv .+ q.*u
 
     ∇²!(deriv, part1, N, h, 1)
 
-    part2 .= deriv .+ Δ.*u .+ u.^3 .+ q^2# .+ 3.0*ϕ₀.*u.^2 
+    part2 .= deriv .+ Δ.*u .+ u.^3 .+ q^2 # .+ 3.0*ϕ₀.*u.^2
 
-    ∇²!(du, part2, N, h, 2)
-
-    du .*= α
+    grad!(graduᵢ, graduⱼ, part2, N, h)
+    graduᵢ .*= αᵢ
+    graduⱼ .*= αⱼ
+    div!(du, graduᵢ, graduⱼ, N, h)
 
     return nothing
 
