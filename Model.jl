@@ -17,25 +17,24 @@ using Laplacian
 using Grad
 using Div
 
-# ϕ̃ₜ = α∇²(Δϕ̃ + (q+∇²)²ϕ̃ + 3ϕ₀ϕ̃² + ϕ̃³)
-# ϕ̃ₜ = α∇²(Δϕ̃ + ∇²(∇²ϕ̃ + qϕ̃) + q² + 3ϕ₀ϕ̃² + ϕ̃³)
-# Δ = r+3ϕ₀²
-# ϕ̃ = ϕ - ϕ₀
-# From Archer, Knobloch 2012 Appendix B
+# ϕ̃ₜ = α∇²(rϕ + (q²+∇²)²ϕ + ϕ³)
+# ϕ̃ₜ = α∇²(rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³)
+
+# From Thiele, Knobloch 2013 Equation 3
 
 @inline @views function PFC!(du, u, p, t)
 
-    deriv, part1, part2, N, h, αᵢ, αⱼ, Δ, ϕ₀, q, graduᵢ, graduⱼ = p
+    deriv, part1, part2, N, h, αᵢ, αⱼ, r, q, graduᵢ, graduⱼ = p
 
     boundaryConditions!(u,N,h)
 
     ∇²!(deriv,u,N,h,0)
 
-    part1 .= deriv .+ q.*u
+    part1 .= deriv .+ (q^2).*u
 
     ∇²!(deriv, part1, N, h, 1)
 
-    part2 .= deriv .+ Δ.*u .+ u.^3 .+ q^2 # .+ 3.0*ϕ₀.*u.^2
+    part2 .= r.*u .+ deriv .+ q^4 .+ u.^3
 
     grad!(graduᵢ, graduⱼ, part2, N, h)
     graduᵢ .*= αᵢ

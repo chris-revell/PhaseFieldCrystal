@@ -14,9 +14,9 @@ using LinearAlgebra
 @inline @views function grad!(graduᵢ, graduⱼ, u, N, h)
 
     for i=1:N+5
-        for j=1:N+5
+        for j=1:N+6
             graduᵢ[i,j] = (u[i+1,j]-u[i,j])/h
-            graduⱼ[i,j] = (u[i,j+1]-u[i,j])/h
+            graduⱼ[j,i] = (u[j,i+1]-u[j,i])/h
         end
     end
 
