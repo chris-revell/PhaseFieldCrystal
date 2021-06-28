@@ -20,7 +20,7 @@ using Model
 using CreateRunDirectory
 using InitialConditions
 
-@inline @views function simulate(L,N,r,ϕ₀,α₀,q,nPlot,tMax)
+@inline @views function simulate(L,N,r,ϕ₀,α₀,q,tMax)
 
     # Input parameters
     # L     Spatial dimensions of domain             (= 200.0 )
@@ -34,14 +34,14 @@ using InitialConditions
 
     # Derived parameters
     h      = L/(N-1)    # Spatial separation of grid points
-    outInt = tMax/nPlot # Output interval
+    outInt = tMax/100 # Output interval
     tspan  = (0.0,tMax) # Time span for solution
 
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,deriv,part1,part2,αᵢ,αⱼ,graduᵢ,graduⱼ,ϕ₀Real = initialConditions(N,L,α₀,ϕ₀)
+    u0,deriv,part1,part2,αᵢ,αⱼ,graduᵢ,graduⱼ,ϕ₀Real = initialConditions(L,N,α₀,ϕ₀)
 
     # Create output folder and data files
-    folderName = createRunDirectory(N,h,r,ϕ₀,α₀,q,outInt,tMax,ϕ₀Real)
+    folderName = createRunDirectory(L,N,h,r,ϕ₀,α₀,q,outInt,tMax,ϕ₀Real)
 
     # Array of parameters to pass to solver
     p = [deriv, part1, part2, N, h, αᵢ, αⱼ, r, q, graduᵢ, graduⱼ]
@@ -60,14 +60,14 @@ using InitialConditions
     anim = @animate for i=1:(size(sol.t)[1])
        heatmap(sol.u[i][4:N+3,4:N+3],clims=(-1,1),aspect_ratio=:equal,border=:none)
     end every 5
-    gif(anim,"output/$folderName/anim.gif",fps=5)
+    gif(anim,"output/$folderName/anim.gif",fps=2)
 
     # Integrate over domain to check for mass conservation
-    x = range(0, L, length=N)
-    y = range(0, L, length=N)
-    for u in sol.u
-        display(integrate((x,y), u[4:N+3,4:N+3])/(L*L))
-    end
+    # x = range(0, L, length=N)
+    # y = range(0, L, length=N)
+    # for u in sol.u
+    #     display(integrate((x,y), u[4:N+3,4:N+3])/(L*L))
+    # end
 
     return 1
 

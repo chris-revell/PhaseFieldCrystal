@@ -11,20 +11,23 @@ module InitialConditions
 using GaussianRandomFields
 using NumericalIntegration
 
-@inline @views function initialConditions(N,L,α₀,ϕ₀)
+@inline @views function initialConditions(L,N,α₀,ϕ₀)
 
     # Gaussian random field for initial u0 field
-    grfLengthScale = L/100.0
-    cov = CovarianceFunction(2,Gaussian(grfLengthScale))
-    ptsX = range(0, stop=L, length=N)
-    ptsY = range(0, stop=L, length=N)
-    grf = GaussianRandomField(ϕ₀, cov, CirculantEmbedding(), ptsX, ptsY,minpadding=N*4+1)
+    # grfLengthScale = L/50.0
+    # cov = CovarianceFunction(2,Gaussian(grfLengthScale))
+    # ptsX = range(0, stop=L, length=N)
+    # ptsY = range(0, stop=L, length=N)
+    # grf = GaussianRandomField(0.0, cov, CirculantEmbedding(), ptsX, ptsY)
 
     # Set initial order parameter field from sample of Gaussian random field
     u0 = zeros(N+6,N+6)
-    u0[4:N+3,4:N+3] .= sample(grf)
+    #u0[4:N+3,4:N+3] .= sample(grf)
+    u0[4:N+3,4:N+3] .= rand(N,N).-0.5.+ϕ₀
 
     # Integrate over domain to find actual average order parameter (ϕ₀ mean in random distribution, but randomness means exact mean may differ)
+    #ϕ₀Real = integrate((range(0, L, length=N),range(0, L, length=N)),u0[4:N+3,4:N+3]/(L*L))
+    #u0 .*= (ϕ₀/ϕ₀Real)
     ϕ₀Real = integrate((range(0, L, length=N),range(0, L, length=N)),u0[4:N+3,4:N+3]/(L*L))
 
     # Set spatially varying diffusivity
@@ -32,10 +35,10 @@ using NumericalIntegration
     αⱼ = α₀.*ones(N+6,N+5)
 
     # Want to block off i = 11:20, j=101:150
-    ilow = 135
-    ihigh = 170
-    jlow = 101
-    jhigh = 150
+    ilow = 35
+    ihigh = 70
+    jlow = 10
+    jhigh = 50
     αᵢ[ilow-1:ihigh,jlow:jhigh] .= 0.0
     αⱼ[ilow:ihigh,jlow-1:jhigh] .= 0.0
 

@@ -14,7 +14,7 @@ using Dates
 using Base.Filesystem
 using DelimitedFiles
 
-function createRunDirectory(N,h,r,ϕ₀,α,q,outInt,tMax,ϕ₀Real)
+function createRunDirectory(L,N,h,r,ϕ₀,α,q,outInt,tMax,ϕ₀Real)
 
     # Create directory for run data labelled with current time.
     foldername = Dates.format(Dates.now(),"yyyy-mm-dd-HH-MM-SS")
@@ -22,11 +22,12 @@ function createRunDirectory(N,h,r,ϕ₀,α,q,outInt,tMax,ϕ₀Real)
 
     # Store system parameters.
     open("output/$(foldername)/conditions.txt","w") do conditionsfile
+        println(conditionsfile, "L,      $L     ")
         println(conditionsfile, "N,      $N     ")
         println(conditionsfile, "h,      $h     ")
         println(conditionsfile, "r,      $r     ")
         println(conditionsfile, "ϕ₀,     $ϕ₀    ")
-        println(conditionsfile, "ϕ₀Real, $ϕ₀Real")        
+        println(conditionsfile, "ϕ₀Real, $ϕ₀Real")
         println(conditionsfile, "α,      $α     ")
         println(conditionsfile, "q,      $q     ")
         println(conditionsfile, "tMax,   $tMax  ")
