@@ -19,26 +19,31 @@ using Div
 
 # ϕ̃ₜ = α∇²(rϕ + (q²+∇²)²ϕ + ϕ³)
 # ϕ̃ₜ = α∇²(rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³)
-
 # From Thiele, Knobloch 2013 Equation 3
 
 @inline @views function PFC!(du, u, p, t)
 
-    deriv, part1, part2, N, h, αᵢ, αⱼ, r, q, graduᵢ, graduⱼ = p
+    # Unpack parameter list
+    deriv, part1, part2, N, h, αᵢ, αⱼ, r, q, q², q⁴, graduᵢ, graduⱼ = p
 
+    # Set values of ghost points to ensure zero flux at boundary
     boundaryConditions!(u,N,h)
 
+    # Find Laplacian of u
     ∇²!(deriv,u,N,h,0)
 
-    part1 .= deriv .+ (q^2).*u
+    # Calculate inner component (∇²ϕ + q²ϕ)
+    part1 .= deriv .+ q².*u
 
+    # Find Laplacian of (∇²ϕ + q²ϕ)
     ∇²!(deriv, part1, N, h, 1)
 
-    part2 .= r.*u .+ deriv .+ q^4 .+ u.^3
+    # Calculate full term within outermost Laplacian (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) = rϕ + ∇²(part1) + q⁴ + ϕ³
+    part2 .= r.*u .+ deriv .+ q⁴ .+ u.^3
 
-    grad!(graduᵢ, graduⱼ, part2, N, h)
-    graduᵢ .*= αᵢ
-    graduⱼ .*= αⱼ
+    grad!(graduᵢ, graduⱼ, part2, αᵢ, αⱼ, N, h)
+    # graduᵢ .*= αᵢ
+    # graduⱼ .*= αⱼ
     div!(du, graduᵢ, graduⱼ, N, h)
 
     return nothing

@@ -11,17 +11,17 @@ module Grad
 
 using LinearAlgebra
 
-@inline @views function grad!(graduᵢ, graduⱼ, u, N, h)
+@inline @views function grad!(graduᵢ, graduⱼ, u, αᵢ, αⱼ, N, h)
 
     for j=1:N+6
         for i=1:N+5
-            graduᵢ[i,j] = (u[i+1,j]-u[i,j])/h
+            graduᵢ[i,j] = αᵢ[i,j]*(u[i+1,j]-u[i,j])/h
         end
     end
 
     for i=1:N+5
         for j=1:N+6
-            graduⱼ[j,i] = (u[j,i+1]-u[j,i])/h
+            graduⱼ[j,i] = αⱼ[j,i]*(u[j,i+1]-u[j,i])/h
         end
     end
 
