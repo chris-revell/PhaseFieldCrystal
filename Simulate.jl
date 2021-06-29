@@ -24,7 +24,7 @@ using InitialConditions
 
 @inline @views function simulate(L,N,r,ϕ₀,α₀,q,tMax)
 
-    #BLAS.set_num_threads(1)
+    # BLAS.set_num_threads(1)
 
     # Input parameters
     # L     Spatial dimensions of domain             (= 200.0 )
@@ -44,7 +44,7 @@ using InitialConditions
     q⁴     = q^4        # Precalculate powers of q to reduce later calculations
 
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0, deriv, part1, part2, αᵢ, αⱼ, graduᵢ, graduⱼ, ϕ₀Real = initialConditions(L,N,α₀,ϕ₀)
+    u0, deriv, part1, part2, αᵢ, αⱼ, graduᵢ, graduⱼ, ϕ₀Real = initialConditions(L,N,α₀,ϕ₀,q)
 
     # Create output folder and data files
     folderName = createRunDirectory(L,N,h,r,ϕ₀,α₀,q,outInt,tMax,ϕ₀Real)
