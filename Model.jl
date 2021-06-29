@@ -33,13 +33,18 @@ using Div
     ∇²!(deriv,u,N,h,0)
 
     # Calculate inner component (∇²ϕ + q²ϕ)
-    part1 .= deriv .+ q².*u    
+    broadcast!(*,part1,q²,u)
+    broadcast!(+,part1,part1,deriv)
+    # part1 .= deriv .+ q².*u
 
     # Find Laplacian of (∇²ϕ + q²ϕ)
     ∇²!(deriv, part1, N, h, 1)
 
     # Calculate full term within outermost Laplacian (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) = rϕ + ∇²(part1) + q⁴ + ϕ³
-    part2 .= r.*u .+ deriv .+ q⁴ .+ u.^3    
+    broadcast!(*,part2,u,u,u)
+    broadcast!(*,part1,r,u)
+    broadcast!(+,part2,part2,part1,deriv,q⁴)
+    # part2 .= r.*u .+ deriv .+ q⁴ .+ u.^3
 
     # Find grad of (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) and multiply by spatially varying diffusivity
     grad!(graduᵢ, graduⱼ, part2, αᵢ, αⱼ, N, h)

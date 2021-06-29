@@ -14,6 +14,8 @@ using LinearAlgebra
 using Plots
 using Random
 using NumericalIntegration
+using Logging: global_logger
+using TerminalLoggers: TerminalLogger
 
 # Import local modules
 using Model
@@ -36,10 +38,10 @@ using InitialConditions
 
     # Derived parameters
     h      = L/(N-1)    # Spatial separation of grid points
-    outInt = tMax/100 # Output interval
+    outInt = tMax/100   # Output interval
     tspan  = (0.0,tMax) # Time span for solution
-    q²     = q^2
-    q⁴     = q^4
+    q²     = q^2        # Precalculate powers of q to reduce later calculations
+    q⁴     = q^4        # Precalculate powers of q to reduce later calculations
 
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
     u0, deriv, part1, part2, αᵢ, αⱼ, graduᵢ, graduⱼ, ϕ₀Real = initialConditions(L,N,α₀,ϕ₀)
@@ -53,25 +55,17 @@ using InitialConditions
     # Define ODE problem using discretised derivatives
     prob = ODEProblem(PFC!, u0, tspan, p)
 
-    # Solve problem
-    sol = solve(prob, Tsit5(), reltol=1e-2, saveat=outInt, maxiters=1e9, progress=true, progress_steps=1)
+    # Start progress logger
+    global_logger(TerminalLogger())
 
-    # # Identify maximum and minimum values for colormap
-    # uMax = maximum(maximum.(sol.u[2:end]))
-    # uMin = minimum(minimum.(sol.u[2:end]))
+    # Solve problem
+    sol = solve(prob, Tsit5(), reltol=1e-2, saveat=outInt, maxiters=1e9, progress=true, progress_steps=10, progress_name="PFC model")
 
     # Plot results as animated gif
     anim = @animate for i=1:(size(sol.t)[1])
        heatmap(sol.u[i][4:N+3,4:N+3],clims=(-1,1),aspect_ratio=:equal,border=:none)
     end every 5
     gif(anim,"output/$folderName/anim.gif",fps=2)
-
-    # Integrate over domain to check for mass conservation
-    # x = range(0, L, length=N)
-    # y = range(0, L, length=N)
-    # for u in sol.u
-    #     display(integrate((x,y), u[4:N+3,4:N+3])/(L*L))
-    # end
 
     return 1
 
