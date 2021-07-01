@@ -11,7 +11,6 @@ module Simulate
 # Import Julia packages
 using DifferentialEquations
 using LinearAlgebra
-using Plots
 using Random
 using NumericalIntegration
 using Logging: global_logger
@@ -21,6 +20,7 @@ using TerminalLoggers: TerminalLogger
 using Model
 using CreateRunDirectory
 using InitialConditions
+using Visualise
 
 @inline @views function simulate(L,N,r,ϕ₀,α₀,q,tMax)
 
@@ -35,6 +35,10 @@ using InitialConditions
     # q     Parameter in Swift-Hohenberg equation    (= 0.1   )
     # nPlot Number of plots produced by return       (= 100   )
     # tMax  Run time of simulation                   (= 2000.0)
+    ilow  = 35
+    ihigh = 70
+    jlow  = 30
+    jhigh = 80
 
     # Derived parameters
     h      = L/(N-1)    # Spatial separation of grid points
@@ -43,11 +47,11 @@ using InitialConditions
     q²     = q^2        # Precalculate powers of q to reduce later calculations
     q⁴     = q^4        # Precalculate powers of q to reduce later calculations
 
-    # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0, deriv, part1, part2, αᵢ, αⱼ, graduᵢ, graduⱼ, ϕ₀Real = initialConditions(L,N,α₀,ϕ₀,q)
-
     # Create output folder and data files
-    folderName = createRunDirectory(L,N,h,r,ϕ₀,α₀,q,outInt,tMax,ϕ₀Real)
+    folderName = createRunDirectory(L,N,h,r,ϕ₀,α₀,q,outInt,tMax)
+
+    # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
+    u0,deriv,part1,part2,αᵢ,αⱼ,graduᵢ,graduⱼ = initialConditions(L,N,α₀,ϕ₀,q,ilow,ihigh,jlow,jhigh)
 
     # Array of parameters to pass to solver
     p = [deriv, part1, part2, N, h, αᵢ, αⱼ, r, q, q², q⁴, graduᵢ, graduⱼ]
@@ -59,13 +63,10 @@ using InitialConditions
     global_logger(TerminalLogger())
 
     # Solve problem
-    sol = solve(prob, Tsit5(), reltol=1e-2, saveat=outInt, maxiters=1e9, progress=true, progress_steps=10, progress_name="PFC model")
+    sol = solve(prob, alg_hints=[:stiff], reltol=10E-2, saveat=outInt, maxiters=1e9, progress=true, progress_steps=10, progress_name="PFC model")
 
     # Plot results as animated gif
-    anim = @animate for i=1:(size(sol.t)[1])
-       heatmap(sol.u[i][4:N+3,4:N+3],clims=(-1,1),aspect_ratio=:equal,border=:none)
-    end every 5
-    gif(anim,"output/$folderName/anim.gif",fps=2)
+    visualise(sol,ilow,ihigh,jlow,jhigh,N,folderName)
 
     return 1
 
