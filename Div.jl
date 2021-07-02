@@ -10,10 +10,12 @@
 module Div
 
 using LinearAlgebra
+#using Base.Threads
+using LoopVectorization
 
-@inline @views function div!(divu, graduᵢ, graduⱼ, N, h)
+@inline function div!(divu, graduᵢ, graduⱼ, N, h)
 
-    for j=2:N+5
+    @tturbo for j=2:N+5
         for i=2:N+5
             divu[i,j] = (graduᵢ[i,j] - graduᵢ[i-1,j] + graduⱼ[i,j] - graduⱼ[i,j-1])/h
         end

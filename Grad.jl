@@ -10,16 +10,18 @@
 module Grad
 
 using LinearAlgebra
+#using Base.Threads
+using LoopVectorization
 
-@inline @views function grad!(graduᵢ, graduⱼ, u, αᵢ, αⱼ, N, h)
+@inline function grad!(graduᵢ, graduⱼ, u, αᵢ, αⱼ, N, h)
 
-    for j=1:N+6
+    @tturbo for j=1:N+6
         for i=1:N+5
             graduᵢ[i,j] = αᵢ[i,j]*(u[i+1,j]-u[i,j])/h
         end
     end
 
-    for i=1:N+5
+    @tturbo for i=1:N+5
         for j=1:N+6
             graduⱼ[j,i] = αⱼ[j,i]*(u[j,i+1]-u[j,i])/h
         end
