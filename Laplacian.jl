@@ -10,10 +10,12 @@
 module Laplacian
 
 using LinearAlgebra
+#using Base.Threads
+using LoopVectorization
 
-@inline @views function ∇²!(∇²u, u, N, h, a)
+@inline function ∇²!(∇²u, u, N, h, a)
 
-    for j = 2+a:N+5-a
+    @tturbo for j = 2+a:N+5-a
         for i = 2+a:N+5-a
             ∇²u[i,j] = (u[i-1,j] + u[i+1,j] + u[i,j-1] + u[i,j+1] - 4*u[i,j])/h^2
         end
