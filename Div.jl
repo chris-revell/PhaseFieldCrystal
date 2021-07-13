@@ -10,7 +10,6 @@
 module Div
 
 using LinearAlgebra
-#using Base.Threads
 using LoopVectorization
 
 @inline function div!(divu, graduᵢ, graduⱼ, N, h)

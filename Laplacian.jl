@@ -10,7 +10,6 @@
 module Laplacian
 
 using LinearAlgebra
-#using Base.Threads
 using LoopVectorization
 
 @inline function ∇²!(∇²u, u, N, h, a)

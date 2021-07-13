@@ -11,8 +11,9 @@ module InitialConditions
 
 using GaussianRandomFields
 using NumericalIntegration
+using Images
 
-@inline @views function initialConditions(L,N,α₀,ϕ₀,λ,ilow,ihigh,jlow,jhigh)
+@inline @views function initialConditions(imageMask,L,N,α₀,ϕ₀,λ)
 
     # Gaussian random field for initial u0 field
     mean = fill(ϕ₀, (N,N))
@@ -25,15 +26,23 @@ using NumericalIntegration
     u0 = zeros(N+6,N+6)
     u0[4:N+3,4:N+3] .= sample(grf)
 
-    # Integrate over domain to find actual average order parameter (ϕ₀ mean in random distribution, but randomness means exact mean may differ)
-    #ϕ₀Real = integrate((ptsX,ptsY),u0[4:N+3,4:N+3]/(L*L))
-
-    # Set spatially varying diffusivity
-    # Block off region specified by ilow:ihigh, jlow:jhigh by setting diffusivity to 0
+    # Set spatially varying diffusivity from imported image
     αᵢ = α₀.*ones(N+5,N+6)
     αⱼ = α₀.*ones(N+6,N+5)
-    αᵢ[ilow-1:ihigh,jlow:jhigh] .= 0.0
-    αⱼ[ilow:ihigh,jlow-1:jhigh] .= 0.0
+    for j=1:N
+        for i=1:N-1
+            if imageMask[i,j] == 0.0 || imageMask[i+1,j] == 0.0
+                αᵢ[i,j] = 0.0
+            end
+        end
+    end
+    for j=1:N-1
+        for i=1:N
+            if imageMask[i,j] == 0.0 || imageMask[i,j+1] == 0.0
+                αⱼ[i,j] = 0.0
+            end
+        end
+    end
 
     # Allocate additional arrays for later calculations
     deriv  = zeros(N+6,N+6)

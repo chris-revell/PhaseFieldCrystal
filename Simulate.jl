@@ -21,8 +21,9 @@ using Model
 using CreateRunDirectory
 using InitialConditions
 using Visualise
+using ImportImage
 
-@inline @views function simulate(L,N,r,ϕ₀,α₀,q,tMax)
+@inline @views function simulate(imagePath,L,r,ϕ₀,α₀,q,tMax)
 
     # BLAS.set_num_threads(1)
 
@@ -35,10 +36,8 @@ using Visualise
     # q     Parameter in Swift-Hohenberg equation    (= 0.1   )
     # nPlot Number of plots produced by return       (= 100   )
     # tMax  Run time of simulation                   (= 2000.0)
-    ilow  = 35
-    ihigh = 70
-    jlow  = 30
-    jhigh = 80
+
+    imageMask,N = importImage(imagePath)
 
     # Derived parameters
     h      = L/(N-1)    # Spatial separation of grid points
@@ -51,7 +50,7 @@ using Visualise
     folderName = createRunDirectory(L,N,h,r,ϕ₀,α₀,q,outInt,tMax)
 
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,deriv,part1,part2,αᵢ,αⱼ,graduᵢ,graduⱼ = initialConditions(L,N,α₀,ϕ₀,q,ilow,ihigh,jlow,jhigh)
+    u0,deriv,part1,part2,αᵢ,αⱼ,graduᵢ,graduⱼ = initialConditions(imageMask,L,N,α₀,ϕ₀,q)
 
     # Array of parameters to pass to solver
     p = [deriv, part1, part2, N, h, αᵢ, αⱼ, r, q, q², q⁴, graduᵢ, graduⱼ]
@@ -66,7 +65,7 @@ using Visualise
     sol = solve(prob, alg_hints=[:stiff], reltol=10E-2, saveat=outInt, maxiters=1e9, progress=true, progress_steps=10, progress_name="PFC model")
 
     # Plot results as animated gif
-    visualise(sol,ilow,ihigh,jlow,jhigh,N,folderName)
+    visualise(sol,N,folderName,imageMask)
 
     return 1
 
