@@ -15,12 +15,14 @@ using Random
 using NumericalIntegration
 using Logging: global_logger
 using TerminalLoggers: TerminalLogger
+using Plots
 
 # Import local modules
 using Model
 using CreateRunDirectory
 using InitialConditions
 using Visualise
+using FreeEnergy
 
 @inline @views function simulate(L,N,r,ϕ₀,α₀,q,tMax)
 
@@ -67,6 +69,13 @@ using Visualise
 
     # Plot results as animated gif
     visualise(sol,ilow,ihigh,jlow,jhigh,N,folderName)
+
+    freeEnergies = zeros(size(sol.u))
+    for (i,u) in enumerate(sol.u)
+        freeEnergies[i] = freeEnergy(u, N, L, q, r, h)
+    end
+    #display(plot(sol.t,freeEnergies))
+    #display(freeEnergies)
 
     return 1
 
