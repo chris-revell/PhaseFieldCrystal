@@ -50,7 +50,7 @@ using Laplacian
 
     display(plot(sol.t,freeEnergies))
 
-    return nothing
+    return freeEnergies
 
 end
 

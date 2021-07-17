@@ -67,11 +67,11 @@ using FreeEnergy
     # Solve problem
     sol = solve(prob, alg_hints=[:stiff], reltol=10E-2, saveat=outInt, maxiters=1e9, progress=true, progress_steps=10, progress_name="PFC model")
 
-    # Plot results as animated gif
-    visualise(sol,ilow,ihigh,jlow,jhigh,N,h,folderName)
-
     # Calculate and plot free energy
-    freeEnergy(sol, N, L, q, r, h)
+    freeEnergies = freeEnergy(sol, N, L, q, r, h)
+
+    # Plot results as animated gif
+    visualise(sol,ilow,ihigh,jlow,jhigh,N,h,folderName,freeEnergies)    
 
     return 1
 
