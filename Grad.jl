@@ -10,7 +10,6 @@
 module Grad
 
 using LinearAlgebra
-#using Base.Threads
 using LoopVectorization
 
 @inline function grad!(graduᵢ, graduⱼ, u, αᵢ, αⱼ, N, h)

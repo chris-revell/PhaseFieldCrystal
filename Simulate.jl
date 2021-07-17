@@ -26,7 +26,7 @@ using FreeEnergy
 
 @inline @views function simulate(L,N,r,ϕ₀,α₀,q,tMax)
 
-    # BLAS.set_num_threads(1)
+    BLAS.set_num_threads(1)
 
     # Input parameters
     # L     Spatial dimensions of domain             (= 200.0 )
@@ -68,14 +68,10 @@ using FreeEnergy
     sol = solve(prob, alg_hints=[:stiff], reltol=10E-2, saveat=outInt, maxiters=1e9, progress=true, progress_steps=10, progress_name="PFC model")
 
     # Plot results as animated gif
-    visualise(sol,ilow,ihigh,jlow,jhigh,N,folderName)
+    visualise(sol,ilow,ihigh,jlow,jhigh,N,h,folderName)
 
-    freeEnergies = zeros(size(sol.u))
-    for (i,u) in enumerate(sol.u)
-        freeEnergies[i] = freeEnergy(u, N, L, q, r, h)
-    end
-    #display(plot(sol.t,freeEnergies))
-    #display(freeEnergies)
+    # Calculate and plot free energy
+    freeEnergy(sol, N, L, q, r, h)
 
     return 1
 

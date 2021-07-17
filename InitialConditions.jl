@@ -32,8 +32,8 @@ using NumericalIntegration
     # Block off region specified by ilow:ihigh, jlow:jhigh by setting diffusivity to 0
     αᵢ = α₀.*ones(N+5,N+6)
     αⱼ = α₀.*ones(N+6,N+5)
-    αᵢ[ilow-1:ihigh,jlow:jhigh] .= 0.0
-    αⱼ[ilow:ihigh,jlow-1:jhigh] .= 0.0
+    # αᵢ[ilow-1:ihigh,jlow:jhigh] .= 0.0
+    # αⱼ[ilow:ihigh,jlow-1:jhigh] .= 0.0
 
     # Allocate additional arrays for later calculations
     deriv  = zeros(N+6,N+6)
