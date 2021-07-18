@@ -16,6 +16,7 @@ using NumericalIntegration
 using Logging: global_logger
 using TerminalLoggers: TerminalLogger
 using Plots
+using JLD2
 
 # Import local modules
 using Model
@@ -24,7 +25,7 @@ using InitialConditions
 using Visualise
 using FreeEnergy
 
-@inline @views function simulate(L,N,r,ϕ₀,α₀,q,tMax)
+@inline @views function simulate(L,N,r,ϕ₀,α₀,q,tMax,visualiseFlag)
 
     BLAS.set_num_threads(1)
 
@@ -70,8 +71,12 @@ using FreeEnergy
     # Calculate and plot free energy
     freeEnergies = freeEnergy(sol, N, L, q, r, h)
 
+    jldsave("output/$folderName/data.jld2";sol,freeEnergies,N,L,q,r,h)
+
     # Plot results as animated gif
-    visualise(sol,ilow,ihigh,jlow,jhigh,N,h,folderName,freeEnergies)    
+    if visualiseFlag==1
+        visualise(sol,ilow,ihigh,jlow,jhigh,N,h,folderName,freeEnergies)
+    end
 
     return 1
 
