@@ -15,6 +15,8 @@ using Random
 using NumericalIntegration
 using Logging: global_logger
 using TerminalLoggers: TerminalLogger
+using Plots
+using JLD2
 
 # Import local modules
 using Model
@@ -22,8 +24,10 @@ using CreateRunDirectory
 using InitialConditions
 using Visualise
 using ImportImage
+using FreeEnergy
 
-@inline @views function simulate(imagePath,L,r,ϕ₀,α₀,q,tMax)
+@inline @views function simulate(imagePath,L,r,ϕ₀,α₀,q,tMax,visualiseFlag)
+
 
     # BLAS.set_num_threads(1)
 
@@ -64,8 +68,15 @@ using ImportImage
     # Solve problem
     sol = solve(prob, alg_hints=[:stiff], reltol=10E-2, saveat=outInt, maxiters=1e9, progress=true, progress_steps=10, progress_name="PFC model")
 
+    # Calculate and plot free energy
+    freeEnergies = freeEnergy(sol, N, L, q, r, h)
+
+    jldsave("output/$folderName/data.jld2";sol,freeEnergies,N,L,q,r,h)
+
     # Plot results as animated gif
-    visualise(sol,N,folderName,imageMask)
+    if visualiseFlag==1
+        visualise(sol,N,h,folderName,freeEnergies,imageMask)
+    end
 
     return 1
 
