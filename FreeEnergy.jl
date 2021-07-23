@@ -48,8 +48,6 @@ using Laplacian
 
     end
 
-    display(plot(sol.t,freeEnergies))
-
     return freeEnergies
 
 end

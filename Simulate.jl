@@ -71,7 +71,8 @@ using FreeEnergy
     # Calculate and plot free energy
     freeEnergies = freeEnergy(sol, N, L, q, r, h)
 
-    jldsave("output/$folderName/data.jld2";sol,freeEnergies,N,L,q,r,h)
+    # Save variables and results to file
+    jldsave("output/$folderName/data.jld2";sol,imageMask,freeEnergies,N,L,q,r,h,folderName)
 
     # Plot results as animated gif
     if visualiseFlag==1
