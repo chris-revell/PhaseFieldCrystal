@@ -32,14 +32,14 @@ using Images
     for j=1:N
         for i=1:N-1
             if imageMask[i,j] == 0.0 || imageMask[i+1,j] == 0.0
-                αᵢ[i,j] = 0.0
+                αᵢ[i+3,j+3] = 0.0
             end
         end
     end
     for j=1:N-1
         for i=1:N
             if imageMask[i,j] == 0.0 || imageMask[i,j+1] == 0.0
-                αⱼ[i,j] = 0.0
+                αⱼ[i+3,j+3] = 0.0
             end
         end
     end
