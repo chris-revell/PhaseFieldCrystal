@@ -72,6 +72,7 @@ using FreeEnergy
     freeEnergies = freeEnergy(sol, N, L, q, r, h)
 
     # Save variables and results to file
+    @info "Saving data to output/$folderName/data.jld2"
     jldsave("output/$folderName/data.jld2";sol,imageMask,freeEnergies,N,L,q,r,h,folderName)
 
     # Plot results as animated gif
