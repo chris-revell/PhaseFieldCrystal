@@ -11,25 +11,32 @@ module BoundaryConditions
 
 using LinearAlgebra
 
-@inline @views function boundaryConditions!(u, N, h)
+@views function boundaryConditions!(u, N, h, nGhosts)
 
-    # Set 1st derivative at boundary to be zero by reflecting values around edge point
-    u[:,3]   .= u[:,5]
-    u[:,N+4] .= u[:,N+2]
-    u[3,:]   .= u[5,:]
-    u[N+4,:] .= u[N+2,:]
+    for i=1:nGhosts
+        u[:,nGhosts+1-i]   .= u[:,nGhosts+1+i]
+        u[nGhosts+1-i,:]   .= u[nGhosts+1+i,:]
+        u[:,N+nGhosts+i] .= u[:,N+nGhosts-i]
+        u[N+nGhosts+i,:] .= u[N+nGhosts-i,:]
+    end
 
-    # Set 3rd derivative at boundary to be zero by reflecting values around edge point
-    u[:,2]   .= u[:,6]
-    u[2,:]   .= u[6,:]
-    u[:,N+5] .= u[:,N+1]
-    u[N+5,:] .= u[N+1,:]
-
-    # Set 5th derivative at boundary to be zero by reflecting values around edge point
-    u[:,1]   .= u[:,7]
-    u[1,:]   .= u[7,:]
-    u[:,N+6] .= u[:,N]
-    u[N+6,:] .= u[N,:]
+    # # Set 1st derivative at boundary to be zero by reflecting values around edge point
+    # u[:,3]   .= u[:,5]
+    # u[:,N+4] .= u[:,N+2]
+    # u[3,:]   .= u[5,:]
+    # u[N+4,:] .= u[N+2,:]
+    #
+    # # Set 3rd derivative at boundary to be zero by reflecting values around edge point
+    # u[:,2]   .= u[:,6]
+    # u[2,:]   .= u[6,:]
+    # u[:,N+5] .= u[:,N+1]
+    # u[N+5,:] .= u[N+1,:]
+    #
+    # # Set 5th derivative at boundary to be zero by reflecting values around edge point
+    # u[:,1]   .= u[:,7]
+    # u[1,:]   .= u[7,:]
+    # u[:,N+6] .= u[:,N]
+    # u[N+6,:] .= u[N,:]
 
     return nothing
 

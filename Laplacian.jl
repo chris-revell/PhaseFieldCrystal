@@ -12,7 +12,7 @@ module Laplacian
 using LinearAlgebra
 using LoopVectorization
 
-@inline function ∇²!(∇²u, u, N, h, a)
+@inline function ∇²!(∇²u, u, N, h, a, nGhosts)
 
     @tturbo for j = 2+a:N+5-a
         for i = 2+a:N+5-a
