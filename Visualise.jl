@@ -9,7 +9,7 @@
 
 module Visualise
 
-using Plots
+using Plots; ENV["GKSwstype"]="nul" #ENV["GKSwstype"]=100 #ENV["JULIA_GR_PROVIDER"] = "GR"
 using ColorSchemes
 using Printf
 using JLD2
