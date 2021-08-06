@@ -12,10 +12,10 @@ module Div
 using LinearAlgebra
 using LoopVectorization
 
-@inline function div!(divu, graduᵢ, graduⱼ, N, h)
+@inline function div!(divu, graduᵢ, graduⱼ, N, h, nGhosts)
 
-    @tturbo for j=2:N+5
-        for i=2:N+5
+    @tturbo for j=2:N+nGhosts*2-1
+        for i=2:N+nGhosts*2-1
             divu[i,j] = (graduᵢ[i,j] - graduᵢ[i-1,j] + graduⱼ[i,j] - graduⱼ[i,j-1])/h
         end
     end

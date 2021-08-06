@@ -28,7 +28,7 @@ using Images
 
     # Set spatially varying diffusivity from imported image
     αᵢ = α₀.*ones(N+2*nGhosts-1,N+2*nGhosts)
-    αⱼ = α₀.*ones(N+2*nGhosts,N+2*nGHosts-1)
+    αⱼ = α₀.*ones(N+2*nGhosts,N+2*nGhosts-1)
     for j=1:N
         for i=1:N-1
             if imageMask[i,j] == 0.0 || imageMask[i+1,j] == 0.0

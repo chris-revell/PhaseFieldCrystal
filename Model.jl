@@ -25,28 +25,28 @@ using Div
 @inline @views function PFC!(du, u, p, t)
 
     # Unpack parameter list
-    deriv, part1, part2, N, h, αᵢ, αⱼ, r, q, q², q⁴, graduᵢ, graduⱼ = p
+    deriv, part1, part2, N, h, αᵢ, αⱼ, r, q, q², q⁴, nGhosts, graduᵢ, graduⱼ = p
 
     # Set values of ghost points to ensure zero flux at boundary
-    boundaryConditions!(u,N,h)
+    boundaryConditions!(u,N,h,nGhosts)
 
     # Find Laplacian of u
-    ∇²!(deriv,u,N,h,0)
+    ∇²!(deriv,u,N,h,0,nGhosts)
 
     # Calculate inner component (∇²ϕ + q²ϕ)
     @tturbo part1 .= deriv .+ q².*u
 
     # Find Laplacian of (∇²ϕ + q²ϕ)
-    ∇²!(deriv, part1, N, h, 1)
+    ∇²!(deriv,part1,N,h,1,nGhosts)
 
     # Calculate full term within outermost Laplacian (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) = rϕ + ∇²(part1) + q⁴ + ϕ³
     @tturbo part2 .= r.*u .+ deriv .+ q⁴ .+ u.^3
 
     # Find grad of (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) and multiply by spatially varying diffusivity
-    grad!(graduᵢ, graduⱼ, part2, αᵢ, αⱼ, N, h)
+    grad!(graduᵢ,graduⱼ,part2,αᵢ,αⱼ,N,h,nGhosts)
 
     # Find divergence of the result from the last term
-    div!(du, graduᵢ, graduⱼ, N, h)
+    div!(du,graduᵢ,graduⱼ,N,h,nGhosts)
 
     return nothing
 

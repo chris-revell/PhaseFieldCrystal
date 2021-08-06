@@ -19,7 +19,7 @@ using Plots
 # Import local Julia modules
 using Laplacian
 
-@inline function freeEnergy(sol, N, L, q, r, h)
+@inline function freeEnergy(sol, N, L, q, r, h, nGhosts)
 
     freeEnergies = zeros(size(sol.u))
     part1 = zeros(N+6,N+6)
@@ -28,10 +28,10 @@ using Laplacian
     for (i,u) in enumerate(sol.u)
 
         # Find del squared u
-        ∇²!(part1, u, N, h, 0)
+        ∇²!(part1, u, N, h, 0, nGhosts)
 
         # Find del ^4 of u
-        ∇²!(part2, part1, N, h, 1)
+        ∇²!(part2, part1, N, h, 1, nGhosts)
 
         # Operate in place on part2 to include additional free energy integrand terms
         part2 .+= r .+ q^4.0 .+ 2.0*q^2.0.*part1

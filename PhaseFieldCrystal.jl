@@ -28,6 +28,7 @@ using FreeEnergy
 
 @inline @views function phaseFieldCrystal(imagePath,L,r,ϕ₀,α₀,q,tMax,visualiseFlag)
 
+    nGhosts = 4
 
     # BLAS.set_num_threads(1)
 
@@ -54,10 +55,10 @@ using FreeEnergy
     folderName = createRunDirectory(L,N,h,r,ϕ₀,α₀,q,outInt,tMax)
 
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,deriv,part1,part2,αᵢ,αⱼ,graduᵢ,graduⱼ = initialConditions(imageMask,L,N,α₀,ϕ₀,q)
+    u0,deriv,part1,part2,αᵢ,αⱼ,graduᵢ,graduⱼ = initialConditions(imageMask,L,N,α₀,ϕ₀,q,nGhosts)
 
     # Array of parameters to pass to solver
-    p = [deriv, part1, part2, N, h, αᵢ, αⱼ, r, q, q², q⁴, graduᵢ, graduⱼ]
+    p = [deriv, part1, part2, N, h, αᵢ, αⱼ, r, q, q², q⁴, nGhosts, graduᵢ, graduⱼ]
 
     # Define ODE problem using discretised derivatives
     prob = ODEProblem(PFC!, u0, tspan, p)
@@ -69,7 +70,7 @@ using FreeEnergy
     sol = solve(prob, alg_hints=[:stiff], reltol=10E-2, saveat=outInt, maxiters=1e9, progress=true, progress_steps=10, progress_name="PFC model")
 
     # Calculate and plot free energy
-    freeEnergies = freeEnergy(sol, N, L, q, r, h)
+    freeEnergies = freeEnergy(sol, N, L, q, r, h, nGhosts)
 
     # Save variables and results to file
     @info "Saving data to output/$folderName/data.jld2"
@@ -77,7 +78,7 @@ using FreeEnergy
 
     # Plot results as animated gif
     if visualiseFlag==1
-        visualise(sol,N,h,folderName,freeEnergies,imageMask)
+        visualise(sol,N,h,nGhosts,folderName,freeEnergies,imageMask)
     end
 
     return 1

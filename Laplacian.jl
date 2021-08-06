@@ -14,9 +14,10 @@ using LoopVectorization
 
 @inline function ∇²!(∇²u, u, N, h, a, nGhosts)
 
-    @tturbo for j = 2+a:N+5-a
-        for i = 2+a:N+5-a
-            ∇²u[i,j] = (u[i-1,j] + u[i+1,j] + u[i,j-1] + u[i,j+1] - 4*u[i,j])/h^2
+    @tturbo for j=2+a:N+(nGhosts*2-1)-a
+        for i=2+a:N+(nGhosts*2-1)-a
+            ∇²u[i,j] = (-u[i-2,j]/12.0 + 4.0*u[i-1,j]/3.0 - 5.0*u[i,j]/2.0 + 4.0*u[i+1,j]/3.0 - u[i+2,j]/12.0 +
+                            -u[i,j-2]/12.0 + 4.0*u[i,j-1]/3.0 - 5.0*u[i,j]/2.0 + 4.0*u[i,j+1]/3.0 - u[i,j+2]/12.0)/h^2
         end
     end
 
