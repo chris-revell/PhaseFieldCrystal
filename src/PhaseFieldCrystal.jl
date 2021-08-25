@@ -28,7 +28,6 @@ using FreeEnergy
 
 @inline @views function phaseFieldCrystal(imagePath,L,r,ϕ₀,α₀,q,tMax,visualiseFlag)
 
-
     # BLAS.set_num_threads(1)
 
     # Input parameters
