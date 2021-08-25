@@ -1,0 +1,21 @@
+name = "PhaseFieldCrystal"
+uuid = "89b58a17-95c1-4997-bb1b-b32d7c8d0377"
+authors = ["chris-revell <christopher.revell@manchester.ac.uk>"]
+version = "0.1.0"
+
+[deps]
+ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+GaussianRandomFields = "e4b2fa32-6e09-5554-b718-106ed5adafe9"
+Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+LoopVectorization = "bdcacae8-1622-11e9-2a5c-532679323890"
+NumericalIntegration = "e7bfaba1-d571-5449-8927-abc22e82249b"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+TerminalLoggers = "5d786b92-1e48-4d6f-9151-6b4477ca9bed"

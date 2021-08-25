@@ -22,7 +22,7 @@ using Div
 # ϕ̃ₜ = α∇²(rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³)
 # From Thiele, Knobloch 2013 Equation 3
 
-@inline @views function PFC!(du, u, p, t)
+@views function PFC!(du, u, p, t)
 
     # Unpack parameter list
     deriv, part1, part2, N, h, αᵢ, αⱼ, r, q, q², q⁴, graduᵢ, graduⱼ = p
@@ -48,7 +48,7 @@ using Div
     # Find divergence of the result from the last term
     div!(du, graduᵢ, graduⱼ, N, h)
 
-    return nothing
+    return du
 
 end
 
