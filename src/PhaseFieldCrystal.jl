@@ -19,12 +19,12 @@ using Plots
 using JLD2
 
 # Import local modules
-using Model
-using CreateRunDirectory
-using InitialConditions
-using Visualise
-using ImportImage
-using FreeEnergy
+include("Model.jl"); using .Model
+include("CreateRunDirectory.jl"); using .CreateRunDirectory
+include("InitialConditions.jl"); using .InitialConditions
+include("Visualise.jl"); using .Visualise
+include("ImportImage.jl"); using .ImportImage
+include("FreeEnergy.jl"); using .FreeEnergy
 
 @inline @views function phaseFieldCrystal(imagePath,L,r,ϕ₀,α₀,q,tMax,visualiseFlag)
 

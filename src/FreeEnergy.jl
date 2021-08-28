@@ -17,7 +17,7 @@ using NumericalIntegration
 using Plots
 
 # Import local Julia modules
-using Laplacian
+include("Laplacian.jl"); using .Laplacian
 
 @inline function freeEnergy(sol, N, L, q, r, h)
 

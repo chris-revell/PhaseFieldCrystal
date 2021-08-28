@@ -9,7 +9,11 @@
 
 module BoundaryConditions
 
+# Import Julia packages
 using LinearAlgebra
+
+# Import local modules
+# include("<Module>.jl"); using .Module
 
 @inline @views function boundaryConditions!(u, N, h)
 

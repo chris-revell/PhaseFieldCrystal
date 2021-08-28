@@ -9,9 +9,13 @@
 
 module InitialConditions
 
+# Import Julia packages
 using GaussianRandomFields
 using NumericalIntegration
 using Images
+
+# Import local modules
+# include("<Module>.jl"); using .Module
 
 @inline @views function initialConditions(imageMask,L,N,α₀,ϕ₀,λ)
 

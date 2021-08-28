@@ -9,8 +9,12 @@
 
 module Laplacian
 
+# Import Julia packages
 using LinearAlgebra
 using LoopVectorization
+
+# Import local modules
+# include("<Module>.jl"); using .Module
 
 @inline function ∇²!(∇²u, u, N, h, a)
 

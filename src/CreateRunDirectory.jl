@@ -9,10 +9,13 @@
 
 module CreateRunDirectory
 
-# Julia packages
+# Import Julia packages
 using Dates
 using Base.Filesystem
 using DelimitedFiles
+
+# Import local modules
+# include("<Module>.jl"); using .Module
 
 function createRunDirectory(L,N,h,r,ϕ₀,α,q,outInt,tMax)
 
@@ -26,7 +29,7 @@ function createRunDirectory(L,N,h,r,ϕ₀,α,q,outInt,tMax)
         println(conditionsfile, "N,      $N     ")
         println(conditionsfile, "h,      $h     ")
         println(conditionsfile, "r,      $r     ")
-        println(conditionsfile, "ϕ₀,     $ϕ₀    ")        
+        println(conditionsfile, "ϕ₀,     $ϕ₀    ")
         println(conditionsfile, "α,      $α     ")
         println(conditionsfile, "q,      $q     ")
         println(conditionsfile, "tMax,   $tMax  ")

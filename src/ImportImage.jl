@@ -9,7 +9,11 @@
 
 module ImportImage
 
+# Import Julia packages
 using Images
+
+# Import local modules
+# include("<Module>.jl"); using .Module
 
 @inline function importImage(imagePath)
 
