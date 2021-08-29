@@ -6,7 +6,7 @@
 #
 #
 
-module PhaseFieldCrystal
+module Simulate
 
 # Import Julia packages
 using DifferentialEquations
@@ -26,7 +26,7 @@ using Visualise
 using ImportImage
 using FreeEnergy
 
-@inline @views function phaseFieldCrystal(imagePath,L,r,ϕ₀,α₀,q,tMax,visualiseFlag)
+@inline @views function simulate(imagePath,L,r,ϕ₀,α₀,q,tMax,visualiseFlag)
 
 
     # BLAS.set_num_threads(1)
@@ -84,6 +84,6 @@ using FreeEnergy
 
 end
 
-export phaseFieldCrystal
+export simulate
 
 end
