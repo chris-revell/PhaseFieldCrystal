@@ -26,7 +26,7 @@ include("Visualise.jl"); using .Visualise
 include("ImportImage.jl"); using .ImportImage
 include("FreeEnergy.jl"); using .FreeEnergy
 
-@inline @views function phaseFieldCrystal(imagePath,L,r,ϕ₀,α₀,q,tMax,outputFlag,visualiseFlag)
+@inline @views function phaseFieldCrystal(imagePath,L,r,ϕ₀,α₀,q,tMax,loggerFlag,outputFlag,visualiseFlag)
 
     # BLAS.set_num_threads(1)
 
@@ -62,10 +62,10 @@ include("FreeEnergy.jl"); using .FreeEnergy
     prob = ODEProblem(PFC!, u0, tspan, p)
 
     # Start progress logger
-    global_logger(TerminalLogger())
+    loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
 
     # Solve problem
-    sol = solve(prob, alg_hints=[:stiff], reltol=10E-2, saveat=outInt, maxiters=1e9, progress=true, progress_steps=10, progress_name="PFC model")
+    sol = solve(prob, alg_hints=[:stiff], reltol=10E-2, saveat=outInt, maxiters=1e9, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate and plot free energy
     freeEnergies = freeEnergy(sol, N, L, q, r, h)
