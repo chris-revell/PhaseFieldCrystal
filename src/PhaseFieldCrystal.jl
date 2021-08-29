@@ -19,15 +19,14 @@ using Plots
 using JLD2
 
 # Import local modules
-using Model
-using CreateRunDirectory
-using InitialConditions
-using Visualise
-using ImportImage
-using FreeEnergy
+include("Model.jl"); using .Model
+include("CreateRunDirectory.jl"); using .CreateRunDirectory
+include("InitialConditions.jl"); using .InitialConditions
+include("Visualise.jl"); using .Visualise
+include("ImportImage.jl"); using .ImportImage
+include("FreeEnergy.jl"); using .FreeEnergy
 
-@inline @views function phaseFieldCrystal(imagePath,L,r,ϕ₀,α₀,q,tMax,visualiseFlag)
-
+@inline @views function phaseFieldCrystal(imagePath,L,r,ϕ₀,α₀,q,tMax,outputFlag,visualiseFlag)
 
     # BLAS.set_num_threads(1)
 
@@ -71,12 +70,14 @@ using FreeEnergy
     # Calculate and plot free energy
     freeEnergies = freeEnergy(sol, N, L, q, r, h)
 
-    # Save variables and results to file
-    @info "Saving data to output/$folderName/data.jld2"
-    jldsave("output/$folderName/data.jld2";sol,imageMask,freeEnergies,N,L,q,r,h,folderName)
+    if outputFlag==1
+        # Save variables and results to file
+        @info "Saving data to output/$folderName/data.jld2"
+        jldsave("output/$folderName/data.jld2";sol,imageMask,freeEnergies,N,L,q,r,h,folderName)
+    end
 
     # Plot results as animated gif
-    if visualiseFlag==1
+    if visualiseFlag==1 && outputFlag==1
         visualise(sol,N,h,folderName,freeEnergies,imageMask)
     end
 

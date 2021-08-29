@@ -8,15 +8,15 @@
 
 module Model
 
-# Julia packages
+# Import Julia packages
 using LinearAlgebra
 using LoopVectorization
 
-# Local modules
-using BoundaryConditions
-using Laplacian
-using Grad
-using Div
+# Import local modules
+include("BoundaryConditions.jl"); using .BoundaryConditions
+include("Laplacian.jl"); using .Laplacian
+include("Grad.jl"); using .Grad
+include("Div.jl"); using .Div
 
 # ϕ̃ₜ = α∇²(rϕ + (q²+∇²)²ϕ + ϕ³)
 # ϕ̃ₜ = α∇²(rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³)

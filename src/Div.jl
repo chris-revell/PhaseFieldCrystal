@@ -9,8 +9,12 @@
 
 module Div
 
+# Import Julia packages
 using LinearAlgebra
 using LoopVectorization
+
+# Import local modules
+# include("<Module>.jl"); using .Module
 
 @inline function div!(divu, graduᵢ, graduⱼ, N, h)
 

@@ -9,12 +9,14 @@
 
 module Visualise
 
+# Import Julia packages
 using Plots; ENV["GKSwstype"]="nul" #ENV["GKSwstype"]=100 #ENV["JULIA_GR_PROVIDER"] = "GR"
 using ColorSchemes
 using Printf
 using JLD2
 
-using Laplacian
+# Import local modules
+include("Laplacian.jl"); using .Laplacian
 
 function visualise(sol,N,h,folderName,freeEnergies,imageMask)
 

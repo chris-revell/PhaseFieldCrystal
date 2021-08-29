@@ -9,8 +9,12 @@
 
 module Grad
 
+# Import Julia packages
 using LinearAlgebra
 using LoopVectorization
+
+# Import local modules
+# include("<Module>.jl"); using .Module
 
 @inline function grad!(graduᵢ, graduⱼ, u, αᵢ, αⱼ, N, h)
 
