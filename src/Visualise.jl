@@ -14,17 +14,18 @@ using Plots; ENV["GKSwstype"]="nul" #ENV["GKSwstype"]=100 #ENV["JULIA_GR_PROVIDE
 using ColorSchemes
 using Printf
 using JLD2
+using DifferentialEquations
 
 # Import local modules
 include("Laplacian.jl"); using .Laplacian
 
-function visualise(sol,N,h,folderName,freeEnergies,imageMask)
+function visualise(sol,N,h,freeEnergies,imageMask,folderName)
 
     # Plot phase field
     anim = @animate for (i,u) in enumerate(sol.u)
         heatmap(u[4:N+3,4:N+3].*imageMask,title="t=$(@sprintf("%.2f", sol.t[i])), Free energy=$(@sprintf("%.2f", freeEnergies[i]))",clims=(-1,1),aspect_ratio=:equal,border=:none,show=false,color=:hawaii)
     end
-    gif(anim,"output/$folderName/anim_u.gif",fps=10)
+    gif(anim,"$folderName/anim_u.gif",fps=10)
 
     # Plot 2nd derivative of phase field
     part1 = zeros(N+6,N+6)
@@ -32,7 +33,7 @@ function visualise(sol,N,h,folderName,freeEnergies,imageMask)
         ∇²!(part1, u, N, h, 0)
         heatmap(part1[4:N+3,4:N+3].*imageMask,title="t=$(@sprintf("%.2f", sol.t[i])), Free energy=$(@sprintf("%.2f", freeEnergies[i]))",aspect_ratio=:equal,border=:none,show=false,color=:roma)
     end
-    gif(anim2,"output/$folderName/anim_del2u.gif",fps=10)
+    gif(anim2,"$folderName/anim_del2u.gif",fps=10)
 
     # Plot 4th derivative of phase field
     part2 = zeros(N+6,N+6)
@@ -41,17 +42,17 @@ function visualise(sol,N,h,folderName,freeEnergies,imageMask)
         ∇²!(part2, part1, N, h, 1)
         heatmap(part2[4:N+3,4:N+3].*imageMask,title="t=$(@sprintf("%.2f", sol.t[i])), Free energy=$(@sprintf("%.2f", freeEnergies[i]))",aspect_ratio=:equal,border=:none,show=false,color=:cork)
     end
-    gif(anim3,"output/$folderName/anim_del4u.gif",fps=10)
+    gif(anim3,"$folderName/anim_del4u.gif",fps=10)
 
     plot(sol.t,freeEnergies)
-    savefig("output/$folderName/freeEnergyVsTime.png")
+    savefig("$folderName/freeEnergyVsTime.png")
 
     return nothing
 
 end
 
 # Function to import data needed for visualisation from file
-# For example, run visualise(importData("ouput/folder/data.jld2")...)
+# For example, run visualise(importData("output/folder/data.jld2")...,output/folder/)
 function importData(path)
 
     data = load(path)
@@ -63,7 +64,7 @@ function importData(path)
     freeEnergies = data["freeEnergies"]
     imageMask    = data["imageMask"]
 
-    return sol,N,h,folderName,freeEnergies,imageMask
+    return sol,N,h,freeEnergies,imageMask
 
 end
 

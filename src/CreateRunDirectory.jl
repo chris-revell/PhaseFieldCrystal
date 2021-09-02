@@ -20,11 +20,12 @@ using DelimitedFiles
 function createRunDirectory(L,N,h,r,ϕ₀,α,q,outInt,tMax)
 
     # Create directory for run data labelled with current time.
-    foldername = Dates.format(Dates.now(),"yyyy-mm-dd-HH-MM-SS")
-    mkpath("output/$(foldername)")
+    folderDate = Dates.format(Dates.now(),"yyyy-mm-dd-HH-MM-SS")
+    folderName = "output/$(folderDate)"
+    mkpath(folderName)
 
     # Store system parameters.
-    open("output/$(foldername)/conditions.txt","w") do conditionsfile
+    open("$folderName/conditions.txt","w") do conditionsfile
         println(conditionsfile, "L,      $L     ")
         println(conditionsfile, "N,      $N     ")
         println(conditionsfile, "h,      $h     ")
@@ -36,7 +37,7 @@ function createRunDirectory(L,N,h,r,ϕ₀,α,q,outInt,tMax)
         println(conditionsfile, "outInt, $outInt")
     end
 
-    return foldername
+    return folderName
 
 end
 

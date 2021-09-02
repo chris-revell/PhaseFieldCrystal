@@ -26,7 +26,7 @@ include("Visualise.jl"); using .Visualise
 include("ImportImage.jl"); using .ImportImage
 include("FreeEnergy.jl"); using .FreeEnergy
 
-@inline @views function phaseFieldCrystal(imagePath,L,r,ϕ₀,α₀,q,tMax,outputFlag,visualiseFlag)
+@inline @views function phaseFieldCrystal(imagePath,L,r,ϕ₀,α₀,q,tMax,loggerFlag,outputFlag,visualiseFlag)
 
     # BLAS.set_num_threads(1)
 
@@ -49,9 +49,6 @@ include("FreeEnergy.jl"); using .FreeEnergy
     q²     = q^2        # Precalculate powers of q to reduce later calculations
     q⁴     = q^4        # Precalculate powers of q to reduce later calculations
 
-    # Create output folder and data files
-    folderName = createRunDirectory(L,N,h,r,ϕ₀,α₀,q,outInt,tMax)
-
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
     u0,deriv,part1,part2,αᵢ,αⱼ,graduᵢ,graduⱼ = initialConditions(imageMask,L,N,α₀,ϕ₀,q)
 
@@ -62,23 +59,25 @@ include("FreeEnergy.jl"); using .FreeEnergy
     prob = ODEProblem(PFC!, u0, tspan, p)
 
     # Start progress logger
-    global_logger(TerminalLogger())
+    loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
 
     # Solve problem
-    sol = solve(prob, alg_hints=[:stiff], reltol=10E-2, saveat=outInt, maxiters=1e9, progress=true, progress_steps=10, progress_name="PFC model")
+    sol = solve(prob, alg_hints=[:stiff], reltol=10E-2, saveat=outInt, maxiters=1e9, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate and plot free energy
     freeEnergies = freeEnergy(sol, N, L, q, r, h)
 
     if outputFlag==1
+        # Create output folder and data files
+        folderName = createRunDirectory(L,N,h,r,ϕ₀,α₀,q,outInt,tMax)
         # Save variables and results to file
-        @info "Saving data to output/$folderName/data.jld2"
-        jldsave("output/$folderName/data.jld2";sol,imageMask,freeEnergies,N,L,q,r,h,folderName)
+        @info "Saving data to $folderName/data.jld2"
+        jldsave("$folderName/data.jld2";sol,imageMask,freeEnergies,N,L,q,r,h,folderName)
     end
 
     # Plot results as animated gif
     if visualiseFlag==1 && outputFlag==1
-        visualise(sol,N,h,folderName,freeEnergies,imageMask)
+        visualise(sol,N,h,freeEnergies,imageMask,folderName)
     end
 
     return 1
