@@ -11,6 +11,7 @@ module Model
 # Import Julia packages
 using LinearAlgebra
 using LoopVectorization
+using SparseArrays
 
 # Import local modules
 include("BoundaryConditions.jl"); using .BoundaryConditions
@@ -18,70 +19,68 @@ include("Laplacian.jl"); using .Laplacian
 include("Grad.jl"); using .Grad
 include("Div.jl"); using .Div
 
-# ϕ̃ₜ = α∇²(rϕ + (q²+∇²)²ϕ + ϕ³)
-# ϕ̃ₜ = α∇²(rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³)
-# From Thiele, Knobloch 2013 Equation 3
+# Defining model as a split ode problem as per the following two links
+# https://diffeq.sciml.ai/stable/solvers/split_ode_solve/
+# https://diffeq.sciml.ai/stable/types/split_ode_types/#Constructors
 
-function f1!(du, u, p, t)
+# f1 = ((1-r+a)∇² + ∇⁶)ϕ
+# f2 = ∇²(u³ - au + 2∇²u)
 
-    # Unpack parameter list
-    deriv, part1, part2, N, h, αᵢ, αⱼ, r, a, q, q², q⁴, graduᵢ, graduⱼ = p
+# From Glasner, Orizaga 2016 Equation 23
 
-    # Set values of ghost points to ensure zero flux at boundary
-    boundaryConditions!(u,N,h)
+function f1(N,r,a,h)
 
-    # Find Laplacian of u
-    ∇²!(deriv,u,N,h,0)
+    adj = spzeros((N+6)^2,(N+6)^2)
+    dx = [- 1, 0, 1, - 1, 1, - 1, 0, 1]
+    dy = [- 1, - 1, - 1, 0, 0, 1, 1, 1]
+    for x=1:N+6
+        for y=1:N+6
+            index = (x-1)*(N+6)+y
+            for ne=1:length(dx)
+                newx = x + dx[ne]
+                newy = y + dy[ne]
+                if newx>0 && newx <=(N+6) && newy>0 && newy<=(N+6)
+                    index2 = (newx-1)*(N+6) + newy
+                    adj[index,index2] = 1
+                end
+            end
+        end
+    end
 
-    # Calculate inner component (∇²ϕ + q²ϕ)
-    @tturbo part1 .= deriv .+ q².*u
+    degree = spdiagm(0=>sum(adj, dims=2)[:,1])
 
-    # Find Laplacian of (∇²ϕ + q²ϕ)
-    ∇²!(deriv, part1, N, h, 1)
+    L = (degree-adj)./h^2
 
-    # Calculate full term within outermost Laplacian (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) = rϕ + ∇²(part1) + q⁴ + ϕ³
-    @tturbo part2 .= r.*u .+ deriv .+ q⁴ .+ u.^3
 
-    # Find grad of (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) and multiply by spatially varying diffusivity
-    grad!(graduᵢ, graduⱼ, part2, αᵢ, αⱼ, N, h)
+    # Find (1-r+a)∇²
+    linearOperator = (1.0-r+a).*L .* L*L*L
 
-    # Find divergence of the result from the last term
-    div!(du, graduᵢ, graduⱼ, N, h)
-
-    return du
+    return linearOperator
 
 end
 
+# f2 = ∇²(u³ - au + 2∇²u)
 function f2!(du, u, p, t)
 
     # Unpack parameter list
-    deriv, part1, part2, N, h, αᵢ, αⱼ, r, q, q², q⁴, graduᵢ, graduⱼ = p
+    linearOperator, mat1, mat2, mat3, N, h, r, a = p
+
+    # Find 2nd derivative of u
+    @tturbo mat1 .= linearOperator*u
+
+    # Calculate inner component (u³ - au + 2∇²u)
+    @tturbo mat2 .= u.^3 .- a.*u .+ 2.0.*mat1
+
+    # Find 2nd derivative of (u³ - au + 2∇²u)
+    @tturbo mul!(du,linearOperator,mat2)
 
     # Set values of ghost points to ensure zero flux at boundary
-    boundaryConditions!(u,N,h)
-
-    # Find Laplacian of u
-    ∇²!(deriv,u,N,h,0)
-
-    # Calculate inner component (∇²ϕ + q²ϕ)
-    @tturbo part1 .= deriv .+ q².*u
-
-    # Find Laplacian of (∇²ϕ + q²ϕ)
-    ∇²!(deriv, part1, N, h, 1)
-
-    # Calculate full term within outermost Laplacian (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) = rϕ + ∇²(part1) + q⁴ + ϕ³
-    @tturbo part2 .= r.*u .+ deriv .+ q⁴ .+ u.^3
-
-    # Find grad of (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) and multiply by spatially varying diffusivity
-    grad!(graduᵢ, graduⱼ, part2, αᵢ, αⱼ, N, h)
-
-    # Find divergence of the result from the last term
-    div!(du, graduᵢ, graduⱼ, N, h)
+    boundaryConditions!(u,N)
 
     return du
 
 end
 
-export f1!, f2!
+export f1, f2!
 
 end

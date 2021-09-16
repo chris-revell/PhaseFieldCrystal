@@ -15,9 +15,9 @@ using NumericalIntegration
 using Images
 
 # Import local modules
-# include("<Module>.jl"); using .Module
+include("BoundaryConditions.jl"); using .BoundaryConditions
 
-@inline @views function initialConditions(imageMask,L,N,α₀,ϕ₀,λ)
+@views function initialConditions(imageMask,L,N,α₀,ϕ₀,λ)
 
     # Gaussian random field for initial u0 field
     mean = fill(ϕ₀, (N,N))
@@ -30,32 +30,35 @@ using Images
     u0 = zeros(N+6,N+6)
     u0[4:N+3,4:N+3] .= sample(grf)
 
-    # Set spatially varying diffusivity from imported image
-    αᵢ = α₀.*ones(N+5,N+6)
-    αⱼ = α₀.*ones(N+6,N+5)
-    for j=1:N
-        for i=1:N-1
-            if imageMask[i,j] == 0.0 || imageMask[i+1,j] == 0.0
-                αᵢ[i+3,j+3] = 0.0
-            end
-        end
-    end
-    for j=1:N-1
-        for i=1:N
-            if imageMask[i,j] == 0.0 || imageMask[i,j+1] == 0.0
-                αⱼ[i+3,j+3] = 0.0
-            end
-        end
-    end
+    # # Set spatially varying diffusivity from imported image
+    # αᵢ = α₀.*ones(N+5,N+6)
+    # αⱼ = α₀.*ones(N+6,N+5)
+    # for j=1:N
+    #     for i=1:N-1
+    #         if imageMask[i,j] == 0.0 || imageMask[i+1,j] == 0.0
+    #             αᵢ[i+3,j+3] = 0.0
+    #         end
+    #     end
+    # end
+    # for j=1:N-1
+    #     for i=1:N
+    #         if imageMask[i,j] == 0.0 || imageMask[i,j+1] == 0.0
+    #             αⱼ[i+3,j+3] = 0.0
+    #         end
+    #     end
+    # end
+
+    # Set values of ghost points to ensure zero flux at boundary
+    boundaryConditions!(u0,N)
+
+    u0 = reshape(u0,(N+6)^2)
 
     # Allocate additional arrays for later calculations
-    deriv  = zeros(N+6,N+6)
-    part1  = zeros(N+6,N+6)
-    part2  = zeros(N+6,N+6)
-    graduᵢ = zeros(N+5,N+6)
-    graduⱼ = zeros(N+6,N+5)
+    mat1  = zeros(N+6*N+6)
+    mat2  = zeros(N+6*N+6)
+    mat3  = zeros(N+6*N+6)
 
-return u0,deriv,part1,part2,αᵢ,αⱼ,graduᵢ,graduⱼ
+return u0,mat1,mat2,mat3
 
 end
 

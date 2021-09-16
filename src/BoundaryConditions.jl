@@ -15,7 +15,7 @@ using LinearAlgebra
 # Import local modules
 # include("<Module>.jl"); using .Module
 
-@inline @views function boundaryConditions!(u, N, h)
+@inline @views function boundaryConditions!(u, N)
 
     # Set 1st derivative at boundary to be zero by reflecting values around edge point
     u[:,3]   .= u[:,5]

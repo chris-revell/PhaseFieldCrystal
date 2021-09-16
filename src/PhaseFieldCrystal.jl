@@ -26,7 +26,7 @@ include("Visualise.jl"); using .Visualise
 include("ImportImage.jl"); using .ImportImage
 include("FreeEnergy.jl"); using .FreeEnergy
 
-@inline @views function phaseFieldCrystal(imagePath,L,r,ϕ₀,α₀,q,tMax,loggerFlag,outputFlag,visualiseFlag)
+@inline @views function phaseFieldCrystal(imagePath,L,r,ϕ₀,α₀,q,a,tMax,loggerFlag,outputFlag,visualiseFlag)
 
     # BLAS.set_num_threads(1)
 
@@ -41,7 +41,7 @@ include("FreeEnergy.jl"); using .FreeEnergy
     # tMax  Run time of simulation                   (= 2000.0)
 
     imageMask,N = importImage(imagePath)
-
+    N = 50
     # Derived parameters
     h      = L/(N-1)    # Spatial separation of grid points
     outInt = tMax/100   # Output interval
@@ -50,19 +50,21 @@ include("FreeEnergy.jl"); using .FreeEnergy
     q⁴     = q^4        # Precalculate powers of q to reduce later calculations
 
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,deriv,part1,part2,αᵢ,αⱼ,graduᵢ,graduⱼ = initialConditions(imageMask,L,N,α₀,ϕ₀,q)
+    u0,mat1,mat2,mat3 = initialConditions(imageMask,L,N,α₀,ϕ₀,q)
+
+    linearOperator = DiffEqArrayOperator(f1(N,r,a,h))
 
     # Array of parameters to pass to solver
-    p = [deriv, part1, part2, N, h, αᵢ, αⱼ, r, q, q², q⁴, graduᵢ, graduⱼ]
-
+    p = [linearOperator, mat1, mat2, mat3, N, h, r, a]
+    display(u0)
     # Define ODE problem using discretised derivatives
-    prob = ODEProblem(PFC!, u0, tspan, p)
+    prob = SplitODEProblem(linearOperator,f2!,u0,tspan,p)
 
     # Start progress logger
     loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
 
     # Solve problem
-    sol = solve(prob, alg_hints=[:stiff], reltol=10E-2, saveat=outInt, maxiters=1e9, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+    sol = solve(prob, IMEXEuler(), dt=tMax/1000.0, saveat=outInt, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate and plot free energy
     freeEnergies = freeEnergy(sol, N, L, q, r, h)
