@@ -64,19 +64,19 @@ end
 function f2!(du, u, p, t)
 
     # Unpack parameter list
-    linearOperator, mat1, mat2, mat3, N, h, r, a = p
+    laplacianMatrix, mat1, mat2, mat3, N, h, r, a = p
 
     # Find 2nd derivative of u
-    @tturbo mat1 .= linearOperator*u
+    @tturbo mat1 .= laplacianMatrix*u
 
     # Calculate inner component (u³ - au + 2∇²u)
     @tturbo mat2 .= u.^3 .- a.*u .+ 2.0.*mat1
 
     # Find 2nd derivative of (u³ - au + 2∇²u)
-    @tturbo mul!(du,linearOperator,mat2)
+    @tturbo mul!(du,laplacianMatrix,mat2)
 
     # Set values of ghost points to ensure zero flux at boundary
-    boundaryConditions!(u,N)
+    #boundaryConditions!(u,N)
 
     return du
 

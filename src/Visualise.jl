@@ -19,7 +19,7 @@ using DifferentialEquations
 # Import local modules
 
 
-function visualise(sol,laplacianMatrix,mat1,N,h,freeEnergies,imageMask,folderName)
+function visualise(sol,laplacianMatrix,mat1,N,h,freeEnergies,folderName)
 
     uInternal = zeros(N+6,N+6)
 
