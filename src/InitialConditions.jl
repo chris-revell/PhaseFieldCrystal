@@ -25,7 +25,7 @@ include("BoundaryConditions.jl"); using .BoundaryConditions
     ptsX = range(0, stop=L, length=N)
     ptsY = range(0, stop=L, length=N)
     grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsX, ptsY)
-
+    
     # Set initial order parameter field from sample of Gaussian random field
     u0 = zeros(N+6,N+6)
     u0[4:N+3,4:N+3] .= sample(grf)
@@ -54,9 +54,9 @@ include("BoundaryConditions.jl"); using .BoundaryConditions
     u0 = reshape(u0,(N+6)^2)
 
     # Allocate additional arrays for later calculations
-    mat1  = zeros(N+6*N+6)
-    mat2  = zeros(N+6*N+6)
-    mat3  = zeros(N+6*N+6)
+    mat1  = zeros((N+6)^2)
+    mat2  = zeros((N+6)^2)
+    mat3  = zeros((N+6)^2)
 
 return u0,mat1,mat2,mat3
 

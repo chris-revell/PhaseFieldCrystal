@@ -15,7 +15,9 @@ using LinearAlgebra
 # Import local modules
 # include("<Module>.jl"); using .Module
 
-@inline @views function boundaryConditions!(u, N)
+@views function boundaryConditions!(u, N)
+
+    u = reshape(u,(N+6,N+6))
 
     # Set 1st derivative at boundary to be zero by reflecting values around edge point
     u[:,3]   .= u[:,5]
@@ -34,6 +36,8 @@ using LinearAlgebra
     u[1,:]   .= u[7,:]
     u[:,N+6] .= u[:,N]
     u[N+6,:] .= u[N,:]
+
+    u = reshape(u,((N+6)^2,1))[:]
 
     return nothing
 

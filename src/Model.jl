@@ -12,6 +12,7 @@ module Model
 using LinearAlgebra
 using LoopVectorization
 using SparseArrays
+using DifferentialEquations
 
 # Import local modules
 include("BoundaryConditions.jl"); using .BoundaryConditions
@@ -53,9 +54,9 @@ function f1(N,r,a,h)
 
 
     # Find (1-r+a)∇²
-    linearOperator = (1.0-r+a).*L .* L*L*L
+    linearOperator = DiffEqArrayOperator((1.0-r+a).*L .* L*L*L)
 
-    return linearOperator
+    return linearOperator,L
 
 end
 

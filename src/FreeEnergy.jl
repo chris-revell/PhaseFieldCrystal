@@ -19,29 +19,29 @@ using Plots
 # Import local Julia modules
 include("Laplacian.jl"); using .Laplacian
 
-@inline function freeEnergy(sol, N, L, q, r, h)
+@inline function freeEnergy(sol, laplacianMatrix, mat1, mat2, N, L, r)
 
     freeEnergies = zeros(size(sol.u))
-    part1 = zeros(N+6,N+6)
-    part2 = zeros(N+6,N+6)
+    mat1 = zeros((N+6)^2)
+    mat2 = zeros((N+6)^2)
+    mat3 = zeros(N+6,N+6)
 
     for (i,u) in enumerate(sol.u)
 
-        # Find del squared u
-        ∇²!(part1, u, N, h, 0)
-
         # Find del ^4 of u
-        ∇²!(part2, part1, N, h, 1)
+        mat1 .= laplacianMatrix*u
+        mat2 .= laplacianMatrix*mat1
 
         # Operate in place on part2 to include additional free energy integrand terms
-        part2 .+= r .+ q^4.0 .+ 2.0*q^2.0.*part1
-        part2 .*= 0.5.*u
-        part2 .+= 0.25.*u.^4
+        mat2 .+= r .+ 2.0.*mat1
+        mat2 .*= 0.5.*u
+        mat2 .+= 0.25.*u.^4
 
         # Integrate free energy matrix
         ptsX = range(0, stop=L, length=N)
         ptsY = range(0, stop=L, length=N)
-        freeEnergyVal = integrate((ptsX,ptsY),part2[4:N+3,4:N+3])
+        mat3 .= reshape(mat2,(N+6,N+6))
+        freeEnergyVal = integrate((ptsX,ptsY),mat3[4:N+3,4:N+3])
 
         # Store free energ value from integration
         freeEnergies[i] = freeEnergyVal
