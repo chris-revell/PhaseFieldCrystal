@@ -19,18 +19,18 @@ using Plots
 # Import local Julia modules
 include("Laplacian.jl"); using .Laplacian
 
-@inline function freeEnergy(sol, laplacianMatrix, mat1, mat2, N, L, r)
+@inline function freeEnergy(sol, ∇², mat1, mat2, nGrid, nGhosts, lSpace, r)
 
     freeEnergies = zeros(size(sol.u))
-    mat1 = zeros((N+6)^2)
-    mat2 = zeros((N+6)^2)
-    mat3 = zeros(N+6,N+6)
+    mat1 = zeros((nGrid+nGhosts)^2)
+    mat2 = zeros((nGrid+nGhosts)^2)
+    mat3 = zeros(nGrid+nGhosts,nGrid+nGhosts)
 
     for (i,u) in enumerate(sol.u)
 
         # Find del ^4 of u
-        mat1 .= laplacianMatrix*u
-        mat2 .= laplacianMatrix*mat1
+        mat1 .= ∇²*u
+        mat2 .= ∇²*mat1
 
         # Operate in place on part2 to include additional free energy integrand terms
         mat2 .+= r .+ 2.0.*mat1
@@ -38,10 +38,10 @@ include("Laplacian.jl"); using .Laplacian
         mat2 .+= 0.25.*u.^4
 
         # Integrate free energy matrix
-        ptsX = range(0, stop=L, length=N)
-        ptsY = range(0, stop=L, length=N)
-        mat3 .= reshape(mat2,(N+6,N+6))
-        freeEnergyVal = integrate((ptsX,ptsY),mat3[4:N+3,4:N+3])
+        ptsX = range(0, stop=lSpace, length=nGrid)
+        ptsY = range(0, stop=lSpace, length=nGrid)
+        mat3 .= reshape(mat2,(nGrid+nGhosts,nGrid+nGhosts))
+        freeEnergyVal = integrate((ptsX,ptsY),mat3[4:nGrid+3,4:nGrid+3])
 
         # Store free energ value from integration
         freeEnergies[i] = freeEnergyVal

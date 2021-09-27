@@ -15,29 +15,27 @@ using LinearAlgebra
 # Import local modules
 # include("<Module>.jl"); using .Module
 
-@views function boundaryConditions!(u, N)
+@views function boundaryConditions!(u, nGrid, inset)
 
-    u = reshape(u,(N+6,N+6))
+    uTmp = reshape(u,(nGrid+6,nGrid+6))
 
     # Set 1st derivative at boundary to be zero by reflecting values around edge point
-    u[:,3]   .= u[:,5]
-    u[:,N+4] .= u[:,N+2]
-    u[3,:]   .= u[5,:]
-    u[N+4,:] .= u[N+2,:]
+    uTmp[:,inset]   .= uTmp[:,inset+2]
+    uTmp[:,nGrid+inset+1] .= uTmp[:,nGrid+inset-1]
+    uTmp[inset,:]   .= uTmp[inset+2,:]
+    uTmp[nGrid+inset+1,:] .= uTmp[nGrid+inset-1,:]
 
     # Set 3rd derivative at boundary to be zero by reflecting values around edge point
-    u[:,2]   .= u[:,6]
-    u[2,:]   .= u[6,:]
-    u[:,N+5] .= u[:,N+1]
-    u[N+5,:] .= u[N+1,:]
+    uTmp[:,inset-1]   .= uTmp[:,inset+3]
+    uTmp[inset-1,:]   .= uTmp[inset+3,:]
+    uTmp[:,nGrid+inset+2] .= uTmp[:,nGrid+inset-2]
+    uTmp[nGrid+inset+2,:] .= uTmp[nGrid+inset-2,:]
 
     # Set 5th derivative at boundary to be zero by reflecting values around edge point
-    u[:,1]   .= u[:,7]
-    u[1,:]   .= u[7,:]
-    u[:,N+6] .= u[:,N]
-    u[N+6,:] .= u[N,:]
-
-    u = reshape(u,((N+6)^2,1))[:]
+    uTmp[:,inset-2]   .= uTmp[:,inset+4]
+    uTmp[inset-2,:]   .= uTmp[inset+4,:]
+    uTmp[:,nGrid+inset+3] .= uTmp[:,nGrid+inset-3]
+    uTmp[nGrid+inset+3,:] .= uTmp[nGrid+inset-3,:]    
 
     return nothing
 

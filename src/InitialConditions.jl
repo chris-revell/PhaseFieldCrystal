@@ -17,30 +17,32 @@ using Images
 # Import local modules
 include("BoundaryConditions.jl"); using .BoundaryConditions
 
-@views function initialConditions(L,N,ϕ₀,λ)
+@views function initialConditions(lSpace,nGrid,nGhosts,ϕ₀,λ)
 
     # Gaussian random field for initial u0 field
-    mean = fill(ϕ₀, (N,N))
+    # Lengthscale of gaussian noise (λ) set to equal lengthscale of PFC (q:=1.0)
+    mean = fill(ϕ₀, (nGrid,nGrid))
     cov = CovarianceFunction(2,Gaussian(λ,σ=0.1))
-    ptsX = range(0, stop=L, length=N)
-    ptsY = range(0, stop=L, length=N)
+    ptsX = range(0, stop=lSpace, length=nGrid)
+    ptsY = range(0, stop=lSpace, length=nGrid)
     grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsX, ptsY)
 
     # Set initial order parameter field from sample of Gaussian random field
-    u0 = zeros(N+6,N+6)
-    u0[4:N+3,4:N+3] .= sample(grf)
+    u0 = zeros(nGrid+nGhosts,nGrid+nGhosts)
+    inset = nGhosts÷2
+    u0[inset+1:inset+nGrid,inset+1:inset+nGrid] .= sample(grf)
 
     # Set values of ghost points to ensure zero flux at boundary
-    boundaryConditions!(u0,N)
+    boundaryConditions!(u0,nGrid,nGhosts÷2)
 
-    u0 = reshape(u0,(N+6)^2)
+    u0 = reshape(u0,(nGrid+nGhosts)^2)
 
     # Allocate additional arrays for later calculations
-    mat1  = zeros((N+6)^2)
-    mat2  = zeros((N+6)^2)
-    mat3  = zeros((N+6)^2)
+    mat1  = zeros((nGrid+nGhosts)^2)
+    mat2  = zeros((nGrid+nGhosts)^2)
+    mat3  = zeros((nGrid+nGhosts)^2)
 
-    h = L/(N-1)    # Spatial separation of grid points
+    h = lSpace/(nGrid-1)    # Spatial separation of grid points
 
 return u0,mat1,mat2,mat3,h
 
