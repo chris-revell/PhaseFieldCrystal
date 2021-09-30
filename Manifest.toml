@@ -924,9 +924,9 @@ version = "0.12.73"
 
 [[MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "Pkg"]
-git-tree-sha1 = "c253236b0ed414624b083e6b72bfe891fbd2c7af"
+git-tree-sha1 = "5455aef09b40e5020e1520f551fa3135040d4ed0"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
-version = "2021.1.1+1"
+version = "2021.1.1+2"
 
 [[MacroTools]]
 deps = ["Markdown", "Random"]
@@ -1046,6 +1046,12 @@ version = "0.3.11"
 deps = ["Interpolations", "LinearAlgebra", "Logging"]
 git-tree-sha1 = "2a4ef5fc235053f9747d59cfdee19bcb8ba1e833"
 uuid = "e7bfaba1-d571-5449-8927-abc22e82249b"
+version = "0.3.3"
+
+[[Octavian]]
+deps = ["ArrayInterface", "IfElse", "LoopVectorization", "ManualMemory", "PolyesterWeave", "Static", "ThreadingUtilities", "VectorizationBase"]
+git-tree-sha1 = "80d81a9ea3e094c13a8c0351eb9d2289b790af67"
+uuid = "6fd5a793-0b7e-452c-907f-f8bfe9c57db4"
 version = "0.3.3"
 
 [[OffsetArrays]]

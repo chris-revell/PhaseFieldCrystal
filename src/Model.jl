@@ -12,6 +12,7 @@ module Model
 using LinearAlgebra
 using LoopVectorization
 using SparseArrays
+using Octavian
 
 # Import local modules
 include("BoundaryConditions.jl"); using .BoundaryConditions
@@ -24,28 +25,93 @@ include("BoundaryConditions.jl"); using .BoundaryConditions
 # linearOperator = ((1-r+a)∇² + ∇⁶)
 # f2 = ∇²(u³ - au + 2∇²u)
 
-# f2 = ∇²(u³ - au + 2∇²u)
 function f2!(du, u, p, t)
 
     # Unpack parameter list
-    ∇², mat1, mat2, mat3, N, h, r, a = p
+    ∇², linearOperator, mat1, mat2, nGrid, h, r, a = p
 
     # Find 2nd derivative of u
-    #mat1 .= ∇²*u
+    matmul!(mat1,∇²,u)
 
     # Calculate inner component (u³ - au + 2∇²u)
-    mat2 .= u.^3 .- a.*u .+ 2.0.*∇²*u
+    @tturbo mat2 .= u.^3 .- a.*u .+ 2.0.*mat1
 
     # Find 2nd derivative of (u³ - au + 2∇²u)
-    mul!(du,∇²,mat2)
+    matmul!(du,∇²,mat2)
+
+    matmul!(mat2,linearOperator,u)
+
+    du .+= mat2
 
     # Set values of ghost points to ensure zero flux at boundary
-    #boundaryConditions!(u,N)
+    boundaryConditions!(u, nGrid, 3)
+
+    duTmp = reshape(du,(nGrid+6,nGrid+6))
+    duTmp[:,1] .= 0.0
+    duTmp[:,2] .= 0.0
+    duTmp[:,3] .= 0.0
+    duTmp[1,:] .= 0.0
+    duTmp[2,:] .= 0.0
+    duTmp[3,:] .= 0.0
+    duTmp[:,nGrid+3+1] .= 0.0
+    duTmp[:,nGrid+3+2] .= 0.0
+    duTmp[:,nGrid+3+3] .= 0.0
+    duTmp[nGrid+3+1,:] .= 0.0
+    duTmp[nGrid+3+2,:] .= 0.0
+    duTmp[nGrid+3+3,:] .= 0.0
 
     return du
 
 end
 
-export f2!
+function PFC!(du, u, p, t)
+
+    # Unpack parameter list
+    ∇², mat1, mat2, r = p
+    
+    # Find Laplacian of u
+    mat1 = ∇²*u
+
+    # Calculate inner component (∇²ϕ + q²ϕ)
+    mat1 .+= u
+
+    # Find Laplacian of (∇²ϕ + q²ϕ)
+    mat2 .= ∇²*mat1
+
+    # Calculate full term within outermost Laplacian (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) = rϕ + ∇²(mat1) + q⁴ + ϕ³
+    mat2 .+= r.*u .+ u.^3
+
+    du .= ∇²*mat2
+
+    return du
+
+end
+
+function diffusion!(du, u, p, t)
+
+    # Unpack parameter list
+    ∇², mat1, mat2, r = p
+
+    du .= -1.0.*∇²*u
+
+    return du
+
+end
+
+function cahnHilliard!(du, u, p, t)
+
+    # Unpack parameter list
+    ∇², mat1, mat2, r = p
+
+    mat1 .= -0.00005.*∇²*u 
+    mat1.+= u.^3 .- u
+
+    du .= ∇²*mat1
+
+    return du
+
+end
+
+export f2!, PFC!, diffusion!, cahnHilliard!
 
 end

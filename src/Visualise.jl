@@ -11,23 +11,26 @@ module Visualise
 
 # Import Julia packages
 using Plots
-#ENV["GKSwstype"]="nul"
-ENV["GKSwstype"]=100
-ENV["JULIA_GR_PROVIDER"] = "GR"
+ENV["GKSwstype"]="nul"
+#ENV["GKSwstype"]=100
+#ENV["JULIA_GR_PROVIDER"] = "GR"
 using ColorSchemes
 using Printf
 using JLD2
-using DifferentialEquations
+#using DifferentialEquations
+using UnPack
 
 # Import local modules
 
 
-function visualise(sol,∇²,mat1,nGrid,nGhosts,h,freeEnergies,folderName)
+function visualise(sol,∇²,nGrid,freeEnergies,folderName)
+
+    mat1 = zeros(nGrid^2)
 
     # Plot phase field
     anim = @animate for (i,u) in enumerate(sol.u)
-        uInternal = reshape(u,(nGrid+nGhosts,nGrid+nGhosts))
-        heatmap(uInternal[4:nGrid+3,4:nGrid+3],title="t=$(@sprintf("%.2f", sol.t[i]))",clims=(-1,1),aspect_ratio=:equal,border=:none,show=false,color=:hawaii)
+        uInternal = reshape(u,(nGrid,nGrid))
+        heatmap(uInternal,title="t=$(@sprintf("%.2f", sol.t[i]))",clims=(-1,1),aspect_ratio=:equal,border=:none,show=false,color=:hawaii)
     end
     gif(anim,"$folderName/anim_u.gif",fps=10)
 
@@ -35,8 +38,8 @@ function visualise(sol,∇²,mat1,nGrid,nGhosts,h,freeEnergies,folderName)
 
     anim2 = @animate for (i,u) in enumerate(sol.u)
         mat1 .= ∇²*u
-        uInternal = reshape(mat1,(nGrid+nGhosts,nGrid+nGhosts))
-        heatmap(uInternal[4:nGrid+3,4:nGrid+3],title="t=$(@sprintf("%.2f", sol.t[i]))",aspect_ratio=:equal,border=:none,show=false,color=:roma)
+        uInternal = reshape(mat1,(nGrid,nGrid))
+        heatmap(uInternal,title="t=$(@sprintf("%.2f", sol.t[i]))",aspect_ratio=:equal,border=:none,show=false,color=:roma)
     end
     gif(anim2,"$folderName/anim_del2u.gif",fps=10)
 
@@ -45,8 +48,8 @@ function visualise(sol,∇²,mat1,nGrid,nGhosts,h,freeEnergies,folderName)
     anim3 = @animate for (i,u) in enumerate(sol.u)
         mat1 .= ∇²*u
         mat1 .= ∇²*mat1
-        uInternal = reshape(mat1,(nGrid+nGhosts,nGrid+nGhosts))
-        heatmap(uInternal[4:nGrid+3,4:nGrid+3],title="t=$(@sprintf("%.2f", sol.t[i]))",aspect_ratio=:equal,border=:none,show=false,color=:cork)
+        uInternal = reshape(mat1,(nGrid,nGrid))
+        heatmap(uInternal,title="t=$(@sprintf("%.2f", sol.t[i]))",aspect_ratio=:equal,border=:none,show=false,color=:cork)
     end
     gif(anim3,"$folderName/anim_del4u.gif",fps=10)
 
@@ -62,16 +65,9 @@ end
 function importData(path)
 
     data = load(path)
+    @unpack sol,∇²,nGrid,freeEnergies,folderName = data
 
-    sol          = data["sol"]
-    nGrid        = data["nGrid"]
-    
-    h            = data["h"]
-    folderName   = data["folderName"]
-    freeEnergies = data["freeEnergies"]
-    imageMask    = data["imageMask"]
-
-    return sol,nGrid,h,freeEnergies,imageMask
+    return sol,∇²,nGrid,freeEnergies,folderName
 
 end
 

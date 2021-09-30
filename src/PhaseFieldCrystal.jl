@@ -21,7 +21,7 @@ using SparseArrays
 
 # Import local modules
 include("Model.jl"); using .Model
-include("Laplacian.jl"); using .Laplacian
+include("CreateLaplacian.jl"); using .CreateLaplacian
 include("CreateRunDirectory.jl"); using .CreateRunDirectory
 include("InitialConditions.jl"); using .InitialConditions
 include("Visualise.jl"); using .Visualise
@@ -29,7 +29,7 @@ include("FreeEnergy.jl"); using .FreeEnergy
 
 @inline @views function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,tMax,loggerFlag,outputFlag,visualiseFlag)
 
-    # BLAS.set_num_threads(1)
+    BLAS.set_num_threads(1)
 
     # Input parameters
     # L     Spatial dimensions of domain             (= 200.0 )
@@ -43,38 +43,36 @@ include("FreeEnergy.jl"); using .FreeEnergy
     nGhosts = 6
     
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,mat1,mat2,mat3,h = initialConditions(lSpace,nGrid,nGhosts,ϕ₀,1.0)
+    u0,mat1,mat2,h = initialConditions(lSpace,nGrid,ϕ₀,1.0)
 
-    ∇² = createLaplacian(nGrid+nGhosts,h)
-
-    linearOperator = DiffEqArrayOperator((1.0-r+a).*∇² .+ ∇²*∇²*∇²)
+    ∇² = createLaplacian(nGrid,h)
 
     # Array of parameters to pass to solver
-    p = [∇², mat1, mat2, mat3, nGrid, h, r, a]
+    p = [∇², mat1, mat2, r]
 
     # Define ODE problem using discretised derivatives
-    prob = SplitODEProblem(linearOperator,f2!,u0,(0.0,tMax),p)
+    prob = ODEProblem(cahnHilliard!,u0,(0.0,tMax),p)
 
     # Start progress logger if loggerFlag argument is 1
     loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
 
     # Solve problem
-    sol = solve(prob, SplitEuler(), dt=(tMax/100000.0), saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+    sol = solve(prob, alg_hints=[:stiff], saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate and plot free energy
-    freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nGrid, nGhosts, lSpace, r)
+    freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nGrid, lSpace, r)
 
     if outputFlag==1
         # Create output folder and data files
         folderName = createRunDirectory(lSpace,nGrid,h,r,ϕ₀,tMax/100,tMax)
         # Save variables and results to file
         @info "Saving data to $folderName/data.jld2"
-        jldsave("$folderName/data.jld2";sol,freeEnergies,nGrid,nGhosts,lSpace,r,h,folderName)
+        jldsave("$folderName/data.jld2";sol,∇²,freeEnergies,nGrid,lSpace,r,h,folderName)
     end
 
     # Plot results as animated gif
     if visualiseFlag==1 && outputFlag==1
-        visualise(sol,∇²,mat1,nGrid,nGhosts,h,freeEnergies,folderName)
+        visualise(sol,∇²,nGrid,freeEnergies,folderName)
     end
 
     return 1

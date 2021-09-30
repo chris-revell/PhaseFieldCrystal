@@ -14,17 +14,12 @@ module FreeEnergy
 # Import Julia packages
 using LinearAlgebra
 using NumericalIntegration
-using Plots
 
-# Import local Julia modules
-include("Laplacian.jl"); using .Laplacian
-
-@inline function freeEnergy(sol, ∇², mat1, mat2, nGrid, nGhosts, lSpace, r)
+@inline function freeEnergy(sol, ∇², mat1, mat2, nGrid, lSpace, r)
 
     freeEnergies = zeros(size(sol.u))
-    mat1 = zeros((nGrid+nGhosts)^2)
-    mat2 = zeros((nGrid+nGhosts)^2)
-    mat3 = zeros(nGrid+nGhosts,nGrid+nGhosts)
+    mat1 = zeros(nGrid^2)
+    mat2 = zeros(nGrid^2)
 
     for (i,u) in enumerate(sol.u)
 
@@ -40,10 +35,10 @@ include("Laplacian.jl"); using .Laplacian
         # Integrate free energy matrix
         ptsX = range(0, stop=lSpace, length=nGrid)
         ptsY = range(0, stop=lSpace, length=nGrid)
-        mat3 .= reshape(mat2,(nGrid+nGhosts,nGrid+nGhosts))
-        freeEnergyVal = integrate((ptsX,ptsY),mat3[4:nGrid+3,4:nGrid+3])
+        mat3 = reshape(mat2,(nGrid,nGrid))
+        freeEnergyVal = integrate((ptsX,ptsY),mat3)
 
-        # Store free energ value from integration
+        # Store free energy value from integration
         freeEnergies[i] = freeEnergyVal
 
     end
