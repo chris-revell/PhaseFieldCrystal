@@ -12,6 +12,8 @@ module Visualise
 # Import Julia packages
 using Plots
 ENV["GKSwstype"]="nul"
+#ENV["GKSwstype"]=100
+#ENV["JULIA_GR_PROVIDER"] = "GR"
 using ColorSchemes
 using Printf
 using JLD2
@@ -28,24 +30,22 @@ function visualise(sol,∇²,nGrid,freeEnergies,folderName)
     end
     gif(anim,"$folderName/anim_u.gif",fps=10)
 
-    # Plot 2nd derivative of phase field
+    # # Plot 2nd derivative of phase field
+    # anim2 = @animate for (i,u) in enumerate(sol.u)
+    #     mat1 .= ∇²*u
+    #     uInternal = reshape(mat1,(nGrid,nGrid))
+    #     heatmap(uInternal,title="t=$(@sprintf("%.2f", sol.t[i]))",aspect_ratio=:equal,border=:none,show=false,color=:roma)
+    # end
+    # gif(anim2,"$folderName/anim_del2u.gif",fps=10)
 
-    anim2 = @animate for (i,u) in enumerate(sol.u)
-        mat1 .= ∇²*u
-        uInternal = reshape(mat1,(nGrid,nGrid))
-        heatmap(uInternal,title="t=$(@sprintf("%.2f", sol.t[i]))",aspect_ratio=:equal,border=:none,show=false,color=:roma)
-    end
-    gif(anim2,"$folderName/anim_del2u.gif",fps=10)
-
-    # Plot 4th derivative of phase field
-
-    anim3 = @animate for (i,u) in enumerate(sol.u)
-        mat1 .= ∇²*u
-        mat1 .= ∇²*mat1
-        uInternal = reshape(mat1,(nGrid,nGrid))
-        heatmap(uInternal,title="t=$(@sprintf("%.2f", sol.t[i]))",aspect_ratio=:equal,border=:none,show=false,color=:cork)
-    end
-    gif(anim3,"$folderName/anim_del4u.gif",fps=10)
+    # # Plot 4th derivative of phase field
+    # anim3 = @animate for (i,u) in enumerate(sol.u)
+    #     mat1 .= ∇²*u
+    #     mat1 .= ∇²*mat1
+    #     uInternal = reshape(mat1,(nGrid,nGrid))
+    #     heatmap(uInternal,title="t=$(@sprintf("%.2f", sol.t[i]))",aspect_ratio=:equal,border=:none,show=false,color=:cork)
+    # end
+    # gif(anim3,"$folderName/anim_del4u.gif",fps=10)
 
     plot(sol.t,freeEnergies)
     savefig("$folderName/freeEnergyVsTime.png")

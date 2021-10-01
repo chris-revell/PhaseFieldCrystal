@@ -29,7 +29,7 @@ include("FreeEnergy.jl"); using .FreeEnergy
 
 function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,tMax,loggerFlag,outputFlag,visualiseFlag)
 
-    BLAS.set_num_threads(1)
+    BLAS.set_num_threads(4)
 
     # Input parameters
     # L     Spatial dimensions of domain             (= 200.0 )
@@ -45,20 +45,20 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,tMax,loggerFlag,outputFlag,vis
     u0,mat1,mat2,h = initialConditions(lSpace,nGrid,ϕ₀,1.0)
 
     ∇² = createLaplacian(nGrid,h)
-    linearOperator = DiffEqArrayOperator((1.0-r+a).*∇² .+ ∇²*∇²*∇²)
+    
+    linearOperator = (1.0-r+a).*∇² .+ ∇²*∇²*∇²
 
     # Array of parameters to pass to solver
-    p = [∇², mat1, mat2, r, a]
-
+    p = [∇², linearOperator, mat1, mat2, r, a]
 
     # Start progress logger if loggerFlag argument is 1
     loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
 
     # Define ODE problem using discretised derivatives
-    #prob = SplitODEProblem(linearOperator,f2!,u0,(0.0,tMax),p)
-    #sol = solve(prob, IMEXEuler(), dt=0.00001, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
-    prob = ODEProblem(PFC!,u0,(0.0,tMax),p)
-    sol = solve(prob, alg_hints=[:stiff], saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+    prob = SplitODEProblem(DiffEqArrayOperator(linearOperator),splitNonlinearPart!,u0,(0.0,tMax),p)
+    sol = solve(prob, IMEXEuler(), dt=0.00001, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+    #prob = ODEProblem(f2!,u0,(0.0,tMax),p)
+    #sol = solve(prob, alg_hints=[:stiff], saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate and plot free energy
     freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nGrid, lSpace, r)
@@ -69,11 +69,11 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,tMax,loggerFlag,outputFlag,vis
         # Save variables and results to file
         @info "Saving data to $folderName/data.jld2"
         jldsave("$folderName/data.jld2";sol,∇²,freeEnergies,nGrid,lSpace,r,h,folderName)
-    end
-
-    # Plot results as animated gif
-    if visualiseFlag==1 && outputFlag==1
-        visualise(sol,∇²,nGrid,freeEnergies,folderName)
+        
+        # Plot results as animated gif
+        if visualiseFlag==1
+            visualise(sol,∇²,nGrid,freeEnergies,folderName)
+        end
     end
 
     return 1
