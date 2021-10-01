@@ -40,25 +40,24 @@ include("FreeEnergy.jl"); using .FreeEnergy
     # q     Parameter in Swift-Hohenberg equation    (= 0.1   )
     # nPlot Number of plots produced by return       (= 100   )
     # tMax  Run time of simulation                   (= 2000.0)
-    nGhosts = 6
     
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
     u0,mat1,mat2,h = initialConditions(lSpace,nGrid,ϕ₀,1.0)
 
     ∇² = createLaplacian(nGrid,h)
-    linearOperator = (1.0-r+a).*∇² .+ ∇²*∇²*∇²
+    linearOperator = DiffEqArrayOperator((1.0-r+a).*∇² .+ ∇²*∇²*∇²)
 
     # Array of parameters to pass to solver
-    p = [∇², linearOperator, mat1, mat2, r]
+    p = [∇², mat1, mat2, r, a]
 
     # Define ODE problem using discretised derivatives
-    prob = ODEProblem(PFC!,u0,(0.0,tMax),p)
+    prob = SplitODEProblem(linearOperator,f2!,u0,(0.0,tMax),p)
 
     # Start progress logger if loggerFlag argument is 1
     loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
 
     # Solve problem
-    sol = solve(prob, alg_hints=[:stiff], saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+    sol = solve(prob, IMEXEuler(), dt=0.00001, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate and plot free energy
     freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nGrid, lSpace, r)

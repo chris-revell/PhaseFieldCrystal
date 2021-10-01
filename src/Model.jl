@@ -25,7 +25,7 @@ using Octavian
 function f2!(du, u, p, t)
 
     # Unpack parameter list
-    ∇², linearOperator, mat1, mat2, r = p
+    ∇², mat1, mat2, r, a = p
 
     # Find 2nd derivative of u
     mul!(mat1,∇²,u)
@@ -37,10 +37,6 @@ function f2!(du, u, p, t)
     # Find 2nd derivative of (u³ - au + 2∇²u)
     mul!(du,∇²,mat1)
 
-    mul!(mat1,linearOperator,u)
-
-    du .+= mat1
-
     return du
 
 end
@@ -48,7 +44,7 @@ end
 function PFC!(du, u, p, t)
 
     # Unpack parameter list
-    ∇², linearOperator, mat1, mat2, r = p
+    ∇², mat1, mat2, r, a = p
     
     # Find Laplacian of u
     mat1 .= ∇²*u
@@ -68,31 +64,6 @@ function PFC!(du, u, p, t)
 
 end
 
-function diffusion!(du, u, p, t)
-
-    # Unpack parameter list
-    ∇², mat1, mat2, r = p
-
-    du .= -1.0.*∇²*u
-
-    return du
-
-end
-
-function cahnHilliard!(du, u, p, t)
-
-    # Unpack parameter list
-    ∇², mat1, mat2, r = p
-
-    mat1 .= -1.0.*∇²*u 
-    mat1.+= u.^3 .- u
-
-    du .= ∇²*mat1
-
-    return du
-
-end
-
-export f2!, PFC!, diffusion!, cahnHilliard!
+export f2!, PFC!
 
 end
