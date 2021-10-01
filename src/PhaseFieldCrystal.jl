@@ -46,12 +46,13 @@ include("FreeEnergy.jl"); using .FreeEnergy
     u0,mat1,mat2,h = initialConditions(lSpace,nGrid,ϕ₀,1.0)
 
     ∇² = createLaplacian(nGrid,h)
+    linearOperator = (1.0-r+a).*∇² .+ ∇²*∇²*∇²
 
     # Array of parameters to pass to solver
-    p = [∇², mat1, mat2, r]
+    p = [∇², linearOperator, mat1, mat2, r]
 
     # Define ODE problem using discretised derivatives
-    prob = ODEProblem(cahnHilliard!,u0,(0.0,tMax),p)
+    prob = ODEProblem(PFC!,u0,(0.0,tMax),p)
 
     # Start progress logger if loggerFlag argument is 1
     loggerFlag==1 ? global_logger(TerminalLogger()) : nothing

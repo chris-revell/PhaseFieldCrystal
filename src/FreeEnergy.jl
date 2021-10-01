@@ -14,12 +14,11 @@ module FreeEnergy
 # Import Julia packages
 using LinearAlgebra
 using NumericalIntegration
+using LoopVectorization
 
 @inline function freeEnergy(sol, ∇², mat1, mat2, nGrid, lSpace, r)
 
     freeEnergies = zeros(size(sol.u))
-    mat1 = zeros(nGrid^2)
-    mat2 = zeros(nGrid^2)
 
     for (i,u) in enumerate(sol.u)
 
@@ -28,9 +27,9 @@ using NumericalIntegration
         mat2 .= ∇²*mat1
 
         # Operate in place on part2 to include additional free energy integrand terms
-        mat2 .+= r .+ 2.0.*mat1
-        mat2 .*= 0.5.*u
-        mat2 .+= 0.25.*u.^4
+        @tturbo mat2 .+= r .+ 2.0.*mat1
+        @tturbo mat2 .*= 0.5.*u
+        @tturbo mat2 .+= 0.25.*u.^4
 
         # Integrate free energy matrix
         ptsX = range(0, stop=lSpace, length=nGrid)

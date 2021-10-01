@@ -14,9 +14,6 @@ using LoopVectorization
 using SparseArrays
 using Octavian
 
-# Import local modules
-include("BoundaryConditions.jl"); using .BoundaryConditions
-
 # Defining model as a split ode problem as per the following two links
 # https://diffeq.sciml.ai/stable/solvers/split_ode_solve/
 # https://diffeq.sciml.ai/stable/types/split_ode_types/#Constructors
@@ -28,37 +25,21 @@ include("BoundaryConditions.jl"); using .BoundaryConditions
 function f2!(du, u, p, t)
 
     # Unpack parameter list
-    ∇², linearOperator, mat1, mat2, nGrid, h, r, a = p
+    ∇², linearOperator, mat1, mat2, r = p
 
     # Find 2nd derivative of u
-    matmul!(mat1,∇²,u)
+    mul!(mat1,∇²,u)
 
     # Calculate inner component (u³ - au + 2∇²u)
-    @tturbo mat2 .= u.^3 .- a.*u .+ 2.0.*mat1
+    @tturbo mat1 .*= 2.0
+    @tturbo mat1 .+= u.^3 .- a.*u
 
     # Find 2nd derivative of (u³ - au + 2∇²u)
-    matmul!(du,∇²,mat2)
+    mul!(du,∇²,mat1)
 
-    matmul!(mat2,linearOperator,u)
+    mul!(mat1,linearOperator,u)
 
-    du .+= mat2
-
-    # Set values of ghost points to ensure zero flux at boundary
-    boundaryConditions!(u, nGrid, 3)
-
-    duTmp = reshape(du,(nGrid+6,nGrid+6))
-    duTmp[:,1] .= 0.0
-    duTmp[:,2] .= 0.0
-    duTmp[:,3] .= 0.0
-    duTmp[1,:] .= 0.0
-    duTmp[2,:] .= 0.0
-    duTmp[3,:] .= 0.0
-    duTmp[:,nGrid+3+1] .= 0.0
-    duTmp[:,nGrid+3+2] .= 0.0
-    duTmp[:,nGrid+3+3] .= 0.0
-    duTmp[nGrid+3+1,:] .= 0.0
-    duTmp[nGrid+3+2,:] .= 0.0
-    duTmp[nGrid+3+3,:] .= 0.0
+    du .+= mat1
 
     return du
 
@@ -67,10 +48,10 @@ end
 function PFC!(du, u, p, t)
 
     # Unpack parameter list
-    ∇², mat1, mat2, r = p
+    ∇², linearOperator, mat1, mat2, r = p
     
     # Find Laplacian of u
-    mat1 = ∇²*u
+    mat1 .= ∇²*u
 
     # Calculate inner component (∇²ϕ + q²ϕ)
     mat1 .+= u
@@ -103,7 +84,7 @@ function cahnHilliard!(du, u, p, t)
     # Unpack parameter list
     ∇², mat1, mat2, r = p
 
-    mat1 .= -0.00005.*∇²*u 
+    mat1 .= -1.0.*∇²*u 
     mat1.+= u.^3 .- u
 
     du .= ∇²*mat1

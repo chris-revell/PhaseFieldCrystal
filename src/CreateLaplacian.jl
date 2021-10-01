@@ -38,7 +38,7 @@ function createLaplacian(nGrid, h)
     end
 
     degree = spdiagm(0=>sum(adj, dims=2)[:,1])
-    ∇² = (degree-adj)./h^2
+    ∇² = (adj-degree)./h^2
 
     return ∇²
 

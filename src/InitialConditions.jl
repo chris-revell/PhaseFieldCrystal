@@ -12,9 +12,6 @@ module InitialConditions
 # Import Julia packages
 using GaussianRandomFields
 
-# Import local modules
-include("BoundaryConditions.jl"); using .BoundaryConditions
-
 @views function initialConditions(lSpace,nGrid,ϕ₀,λ)
 
     # Gaussian random field for initial u0 field
