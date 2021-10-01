@@ -47,18 +47,18 @@ function PFC!(du, u, p, t)
     ∇², mat1, mat2, r, a = p
     
     # Find Laplacian of u
-    mat1 .= ∇²*u
+    Octavian.matmul!(mat1,∇²,u)
 
     # Calculate inner component (∇²ϕ + q²ϕ)
-    mat1 .+= u
+    @tturbo mat1 .+= u
 
     # Find Laplacian of (∇²ϕ + q²ϕ)
-    mat2 .= ∇²*mat1
+    Octavian.matmul!(mat2,∇²,mat1)
 
     # Calculate full term within outermost Laplacian (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) = rϕ + ∇²(mat1) + q⁴ + ϕ³
-    mat2 .+= r.*u .+ u.^3
+    @tturbo mat2 .+= r.*u .+ u.^3
 
-    du .= ∇²*mat2
+    Octavian.matmul!(du,∇²,mat2)
 
     return du
 

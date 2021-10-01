@@ -21,7 +21,7 @@ function createRunDirectory(lSpace,nGrid,h,r,ϕ₀,outInt,tMax)
 
     # Create directory for run data labelled with current time.
     folderDate = Dates.format(Dates.now(),"yyyy-mm-dd-HH-MM-SS")
-    folderName = "output/$(folderDate)"
+    folderName = "$(pwd())/output/$(folderDate)"
     mkpath(folderName)
 
     # Store system parameters.

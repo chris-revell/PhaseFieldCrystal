@@ -27,7 +27,7 @@ include("InitialConditions.jl"); using .InitialConditions
 include("Visualise.jl"); using .Visualise
 include("FreeEnergy.jl"); using .FreeEnergy
 
-@inline @views function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,tMax,loggerFlag,outputFlag,visualiseFlag)
+function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,tMax,loggerFlag,outputFlag,visualiseFlag)
 
     BLAS.set_num_threads(1)
 
@@ -50,14 +50,15 @@ include("FreeEnergy.jl"); using .FreeEnergy
     # Array of parameters to pass to solver
     p = [∇², mat1, mat2, r, a]
 
-    # Define ODE problem using discretised derivatives
-    prob = SplitODEProblem(linearOperator,f2!,u0,(0.0,tMax),p)
 
     # Start progress logger if loggerFlag argument is 1
     loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
 
-    # Solve problem
-    sol = solve(prob, IMEXEuler(), dt=0.00001, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+    # Define ODE problem using discretised derivatives
+    #prob = SplitODEProblem(linearOperator,f2!,u0,(0.0,tMax),p)
+    #sol = solve(prob, IMEXEuler(), dt=0.00001, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+    prob = ODEProblem(PFC!,u0,(0.0,tMax),p)
+    sol = solve(prob, alg_hints=[:stiff], saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate and plot free energy
     freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nGrid, lSpace, r)

@@ -1,4 +1,4 @@
- #
+#
 #  Visualise.jl
 #  PhaseFieldCrystal
 #
@@ -12,16 +12,10 @@ module Visualise
 # Import Julia packages
 using Plots
 ENV["GKSwstype"]="nul"
-#ENV["GKSwstype"]=100
-#ENV["JULIA_GR_PROVIDER"] = "GR"
 using ColorSchemes
 using Printf
 using JLD2
-#using DifferentialEquations
 using UnPack
-
-# Import local modules
-
 
 function visualise(sol,∇²,nGrid,freeEnergies,folderName)
 
@@ -61,7 +55,7 @@ function visualise(sol,∇²,nGrid,freeEnergies,folderName)
 end
 
 # Function to import data needed for visualisation from file
-# For example, run visualise(importData("output/folder/data.jld2")...,output/folder/)
+# For example, run visualise(importData("output/folder/data.jld2")...)
 function importData(path)
 
     data = load(path)
