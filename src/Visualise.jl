@@ -24,11 +24,22 @@ function visualise(sol,∇²,nGrid,freeEnergies,folderName)
     mat1 = zeros(nGrid^2)
 
     # Plot phase field
+    # anim = @animate for (i,u) in enumerate(sol.u)
+    #     uInternal = reshape(u,(nGrid,nGrid))
+    #     heatmap(uInternal,title="t=$(@sprintf("%.2f", sol.t[i]))",clims=(-1,1),aspect_ratio=:equal,border=:none,show=false,color=:hawaii)
+    #     savefig("$folderName/freeEnergyVsTime.png")
+    # end
+    
+
+
+    # Plot phase field
     anim = @animate for (i,u) in enumerate(sol.u)
         uInternal = reshape(u,(nGrid,nGrid))
         heatmap(uInternal,title="t=$(@sprintf("%.2f", sol.t[i]))",clims=(-1,1),aspect_ratio=:equal,border=:none,show=false,color=:hawaii)
     end
+    #withenv("DYLD_LIBRARY_PATH"=>Plots.FFMPEG.FFMPEG_jll.LIBPATH[]) do
     gif(anim,"$folderName/anim_u.gif",fps=10)
+    #end
 
     # # Plot 2nd derivative of phase field
     # anim2 = @animate for (i,u) in enumerate(sol.u)

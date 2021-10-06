@@ -12,6 +12,7 @@ module CreateLaplacian
 # Import Julia packages
 using LinearAlgebra
 using SparseArrays
+using LoopVectorization
 
 # Import local modules
 # include("<Module>.jl"); using .Module

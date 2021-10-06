@@ -10,7 +10,7 @@ module Model
 
 # Import Julia packages
 using LinearAlgebra
-using LoopVectorization
+#using LoopVectorization
 using SparseArrays
 using Octavian
 
@@ -28,27 +28,33 @@ function splitNonlinearPart!(du, u, p, t)
     # Find 2nd derivative of u
     mul!(mat1,∇²,u)
     # Calculate inner component (u³ - au + 2∇²u)
-    @tturbo mat1 .*= 2.0
-    @tturbo mat1 .+= u.^3 .- a.*u
+    mat1 .*= 2.0
+    mat1 .+= u.^3 .- a.*u
     # Find 2nd derivative of (u³ - au + 2∇²u)
     mul!(du,∇²,mat1)
     return du
 end
 
-function fullSplit!(du, u, p, t)
-    # Unpack parameter list
-    ∇², linearOperator, mat1, mat2, r, a = p
-    # Find 2nd derivative of u
-    mul!(mat1,∇²,u)
-    # Calculate inner component (u³ - au + 2∇²u)
-    @turbo mat1 .*= 2.0
-    @turbo mat1 .+= u.^3 .- a.*u
-    # Find 2nd derivative of (u³ - au + 2∇²u)
-    mul!(du,∇²,mat1)
-    mat1 .= linearOperator*u
-    du .+= mat1
-    return du
-end
+# function splitLinearPart!(du, u, p, t)
+#     ∇², linearOperator, mat1, mat2, r, a = p
+#     mul!(du,linearOperator,u)
+#     return du
+# end 
+
+# function fullSplit!(du, u, p, t)
+#     # Unpack parameter list
+#     ∇², linearOperator, mat1, mat2, r, a = p
+#     # Find 2nd derivative of u
+#     mul!(mat1,∇²,u)
+#     # Calculate inner component (u³ - au + 2∇²u)
+#     mat1 .*= 2.0
+#     mat1 .+= u.^3 .- a.*u
+#     # Find 2nd derivative of (u³ - au + 2∇²u)
+#     mul!(du,∇²,mat1)
+#     mat1 .= linearOperator*u
+#     du .+= mat1
+#     return du
+# end
 
 function PFC!(du, u, p, t)
     # Unpack parameter list
@@ -56,15 +62,15 @@ function PFC!(du, u, p, t)
     # Find Laplacian of u
     mul!(mat1,∇²,u)
     # Calculate inner component (∇²ϕ + q²ϕ)
-    @tturbo mat1 .+= u
+    mat1 .+= u
     # Find Laplacian of (∇²ϕ + q²ϕ)
     mul!(mat2,∇²,mat1)
     # Calculate full term within outermost Laplacian (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) = rϕ + ∇²(mat1) + q⁴ + ϕ³
-    @tturbo mat2 .+= r.*u .+ u.^3
+    mat2 .+= r.*u .+ u.^3
     mul!(du,∇²,mat2)
     return du
 end
 
-export splitNonlinearPart!, fullSplit!, PFC!
+export splitNonlinearPart!, PFC!#, splitLinearPart!, fullSplit!, 
 
 end
