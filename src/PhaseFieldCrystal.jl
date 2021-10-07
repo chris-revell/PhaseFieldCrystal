@@ -27,19 +27,23 @@ include("InitialConditions.jl"); using .InitialConditions
 include("Visualise.jl"); using .Visualise
 include("FreeEnergy.jl"); using .FreeEnergy
 
-function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,tMax,loggerFlag,outputFlag,visualiseFlag)
+function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,dt,tMax,loggerFlag,outputFlag,visualiseFlag,integrator)
 
     #BLAS.set_num_threads(8)
 
     # Input parameters
-    # L     Spatial dimensions of domain             (= 200.0 )
-    # N     Number of grid points in each dimension  (= 200   )
-    # r     Parameter in Swift-Hohenberg equation    (= -0.9  )
-    # ϕ₀    Mean order parameter across domain       (= -0.516)
-    # α     Diffusivity                              (= 1.0   )
-    # q     Parameter in Swift-Hohenberg equation    (= 0.1   )
-    # nPlot Number of plots produced by return       (= 100   )
-    # tMax  Run time of simulation                   (= 2000.0)
+    # nGrid         Number of grid points in both dimensions  (eg. = 200          )
+    # lSpace        Spatial dimensions of domain              (eg. = 200.0        )
+    # r             Parameter in Swift-Hohenberg equation     (eg. = -0.9 or 0.5  )
+    # ϕ₀            Mean order parameter across domain        (eg. = -0.516       )
+    # a             Parameter in splitting scheme             (eg. = 2.0          )
+    # dt            Time step for implicit semi-linear scheme (eg. = 0.01         )
+    # tMax          Run time of simulation                    (eg. = 20.0         )
+    # loggerFlag    Display progress bar in REPL when =1; Always set to 0 on HPC
+    # outputFlag    Flag to control whether data are saved to file (=1 or 0)
+    # visualiseFlag Flag to control whether data are plotted  (=1 or 0)
+    # integrator    Controls which integration scheme to use ="split" or "explicit"
+
     
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
     u0,mat1,mat2,h = initialConditions(lSpace,nGrid,ϕ₀,1.0)
