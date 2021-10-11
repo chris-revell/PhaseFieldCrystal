@@ -12,19 +12,29 @@ module InitialConditions
 # Import Julia packages
 using GaussianRandomFields
 
-@views function initialConditions(lSpace,nGrid,ϕ₀,λ)
+@views function initialConditions(lSpace,nGrid,ϕ₀,λ,randomOrNot)
 
-    # Gaussian random field for initial u0 field
-    # Lengthscale of gaussian noise (λ) set to equal lengthscale of PFC (q:=1.0)
-    mean = fill(ϕ₀, (nGrid,nGrid))
-    cov = CovarianceFunction(2,Gaussian(λ,σ=0.1))
-    ptsX = range(0, stop=lSpace, length=nGrid)
-    ptsY = range(0, stop=lSpace, length=nGrid)
-    grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsX, ptsY)
+    if randomOrNot == 1
+        # Gaussian random field for initial u0 field
+        # Lengthscale of gaussian noise (λ) set to equal lengthscale of PFC (q:=1.0)
+        mean = fill(ϕ₀, (nGrid,nGrid))
+        cov = CovarianceFunction(2,Gaussian(λ,σ=0.1))
+        ptsX = range(0, stop=lSpace, length=nGrid)
+        ptsY = range(0, stop=lSpace, length=nGrid)
+        grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsX, ptsY)
 
-    # Set initial order parameter field from sample of Gaussian random field
-    u0 = reshape(sample(grf),nGrid^2)
+        # Set initial order parameter field from sample of Gaussian random field
+        u0 = reshape(sample(grf),nGrid^2)
+    else 
+        u0Tmp = ones(nGrid,nGrid).*ϕ₀
+        u0Tmp[nGrid÷2-3:nGrid÷2+3,nGrid÷2-3:nGrid÷2+3] .+= 0.01
+        u0Tmp[nGrid÷2-2:nGrid÷2+2,nGrid÷2-2:nGrid÷2+2] .+= 0.02
+        u0Tmp[nGrid÷2-1:nGrid÷2+1,nGrid÷2-1:nGrid÷2+1] .+= 0.03
+        #u0Tmp[nGrid÷2,nGrid÷2] += 0.03
+        u0 = reshape(u0Tmp,nGrid^2)
+    end
 
+    
     # Allocate additional arrays for later calculations
     mat1  = zeros(nGrid^2)
     mat2  = zeros(nGrid^2)

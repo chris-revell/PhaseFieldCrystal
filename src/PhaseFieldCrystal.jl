@@ -27,7 +27,7 @@ include("InitialConditions.jl"); using .InitialConditions
 include("Visualise.jl"); using .Visualise
 include("FreeEnergy.jl"); using .FreeEnergy
 
-function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,dt,tMax,loggerFlag,outputFlag,visualiseFlag,integrator)
+function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,dt,tMax,loggerFlag,outputFlag,visualiseFlag,integrator,randomOrNot)
 
     #BLAS.set_num_threads(8)
 
@@ -46,7 +46,7 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,dt,tMax,loggerFlag,outputFlag,
 
     
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,mat1,mat2,h = initialConditions(lSpace,nGrid,ϕ₀,1.0)
+    u0,mat1,mat2,h = initialConditions(lSpace,nGrid,ϕ₀,1.0,randomOrNot)
 
     ∇² = createLaplacian(nGrid,h)
     
@@ -64,7 +64,7 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,dt,tMax,loggerFlag,outputFlag,
         sol = solve(prob, LawsonEuler(krylov=true, m=50), dt=0.01, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
     elseif integrator=="explicit"
         prob = ODEProblem(PFC!,u0,(0.0,tMax),p)
-        sol = solve(prob, alg_hints=[:stiff], saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+        sol = solve(prob, Tsit5(), saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
     end 
     #prob = SplitODEProblem(splitLinearPart!,splitNonlinearPart!,u0,(0.0,tMax),p)
     #sol = solve(prob, IMEXEuler(), dt=0.0001, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
