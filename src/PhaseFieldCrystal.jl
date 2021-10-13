@@ -27,7 +27,7 @@ include("InitialConditions.jl"); using .InitialConditions
 include("Visualise.jl"); using .Visualise
 include("FreeEnergy.jl"); using .FreeEnergy
 
-function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,dt,tMax,loggerFlag,outputFlag,visualiseFlag,integrator)
+function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,integrator)
 
     #BLAS.set_num_threads(8)
 
@@ -37,7 +37,7 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,dt,tMax,loggerFlag,outputFlag,
     # r             Parameter in Swift-Hohenberg equation     (eg. = -0.9 or 0.5  )
     # ϕ₀            Mean order parameter across domain        (eg. = -0.516       )
     # a             Parameter in splitting scheme             (eg. = 2.0          )
-    # dt            Time step for implicit semi-linear scheme (eg. = 0.01         )
+    # δt            Time step for implicit semi-linear scheme (eg. = 0.01         )
     # tMax          Run time of simulation                    (eg. = 20.0         )
     # loggerFlag    Display progress bar in REPL when =1; Always set to 0 on HPC
     # outputFlag    Flag to control whether data are saved to file (=1 or 0)
@@ -61,7 +61,7 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,dt,tMax,loggerFlag,outputFlag,
     # Define ODE problem using discretised derivatives
     if integrator=="split"
         prob = SplitODEProblem(DiffEqArrayOperator(linearOperator),splitNonlinearPart!,u0,(0.0,tMax),p)
-        sol = solve(prob, LawsonEuler(krylov=true, m=50), dt=0.01, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+        sol = solve(prob, LawsonEuler(krylov=true, m=50), dt=δt, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
     elseif integrator=="explicit"
         prob = ODEProblem(PFC!,u0,(0.0,tMax),p)
         sol = solve(prob, alg_hints=[:stiff], saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
