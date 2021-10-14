@@ -44,12 +44,12 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,δt,tMax,loggerFlag,outputFlag
     # visualiseFlag Flag to control whether data are plotted  (=1 or 0)
     # integrator    Controls which integration scheme to use ="split" or "explicit"
 
-    
+
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
     u0,mat1,mat2,h = initialConditions(lSpace,nGrid,ϕ₀,1.0)
 
     ∇² = createLaplacian(nGrid,h)
-    
+
     linearOperator = (1.0-r+a).*∇² .+ ∇²*∇²*∇²
 
     # Array of parameters to pass to solver
@@ -65,16 +65,16 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,δt,tMax,loggerFlag,outputFlag
     elseif integrator=="explicit"
         prob = ODEProblem(PFC!,u0,(0.0,tMax),p)
         sol = solve(prob, alg_hints=[:stiff], saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
-    end 
+    end
     #prob = SplitODEProblem(splitLinearPart!,splitNonlinearPart!,u0,(0.0,tMax),p)
     #sol = solve(prob, IMEXEuler(), dt=0.0001, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
-    
+
     # Calculate and plot free energy
     freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nGrid, lSpace, r)
 
     if outputFlag==1
         # Create output folder and data files
-        folderName = createRunDirectory(lSpace,nGrid,h,r,ϕ₀,tMax/100,tMax)
+        folderName = createRunDirectory(nGrid,lSpace,r,ϕ₀,a,δt,tMax/100,tMax,integrator)
         # Save variables and results to file
         @info "Saving data to $folderName/data.jld2"
         jldsave("$folderName/data.jld2";sol,∇²,freeEnergies,nGrid,lSpace,r,h,folderName)
