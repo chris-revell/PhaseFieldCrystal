@@ -47,8 +47,10 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,δt,tMax,loggerFlag,outputFlag
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
     u0,mat1,mat2,h = initialConditions(lSpace,nGrid,ϕ₀,1.0)
 
+    # Create Laplacian matrix for given system parameters
     ∇² = createLaplacian(nGrid,h)
 
+    # Create matrix for linaer component of PFC equation
     linearOperator = (1.0-r+a).*∇² .+ ∇²*∇²*∇²
 
     # Array of parameters to pass to solver
@@ -57,24 +59,19 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,δt,tMax,loggerFlag,outputFlag
     # Start progress logger if loggerFlag argument is 1
     loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
 
-    # Define ODE problem using discretised derivatives
-
+    # Define split ODE problem
     prob = SplitODEProblem(DiffEqArrayOperator(linearOperator),splitNonlinearPart!,u0,(0.0,tMax),p)
-    #sol = solve(prob, LawsonEuler(krylov=true, m=50), dt=δt, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
     sol = solve(prob, ETDRK2(krylov=true, m=50), dt=δt, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate and plot free energy
     freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nGrid, lSpace, r)
 
     if outputFlag==1
-
         params = @strdict nGrid lSpace h r ϕ₀ a δt tMax
-
         # Save variables and results to file
         fileName = savename(params, "jld2")
         @info "Saving data to output/$fileName"
         safesave("output/$fileName",@strdict sol freeEnergies params)
-
         # Plot results as animated gif
         if visualiseFlag==1
             visualise(sol, freeEnergies, params,"output/$fileName")
