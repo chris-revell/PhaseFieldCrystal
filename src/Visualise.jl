@@ -17,7 +17,9 @@ using JLD2
 using UnPack
 using DifferentialEquations
 
-function visualise(sol,∇²,nGrid,freeEnergies,folderName)
+function visualise(sol, freeEnergies, params, path)
+
+    @unpack nGrid, lSpace, h, r, ϕ₀, a, δt, tMax = params
 
     mat1 = zeros(nGrid^2)
 
@@ -28,9 +30,7 @@ function visualise(sol,∇²,nGrid,freeEnergies,folderName)
         uInternal = reshape(u,(nGrid,nGrid))
         heatmap(uInternal,title="t=$(@sprintf("%.2f", sol.t[i]))",clims=(-1,1),aspect_ratio=:equal,border=:none,show=false,color=:hawaii)
     end
-    #withenv("DYLD_LIBRARY_PATH"=>Plots.FFMPEG.FFMPEG_jll.LIBPATH[]) do
-    gif(anim,"$folderName/anim_u.gif",fps=10)
-    #end
+    gif(anim,"$(path[1:end-5])_u.gif",fps=10)
 
     # # Plot 2nd derivative of phase field
     # anim2 = @animate for (i,u) in enumerate(sol.u)
@@ -50,7 +50,7 @@ function visualise(sol,∇²,nGrid,freeEnergies,folderName)
     # gif(anim3,"$folderName/anim_del4u.gif",fps=10)
 
     plot(sol.t,freeEnergies)
-    savefig("$folderName/freeEnergyVsTime.png")
+    savefig("$(path[1:end-5])_freeEnergyVsTime.png")
 
     return nothing
 
@@ -60,10 +60,10 @@ end
 # For example, run visualise(importData("output/folder/data.jld2")...)
 function importData(path)
 
-    data = load("$path/data.jld2")
-    @unpack sol,∇²,nGrid,freeEnergies = data
+    data = load(path)
+    @unpack sol, freeEnergies, params = data
 
-    return sol,∇²,nGrid,freeEnergies,path
+    return sol, freeEnergies, params, path
 
 end
 
