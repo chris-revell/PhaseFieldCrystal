@@ -60,10 +60,10 @@ end
 # For example, run visualise(importData("output/folder/data.jld2")...)
 function importData(path)
 
-    data = load(path)
-    @unpack sol,∇²,nGrid,freeEnergies,folderName = data
+    data = load("$path/data.jld2")
+    @unpack sol,∇²,nGrid,freeEnergies = data
 
-    return sol,∇²,nGrid,freeEnergies,folderName
+    return sol,∇²,nGrid,freeEnergies,path
 
 end
 
