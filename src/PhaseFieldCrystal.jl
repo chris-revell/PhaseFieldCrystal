@@ -61,7 +61,8 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,δt,tMax,loggerFlag,outputFlag
     # Define ODE problem using discretised derivatives
     if integrator=="split"
         prob = SplitODEProblem(DiffEqArrayOperator(linearOperator),splitNonlinearPart!,u0,(0.0,tMax),p)
-        sol = solve(prob, LawsonEuler(krylov=true, m=50), dt=δt, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+        #sol = solve(prob, LawsonEuler(krylov=true, m=50), dt=δt, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+        sol = solve(prob, ETDRK2(krylov=true, m=50), dt=δt, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")        
     elseif integrator=="explicit"
         prob = ODEProblem(PFC!,u0,(0.0,tMax),p)
         sol = solve(prob, alg_hints=[:stiff], saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
@@ -74,7 +75,7 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,δt,tMax,loggerFlag,outputFlag
 
     if outputFlag==1
         # Create output folder and data files
-        folderName = createRunDirectory(nGrid,lSpace,r,ϕ₀,a,δt,tMax/100,tMax,integrator)
+        folderName = createRunDirectory(nGrid,lSpace,h,r,ϕ₀,a,δt,tMax/100,tMax,integrator)
         # Save variables and results to file
         @info "Saving data to $folderName/data.jld2"
         jldsave("$folderName/data.jld2";sol,∇²,freeEnergies,nGrid,lSpace,r,h,folderName)
