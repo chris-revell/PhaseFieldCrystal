@@ -10,9 +10,7 @@ module Model
 
 # Import Julia packages
 using LinearAlgebra
-#using LoopVectorization
 using SparseArrays
-using Octavian
 
 function splitNonlinearPart!(du, u, p, t)
     # Defining model as a split ode problem as per the following two links
@@ -22,7 +20,7 @@ function splitNonlinearPart!(du, u, p, t)
     # From Glasner, Orizaga 2016 Equation 23
     # linearOperator = ((1-r+a)∇² + ∇⁶)
     # f2 = ∇²(u³ - au + 2∇²u)
-    
+
     # Unpack parameter list
     ∇², linearOperator, mat1, mat2, r, a = p
     # Find 2nd derivative of u
@@ -32,27 +30,6 @@ function splitNonlinearPart!(du, u, p, t)
     mat1 .+= u.^3 .- a.*u
     # Find 2nd derivative of (u³ - au + 2∇²u)
     mul!(du,∇²,mat1)
-    return du
-end
-
-# function splitLinearPart!(du, u, p, t)
-#     ∇², linearOperator, mat1, mat2, r, a = p
-#     mul!(du,linearOperator,u)
-#     return du
-# end 
-
-function fullSplit!(du, u, p, t)
-    # Unpack parameter list
-    ∇², linearOperator, mat1, mat2, r, a = p
-    # Find 2nd derivative of u
-    mul!(mat1,∇²,u)
-    # Calculate inner component (u³ - au + 2∇²u)
-    mat1 .*= 2.0
-    mat1 .+= u.^3 .- a.*u
-    # Find 2nd derivative of (u³ - au + 2∇²u)
-    mul!(du,∇²,mat1)
-    mat1 .= linearOperator*u
-    du .+= mat1
     return du
 end
 
@@ -71,6 +48,6 @@ function PFC!(du, u, p, t)
     return du
 end
 
-export splitNonlinearPart!, PFC!, fullSplit! #, splitLinearPart!
+export splitNonlinearPart!, PFC!
 
 end

@@ -355,6 +355,12 @@ version = "0.5.7"
 deps = ["ArgTools", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 
+[[DrWatson]]
+deps = ["Dates", "FileIO", "LibGit2", "MacroTools", "Pkg", "Random", "Requires", "UnPack"]
+git-tree-sha1 = "d6aa02ad618cf31af9bbbf87f87baad632538211"
+uuid = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
+version = "2.5.0"
+
 [[DynamicPolynomials]]
 deps = ["DataStructures", "Future", "LinearAlgebra", "MultivariatePolynomials", "MutableArithmetics", "Pkg", "Reexport", "Test"]
 git-tree-sha1 = "1b4665a7e303eaa7e03542cfaef0730cb056cb00"
