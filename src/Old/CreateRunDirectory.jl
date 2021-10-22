@@ -17,7 +17,7 @@ using DelimitedFiles
 # Import local modules
 # include("<Module>.jl"); using .Module
 
-function createRunDirectory(nGrid,lSpace,h,r,ϕ₀,a,δt,outInt,tMax,integrator)
+function createRunDirectory(nGrid,lSpace,h,r,ϕ0,a,δt,outInt,tMax,integrator)
 
     # Create directory for run data labelled with current time.
     folderDate = Dates.format(Dates.now(),"yyyy-mm-dd-HH-MM-SS")
@@ -30,7 +30,7 @@ function createRunDirectory(nGrid,lSpace,h,r,ϕ₀,a,δt,outInt,tMax,integrator)
         println(conditionsfile, "nGrid,      $nGrid     ")
         println(conditionsfile, "h,          $h         ")
         println(conditionsfile, "r,          $r         ")
-        println(conditionsfile, "ϕ₀,         $ϕ₀        ")
+        println(conditionsfile, "ϕ0,         $ϕ0        ")
         println(conditionsfile, "a,          $a         ")
         println(conditionsfile, "δt,         $δt        ")
         println(conditionsfile, "tMax,       $tMax      ")

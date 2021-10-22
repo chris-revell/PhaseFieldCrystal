@@ -23,19 +23,21 @@ using DrWatson
 # Import local modules
 include("Model.jl"); using .Model
 include("CreateLaplacian.jl"); using .CreateLaplacian
+include("CreateGrad.jl"); using .CreateGrad
+include("CreateDiv.jl"); using .CreateDiv
 include("InitialConditions.jl"); using .InitialConditions
 include("Visualise.jl"); using .Visualise
 include("FreeEnergy.jl"); using .FreeEnergy
 
-function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag)
+function phaseFieldCrystal(nGrid,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,nBlasThreads)
 
-    BLAS.set_num_threads(4)
+    BLAS.set_num_threads(nBlasThreads)
 
     # Input parameters
     # nGrid         Number of grid points in both dimensions  (eg. = 200          )
     # lSpace        Spatial dimensions of domain              (eg. = 200.0        )
     # r             Parameter in Swift-Hohenberg equation     (eg. = -0.9 or 0.5  )
-    # ϕ₀            Mean order parameter across domain        (eg. = -0.516       )
+    # ϕ0            Mean order parameter across domain        (eg. = -0.516       )
     # a             Parameter in splitting scheme             (eg. = 2.0          )
     # δt            Time step for implicit semi-linear scheme (eg. = 0.01         )
     # tMax          Run time of simulation                    (eg. = 20.0         )
@@ -45,16 +47,21 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,δt,tMax,loggerFlag,outputFlag
     # integrator    Controls which integration scheme to use ="split" or "explicit"
 
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,mat1,mat2,h = initialConditions(lSpace,nGrid,ϕ₀,1.0,randomOrNot)
+    u0,mat1,mat2,h,αᵢ,αⱼ   = initialConditions(lSpace,nGrid,ϕ0,1.0,1)
 
-    # Create Laplacian matrix for given system parameters
+    # Create finite difference matrices for given system parameters
     ∇² = createLaplacian(nGrid,h)
+    ∇x,∇y = createGrad(nGrid,h)
+    divX,divY = createDiv(nGrid,h)
+
+
 
     # Create matrix for linaer component of PFC equation
+    #linearOperator = divX*(αⱼ*∇x*((1.0-r+a) .+ ∇²*∇²)) .+ divY*(αᵢ*∇y*((1.0-r+a) .+ ∇²*∇²))
     linearOperator = (1.0-r+a).*∇² .+ ∇²*∇²*∇²
 
     # Array of parameters to pass to solver
-    p = [∇², linearOperator, mat1, mat2, r, a]
+    p = [∇², linearOperator, mat1, mat2, ∇x, ∇y, divX, divY, r, a, αᵢ, αⱼ]
 
     # Start progress logger if loggerFlag argument is 1
     loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
@@ -67,7 +74,7 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ₀,a,δt,tMax,loggerFlag,outputFlag
     freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nGrid, lSpace, r)
 
     if outputFlag==1
-        params = @strdict nGrid lSpace h r ϕ₀ a δt tMax
+        params = @strdict nGrid lSpace r ϕ0 a δt tMax
         # Save variables and results to file
         fileName = savename(params, "jld2")
         @info "Saving data to output/$fileName"

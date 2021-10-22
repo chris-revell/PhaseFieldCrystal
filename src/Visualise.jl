@@ -19,7 +19,7 @@ using DifferentialEquations
 
 function visualise(sol, freeEnergies, params, path)
 
-    @unpack nGrid, lSpace, h, r, ϕ₀, a, δt, tMax = params
+    @unpack nGrid, lSpace, r, ϕ0, a, δt, tMax = params
 
     mat1 = zeros(nGrid^2)
 
@@ -30,7 +30,6 @@ function visualise(sol, freeEnergies, params, path)
         uInternal = reshape(u,(nGrid,nGrid))
         heatmap(uInternal,title="t=$(@sprintf("%.2f", sol.t[i]))",clims=(-1,1),aspect_ratio=:equal,border=:none,show=false,color=:hawaii)
     end
-    @info "Saving animated gif"
     gif(anim,"$(path[1:end-5])_u.gif",fps=10)
 
     plot(sol.t,freeEnergies)

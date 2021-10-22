@@ -30,6 +30,11 @@ function createLaplacian(nGrid, h)
                 yNew = arrayLoop(y+dy[i],nGrid) # Find (x,y) indices of neighbouring grid point, introducing periodicity with arrayLoop
                 index2 = (xNew-1)*nGrid + yNew
                 adj[index1,index2] = 1
+                # if dx[i]==-1 || dy[i]==-1
+                #     adj[index1,index2] = -1
+                # else
+                #     adj[index1,index2] = 1
+                # end                    
             end
         end
     end
