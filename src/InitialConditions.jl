@@ -23,10 +23,9 @@ using SparseArrays
         ptsX = range(0, stop=lSpace, length=nGrid)
         ptsY = range(0, stop=lSpace, length=nGrid)
         grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsX, ptsY)
-
         # Set initial order parameter field from sample of Gaussian random field
         u0 = reshape(sample(grf),nGrid^2)
-    else 
+    else
         u0Tmp = ones(nGrid,nGrid).*ϕ0
         u0Tmp[nGrid÷2-3:nGrid÷2+3,nGrid÷2-3:nGrid÷2+3] .+= 0.01
         u0Tmp[nGrid÷2-2:nGrid÷2+2,nGrid÷2-2:nGrid÷2+2] .+= 0.02
@@ -35,20 +34,22 @@ using SparseArrays
         u0 = reshape(u0Tmp,nGrid^2)
     end
 
+    αVec = zeros(2*nGrid^2)
     αᵢTmp = ones(nGrid,nGrid)
-    #αᵢTmp[10:20,10:20] .= 0.0
-    αᵢ = spdiagm(reshape(αᵢTmp,nGrid^2))
+    αᵢTmp[20:50,20:50] .= 0.0
+    αVec[1:nGrid^2] .= reshape(αᵢTmp,nGrid^2)
     αⱼTmp = ones(nGrid,nGrid)
-    #αⱼTmp[10:20,10:20] .= 0.0
-    αⱼ = spdiagm(reshape(αⱼTmp,nGrid^2))
-    
+    αⱼTmp[20:50,20:50] .= 0.0
+    αVec[1+nGrid^2:end] .= reshape(αⱼTmp,nGrid^2)
+    α = spdiagm(αVec)
+
     # Allocate additional arrays for later calculations
     mat1  = zeros(nGrid^2)
     mat2  = zeros(nGrid^2)
 
     h = lSpace/nGrid    # Spatial separation of grid points
 
-return u0,mat1,mat2,h,αᵢ,αⱼ
+return u0,mat1,mat2,h,α
 
 end
 

@@ -1,5 +1,5 @@
 #
-#  Simulate.jl
+#  PhaseFieldCrystal.jl
 #  PhaseFieldCrystal
 #
 #  Created by Christopher Revell on 22/03/2021.
@@ -47,21 +47,17 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,v
     # integrator    Controls which integration scheme to use ="split" or "explicit"
 
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,mat1,mat2,h,αᵢ,αⱼ   = initialConditions(lSpace,nGrid,ϕ0,1.0,1)
+    u0,mat1,mat2,h,α   = initialConditions(lSpace,nGrid,ϕ0,1.0,1)
 
     # Create finite difference matrices for given system parameters
     ∇² = createLaplacian(nGrid,h)
-    ∇x,∇y = createGrad(nGrid,h)
-    divX,divY = createDiv(nGrid,h)
-
-
+    divalphagrad = createGrad(nGrid,h,α)
 
     # Create matrix for linaer component of PFC equation
-    #linearOperator = divX*(αⱼ*∇x*((1.0-r+a) .+ ∇²*∇²)) .+ divY*(αᵢ*∇y*((1.0-r+a) .+ ∇²*∇²))
-    linearOperator = (1.0-r+a).*∇² .+ ∇²*∇²*∇²
+    linearOperator = divalphagrad.*(1.0-r+a) .+ divalphagrad*∇²*∇²
 
     # Array of parameters to pass to solver
-    p = [∇², linearOperator, mat1, mat2, ∇x, ∇y, divX, divY, r, a, αᵢ, αⱼ]
+    p = [∇², linearOperator, mat1, mat2, r, a, divalphagrad]
 
     # Start progress logger if loggerFlag argument is 1
     loggerFlag==1 ? global_logger(TerminalLogger()) : nothing

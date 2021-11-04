@@ -5,7 +5,7 @@
 #  Created by Christopher Revell on 29/03/2021.
 #
 #
-# 
+#
 
 module CreateGrad
 
@@ -16,34 +16,48 @@ using LoopVectorization
 
 arrayLoop(a,nGrid) = (nGrid+a-1)%(nGrid)+1
 
-function createGrad(nGrid, h)
+function createGrad(nGrid, h, α)
 
-    adjX = spzeros(nGrid^2,nGrid^2)
+    incidence = spzeros(2*nGrid^2,nGrid^2)
+    dx = [ 0, 0, 1, -1]
+    dy = [-1, 1, 0,  0]
     for x=1:nGrid
         for y=1:nGrid
-            index1 = (x-1)*nGrid+y
-            xNew = arrayLoop(x+1,nGrid)
-            yNew = y
-            index2 = (xNew-1)*nGrid + yNew
-            adjX[index1,index2] = 1        
+            indexVertex = (x-1)*nGrid+y # Index of grid point (x,y) when 2D array is flattened to a 1D vector
+
+            # Loop over all edges neighbouring vertex (x,y)
+
+            # x dimension edge neighbours
+            xNew = arrayLoop(x-1,nGrid)
+            yNew = arrayLoop(y,nGrid)
+            indexEdge = (xNew-1)*nGrid + yNew
+            incidence[indexEdge,indexVertex] = -1
+
+            xNew = arrayLoop(x,nGrid)
+            yNew = arrayLoop(y,nGrid)
+            indexEdge = (xNew-1)*nGrid + yNew
+            incidence[indexEdge,indexVertex] = 1
+
+            # y dimension edge neighbours
+            xNew = arrayLoop(x,nGrid)
+            yNew = arrayLoop(y-1,nGrid)
+            indexEdge = (xNew-1)*nGrid + yNew + nGrid^2
+            incidence[indexEdge,indexVertex] = -1
+
+            xNew = arrayLoop(x,nGrid)
+            yNew = arrayLoop(y,nGrid)
+            indexEdge = (xNew-1)*nGrid + yNew + nGrid^2
+            incidence[indexEdge,indexVertex] = 1
+
         end
     end
+    incidence .= incidence./h
 
-    adjY = spzeros(nGrid^2,nGrid^2)        
-    for x=1:nGrid
-        for y=1:nGrid
-            index1 = (x-1)*nGrid+y # Index of grid point (x,y) when 2D array is flattened to a 1D vector            
-            xNew = x
-            yNew = arrayLoop(y+1,nGrid)
-            index2 = (xNew-1)*nGrid + yNew
-            adjY[index1,index2] = 1
-        end
-    end
+    incidenceTranspose = sparse(transpose(incidence))
 
-    ∇x = -(I-adjX)./h
-    ∇y = -(I-adjY)./h
+    operator = -incidenceTranspose*α*incidence
 
-    return ∇x,∇y
+    return operator
 
 end
 
