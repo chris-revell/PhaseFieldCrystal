@@ -28,8 +28,10 @@ include("CreateDiv.jl"); using .CreateDiv
 include("InitialConditions.jl"); using .InitialConditions
 include("Visualise.jl"); using .Visualise
 include("FreeEnergy.jl"); using .FreeEnergy
+include("ImportImage.jl"); using .ImportImage
+include("SetMobility.jl"); using .SetMobility
 
-function phaseFieldCrystal(nGrid,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,nBlasThreads)
+function phaseFieldCrystal(imagePath,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,nBlasThreads)
 
     BLAS.set_num_threads(nBlasThreads)
 
@@ -46,8 +48,12 @@ function phaseFieldCrystal(nGrid,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,v
     # visualiseFlag Flag to control whether data are plotted  (=1 or 0)
     # integrator    Controls which integration scheme to use ="split" or "explicit"
 
+    imageMask,nGrid = importImage(imagePath)
+
+    α = setMobility(nGrid,imageMask)
+
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,mat1,mat2,h,α   = initialConditions(lSpace,nGrid,ϕ0,1.0,1)
+    u0,mat1,mat2,h = initialConditions(imageMask,lSpace,nGrid,ϕ0,1.0,1)
 
     # Create finite difference matrices for given system parameters
     ∇² = createLaplacian(nGrid,h)

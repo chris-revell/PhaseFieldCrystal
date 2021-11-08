@@ -12,8 +12,9 @@ module InitialConditions
 # Import Julia packages
 using GaussianRandomFields
 using SparseArrays
+using LinearAlgebra
 
-@views function initialConditions(lSpace,nGrid,ϕ0,λ,randomOrNot)
+@views function initialConditions(imageMask,lSpace,nGrid,ϕ0,λ,randomOrNot)
 
     if randomOrNot == 1
         # Gaussian random field for initial u0 field
@@ -24,24 +25,16 @@ using SparseArrays
         ptsY = range(0, stop=lSpace, length=nGrid)
         grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsX, ptsY)
         # Set initial order parameter field from sample of Gaussian random field
-        u0 = reshape(sample(grf),nGrid^2)
+        u0Tmp = sample(grf)
+        u0Tmp .*= imageMask
+
     else
         u0Tmp = ones(nGrid,nGrid).*ϕ0
         u0Tmp[nGrid÷2-3:nGrid÷2+3,nGrid÷2-3:nGrid÷2+3] .+= 0.01
         u0Tmp[nGrid÷2-2:nGrid÷2+2,nGrid÷2-2:nGrid÷2+2] .+= 0.02
         u0Tmp[nGrid÷2-1:nGrid÷2+1,nGrid÷2-1:nGrid÷2+1] .+= 0.03
-        #u0Tmp[nGrid÷2,nGrid÷2] += 0.03
-        u0 = reshape(u0Tmp,nGrid^2)
     end
-
-    αVec = zeros(2*nGrid^2)
-    αᵢTmp = ones(nGrid,nGrid)
-    αᵢTmp[20:50,20:50] .= 0.0
-    αVec[1:nGrid^2] .= reshape(αᵢTmp,nGrid^2)
-    αⱼTmp = ones(nGrid,nGrid)
-    αⱼTmp[20:50,20:50] .= 0.0
-    αVec[1+nGrid^2:end] .= reshape(αⱼTmp,nGrid^2)
-    α = spdiagm(αVec)
+    u0 = reshape(u0Tmp,nGrid^2)
 
     # Allocate additional arrays for later calculations
     mat1  = zeros(nGrid^2)
@@ -49,7 +42,7 @@ using SparseArrays
 
     h = lSpace/nGrid    # Spatial separation of grid points
 
-return u0,mat1,mat2,h,α
+return u0,mat1,mat2,h
 
 end
 
