@@ -10,7 +10,7 @@
 module Visualise
 
 # Import Julia packages
-using Plots
+using CairoMakie
 using ColorSchemes
 using Printf
 using JLD2
@@ -21,19 +21,27 @@ function visualise(sol, freeEnergies, params, path)
 
     @unpack nGrid, lSpace, r, ϕ0, a, δt, tMax = params
 
-    mat1 = zeros(nGrid^2)
+    uInternal = Observable(zeros(nGrid,nGrid))
 
-    # # Plot phase field
-    ENV["GKSwstype"]=100
-    ENV["JULIA_GR_PROVIDER"] = "GR"
-    anim = @animate for (i,u) in enumerate(sol.u)
-        uInternal = reshape(u,(nGrid,nGrid))
-        heatmap(uInternal,title="t=$(@sprintf("%.2f", sol.t[i]))",clims=(-1,1),aspect_ratio=:equal,border=:none,show=false,color=:hawaii)
+    fig1 = Figure()
+    ga1 = fig1[1,1] = GridLayout()
+    ax1 = Axis(ga1[1,1],aspect=DataAspect())
+    heatmap!(ax1,uInternal)
+    hidedecorations!(ax1)
+
+    tSteps = range(1,length(sol.t),step=1)
+
+    record(fig1,"$(path[1:end-5])_u.gif",tSteps; framerate=10) do i
+        uInternal[] = rotr90(reshape(sol.u[i],(nGrid,nGrid)))
+        uInternal[] = uInternal[]
     end
-    gif(anim,"$(path[1:end-5])_u.gif",fps=10)
 
-    plot(sol.t,freeEnergies)
-    savefig("$(path[1:end-5])_freeEnergyVsTime.png")
+    fig2 = Figure()
+    ax2 = Axis(fig2[1,1])
+    lines!(ax2,sol.t,freeEnergies)
+    ax2.xlabel = "Time"
+    ax2.ylabel = "Free Energy"
+    save("$(path[1:end-5])_freeEnergyVsTime.png",fig2)
 
     return nothing
 
