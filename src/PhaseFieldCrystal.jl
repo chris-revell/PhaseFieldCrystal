@@ -36,7 +36,8 @@ function phaseFieldCrystal(imagePath,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFl
     BLAS.set_num_threads(nBlasThreads)
 
     # Input parameters
-    # nGrid         Number of grid points in both dimensions  (eg. = 200          )
+    # nX            Number of grid points in x dimension      (eg. = 200          )
+    # nY            Number of grid points in y dimension      (eg. = 200          )
     # lSpace        Spatial dimensions of domain              (eg. = 200.0        )
     # r             Parameter in Swift-Hohenberg equation     (eg. = -0.9 or 0.5  )
     # ϕ0            Mean order parameter across domain        (eg. = -0.516       )
@@ -48,16 +49,16 @@ function phaseFieldCrystal(imagePath,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFl
     # visualiseFlag Flag to control whether data are plotted  (=1 or 0)
     # integrator    Controls which integration scheme to use ="split" or "explicit"
 
-    imageMask,nGrid = importImage(imagePath)
+    imageMask, nX, nY = importImage(imagePath)
 
-    α = setMobility(nGrid,imageMask)
+    α = setMobility(nX,nY,imageMask)
 
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,mat1,mat2,h = initialConditions(imageMask,lSpace,nGrid,ϕ0,1.0,1)
+    u0,mat1,mat2,h = initialConditions(imageMask,lSpace,nX,nY,ϕ0,1.0,1)
 
     # Create finite difference matrices for given system parameters
-    ∇² = createLaplacian(nGrid,h)
-    divalphagrad = createGrad(nGrid,h,α)
+    ∇² = createLaplacian(nX,nY,h)
+    divalphagrad = createGrad(nX,nY,h,α)
 
     # Create matrix for linaer component of PFC equation
     linearOperator = divalphagrad.*(1.0-r+a) .+ divalphagrad*∇²*∇²
@@ -73,10 +74,10 @@ function phaseFieldCrystal(imagePath,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFl
     sol = solve(prob, ETDRK2(krylov=true, m=50), dt=δt, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate and plot free energy
-    freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nGrid, lSpace, r)
+    freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nX, nY, lSpace, r)
 
     if outputFlag==1
-        params = @strdict nGrid lSpace r ϕ0 a δt tMax
+        params = @strdict nX nY lSpace r ϕ0 a δt tMax
         # Save variables and results to file
         fileName = savename(params, "jld2")
         @info "Saving data to output/$fileName"

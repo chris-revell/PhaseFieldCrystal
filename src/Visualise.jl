@@ -19,7 +19,7 @@ using DifferentialEquations
 
 function visualise(sol, freeEnergies, params, path)
 
-    @unpack nGrid, lSpace, r, ϕ0, a, δt, tMax = params
+    @unpack nX, nY, lSpace, r, ϕ0, a, δt, tMax = params
 
     uInternal = Observable(zeros(nGrid,nGrid))
 
@@ -32,7 +32,7 @@ function visualise(sol, freeEnergies, params, path)
     tSteps = range(1,length(sol.t),step=1)
 
     record(fig1,"$(path[1:end-5])_u.gif",tSteps; framerate=10) do i
-        uInternal[] = rotr90(reshape(sol.u[i],(nGrid,nGrid)))
+        uInternal[] = rotr90(reshape(sol.u[i],(nY,nX)))
         uInternal[] = uInternal[]
     end
 

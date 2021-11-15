@@ -14,33 +14,33 @@ using GaussianRandomFields
 using SparseArrays
 using LinearAlgebra
 
-@views function initialConditions(imageMask,lSpace,nGrid,ϕ0,λ,randomOrNot)
+@views function initialConditions(imageMask,lSpace,nX,nY,ϕ0,λ,randomOrNot)
 
     if randomOrNot == 1
         # Gaussian random field for initial u0 field
         # Lengthscale of gaussian noise (λ) set to equal lengthscale of PFC (q:=1.0)
-        mean = fill(ϕ0, (nGrid,nGrid))
+        mean = fill(ϕ0, (nY,nX))
         cov = CovarianceFunction(2,Gaussian(λ,σ=0.1))
-        ptsX = range(0, stop=lSpace, length=nGrid)
-        ptsY = range(0, stop=lSpace, length=nGrid)
+        ptsX = range(0, stop=lSpace, length=nX)
+        ptsY = range(0, stop=lSpace, length=nY)
         grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsX, ptsY)
         # Set initial order parameter field from sample of Gaussian random field
         u0Tmp = sample(grf)
         u0Tmp .*= imageMask
 
     else
-        u0Tmp = ones(nGrid,nGrid).*ϕ0
-        u0Tmp[nGrid÷2-3:nGrid÷2+3,nGrid÷2-3:nGrid÷2+3] .+= 0.01
-        u0Tmp[nGrid÷2-2:nGrid÷2+2,nGrid÷2-2:nGrid÷2+2] .+= 0.02
-        u0Tmp[nGrid÷2-1:nGrid÷2+1,nGrid÷2-1:nGrid÷2+1] .+= 0.03
+        u0Tmp = ones(nY,nX).*ϕ0
+        u0Tmp[nY÷2-3:nY÷2+3,nX÷2-3:nX÷2+3] .+= 0.01
+        u0Tmp[nY÷2-2:nY÷2+2,nX÷2-2:nX÷2+2] .+= 0.02
+        u0Tmp[nY÷2-1:nY÷2+1,nX÷2-1:nX÷2+1] .+= 0.03
     end
-    u0 = reshape(u0Tmp,nGrid^2)
+    u0 = reshape(u0Tmp,nX*nY)
 
     # Allocate additional arrays for later calculations
-    mat1  = zeros(nGrid^2)
-    mat2  = zeros(nGrid^2)
+    mat1  = zeros(nX,nY)
+    mat2  = zeros(nX,nY)
 
-    h = lSpace/nGrid    # Spatial separation of grid points
+    h = lSpace/nX    # Spatial separation of grid points
 
 return u0,mat1,mat2,h
 

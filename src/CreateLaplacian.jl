@@ -17,24 +17,19 @@ arrayLoop(a,nGrid) = (nGrid+a-1)%(nGrid)+1
 
 function createLaplacian(nGrid, h)
 
-    adj = spzeros(nGrid^2,nGrid^2)
+    adj = spzeros(nY^2,nX^2)
     # List of neighbour indices in
     dx = [ 0, 0, 1, -1]
     dy = [-1, 1, 0,  0]
-    for x=1:nGrid
-        for y=1:nGrid
-            index1 = (x-1)*nGrid+y # Index of grid point (x,y) when 2D array is flattened to a 1D vector
+    for x=1:nX
+        for y=1:nY
+            index1 = (x-1)*nY+y # Index of grid point (x,y) when 2D array is flattened to a 1D vector
             # Loop over all neighbours of (x,y)
             for i=1:length(dx)
-                xNew = arrayLoop(x+dx[i],nGrid) # Find (x,y) indices of neighbouring grid point, introducing periodicity with arrayLoop
-                yNew = arrayLoop(y+dy[i],nGrid) # Find (x,y) indices of neighbouring grid point, introducing periodicity with arrayLoop
-                index2 = (xNew-1)*nGrid + yNew
+                xNew = arrayLoop(x+dx[i],nX) # Find (x,y) indices of neighbouring grid point, introducing periodicity with arrayLoop
+                yNew = arrayLoop(y+dy[i],nY) # Find (x,y) indices of neighbouring grid point, introducing periodicity with arrayLoop
+                index2 = (xNew-1)*nY + yNew
                 adj[index1,index2] = 1
-                # if dx[i]==-1 || dy[i]==-1
-                #     adj[index1,index2] = -1
-                # else
-                #     adj[index1,index2] = 1
-                # end                    
             end
         end
     end

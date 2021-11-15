@@ -15,9 +15,10 @@ using Images
 
     grayImage = Gray.(load(imagePath))
     imageMask = Float64.(grayImage .> 0.5)
-    nGrid = size(imageMask)[1]
+    nX = size(imageMask)[2]
+    nY = size(imageMask)[1]
 
-    return imageMask, nGrid
+    return imageMask, nX, nY
 
 end
 
