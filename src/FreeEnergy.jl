@@ -16,7 +16,7 @@ using LinearAlgebra
 using NumericalIntegration
 using LoopVectorization
 
-@inline function freeEnergy(sol, ∇², mat1, mat2, nGrid, lSpace, r)
+@inline function freeEnergy(sol, ∇², mat1, mat2, nY, nX, h, r)
 
     freeEnergies = zeros(size(sol.u))
 
@@ -32,10 +32,10 @@ using LoopVectorization
         @tturbo mat2 .+= 0.25.*u.^4
 
         # Integrate free energy matrix
-        ptsX = range(0, stop=lSpace, length=nGrid)
-        ptsY = range(0, stop=lSpace, length=nGrid)
-        mat3 = reshape(mat2,(nGrid,nGrid))
-        freeEnergyVal = integrate((ptsX,ptsY),mat3)
+        ptsX = range(0, stop=h*nY, length=nY)
+        ptsY = range(0, stop=h*nX, length=nX)
+        mat3 = reshape(mat2,(nX,nY))
+        freeEnergyVal = integrate((ptsY,ptsX),mat3)
 
         # Store free energy value from integration
         freeEnergies[i] = freeEnergyVal

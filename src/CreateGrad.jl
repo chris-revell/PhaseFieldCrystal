@@ -16,38 +16,38 @@ using LoopVectorization
 
 arrayLoop(a,nGrid) = (nGrid+a-1)%(nGrid)+1
 
-function createGrad(nX, nY, h, α)
+function createGrad(nY, nX, h, α)
 
-    incidence = spzeros(2*nX*nY,nX*nY)
+    incidence = spzeros(2*nY*nX,nY*nX)
     dx = [ 0, 0, 1, -1]
     dy = [-1, 1, 0,  0]
-    for x=1:nX
-        for y=1:nY
+    for x=1:nY
+        for y=1:nX
             # Index of grid point (x,y) when 2D array is flattened to a 1D vector
-            indexVertex = (x-1)*nY+y
+            indexVertex = (x-1)*nX+y
 
             # Loop over all edges neighbouring vertex (x,y)
 
             # x dimension edge neighbours
-            xNew = arrayLoop(x-1,nX)
-            yNew = arrayLoop(y,nY)
-            indexEdge = (xNew-1)*nY + yNew
+            xNew = arrayLoop(x-1,nY)
+            yNew = arrayLoop(y,nX)
+            indexEdge = (xNew-1)*nX + yNew
             incidence[indexEdge,indexVertex] = -1
 
-            xNew = arrayLoop(x,nX)
-            yNew = arrayLoop(y,nY)
-            indexEdge = (xNew-1)*nY + yNew
+            xNew = arrayLoop(x,nY)
+            yNew = arrayLoop(y,nX)
+            indexEdge = (xNew-1)*nX + yNew
             incidence[indexEdge,indexVertex] = 1
 
             # y dimension edge neighbours
-            xNew = arrayLoop(x,nX)
-            yNew = arrayLoop(y-1,nY)
-            indexEdge = (xNew-1)*nY + yNew + nX*nY
+            xNew = arrayLoop(x,nY)
+            yNew = arrayLoop(y-1,nX)
+            indexEdge = (xNew-1)*nX + yNew + nY*nX
             incidence[indexEdge,indexVertex] = -1
 
-            xNew = arrayLoop(x,nX)
-            yNew = arrayLoop(y,nY)
-            indexEdge = (xNew-1)*nY + yNew + nX*nY
+            xNew = arrayLoop(x,nY)
+            yNew = arrayLoop(y,nX)
+            indexEdge = (xNew-1)*nX + yNew + nY*nX
             incidence[indexEdge,indexVertex] = 1
 
         end

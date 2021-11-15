@@ -24,7 +24,6 @@ using DrWatson
 include("Model.jl"); using .Model
 include("CreateLaplacian.jl"); using .CreateLaplacian
 include("CreateGrad.jl"); using .CreateGrad
-include("CreateDiv.jl"); using .CreateDiv
 include("InitialConditions.jl"); using .InitialConditions
 include("Visualise.jl"); using .Visualise
 include("FreeEnergy.jl"); using .FreeEnergy
@@ -36,8 +35,8 @@ function phaseFieldCrystal(imagePath,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFl
     BLAS.set_num_threads(nBlasThreads)
 
     # Input parameters
-    # nX            Number of grid points in x dimension      (eg. = 200          )
-    # nY            Number of grid points in y dimension      (eg. = 200          )
+    # nY            Number of grid points in x dimension      (eg. = 200          )
+    # nX            Number of grid points in y dimension      (eg. = 200          )
     # lSpace        Spatial dimensions of domain              (eg. = 200.0        )
     # r             Parameter in Swift-Hohenberg equation     (eg. = -0.9 or 0.5  )
     # ϕ0            Mean order parameter across domain        (eg. = -0.516       )
@@ -49,16 +48,16 @@ function phaseFieldCrystal(imagePath,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFl
     # visualiseFlag Flag to control whether data are plotted  (=1 or 0)
     # integrator    Controls which integration scheme to use ="split" or "explicit"
 
-    imageMask, nX, nY = importImage(imagePath)
+    imageMask, nY, nX = importImage(imagePath)
 
-    α = setMobility(nX,nY,imageMask)
+    α = setMobility(nY,nX,imageMask)
 
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,mat1,mat2,h = initialConditions(imageMask,lSpace,nX,nY,ϕ0,1.0,1)
+    u0,mat1,mat2,h = initialConditions(imageMask,lSpace,nY,nX,ϕ0,1.0,1)
 
     # Create finite difference matrices for given system parameters
-    ∇² = createLaplacian(nX,nY,h)
-    divalphagrad = createGrad(nX,nY,h,α)
+    ∇² = createLaplacian(nY,nX,h)
+    divalphagrad = createGrad(nY,nX,h,α)
 
     # Create matrix for linaer component of PFC equation
     linearOperator = divalphagrad.*(1.0-r+a) .+ divalphagrad*∇²*∇²
@@ -74,10 +73,10 @@ function phaseFieldCrystal(imagePath,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFl
     sol = solve(prob, ETDRK2(krylov=true, m=50), dt=δt, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate and plot free energy
-    freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nX, nY, lSpace, r)
+    freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nY, nX, lSpace, r)
 
     if outputFlag==1
-        params = @strdict nX nY lSpace r ϕ0 a δt tMax
+        params = @strdict nY nX lSpace r ϕ0 a δt tMax
         # Save variables and results to file
         fileName = savename(params, "jld2")
         @info "Saving data to output/$fileName"
