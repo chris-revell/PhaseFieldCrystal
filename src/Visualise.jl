@@ -27,11 +27,14 @@ function visualise(sol, freeEnergies, params, path)
     ga1 = fig1[1,1] = GridLayout()
     ax1 = Axis(ga1[1,1],aspect=DataAspect())
     heatmap!(ax1,uInternal)
+    title!(ax1,"t=0.0")
+    Colorbar(ga1[1, 2],limits=(-1.0,1.0),colormap=:viridis,vertical=true)
     hidedecorations!(ax1)
 
     tSteps = range(1,length(sol.t),step=1)
 
     record(fig1,"$(path[1:end-5])_u.gif",tSteps; framerate=10) do i
+        title!(ax1,"t=$(sol.t[i])")
         uInternal[] = reshape(sol.u[i],(nX,nY))
         uInternal[] = uInternal[]
     end
