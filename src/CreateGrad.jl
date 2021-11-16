@@ -12,7 +12,6 @@ module CreateGrad
 # Import Julia packages
 using LinearAlgebra
 using SparseArrays
-using LoopVectorization
 
 arrayLoop(a,nGrid) = (nGrid+a-1)%(nGrid)+1
 
