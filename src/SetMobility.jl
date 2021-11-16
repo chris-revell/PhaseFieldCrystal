@@ -13,27 +13,27 @@ module SetMobility
 using LinearAlgebra
 using SparseArrays
 
-function setMobility(nY,nX,imageMask)
+function setMobility(nX,nY,imageMask)
 
-    αVec = zeros(2*nY*nX)
-    αᵢTmp = ones(nX,nY)
-    αⱼTmp = ones(nX,nY)
-    for j=1:nY
-        for i=1:nX
-            if imageMask[i,j] == 0.0 || imageMask[(nX+i+1-1)%(nX)+1,j] == 0.0
+    αVec = zeros(2*nX*nY)
+    αᵢTmp = ones(nY,nX)
+    αⱼTmp = ones(nY,nX)
+    for j=1:nX
+        for i=1:nY
+            if imageMask[i,j] == 0.0 || imageMask[(nY+i+1-1)%(nY)+1,j] == 0.0
                 αᵢTmp[i,j] = 0.0
             end
         end
     end
-    for j=1:nY
-        for i=1:nX
-            if imageMask[i,j] == 0.0 || imageMask[i,(nY+j+1-1)%(nY)+1] == 0.0
+    for j=1:nX
+        for i=1:nY
+            if imageMask[i,j] == 0.0 || imageMask[i,(nX+j+1-1)%(nX)+1] == 0.0
                 αⱼTmp[i,j] = 0.0
             end
         end
     end
-    αVec[1:nY*nX] .= reshape(αᵢTmp,nY*nX)
-    αVec[1+nY*nX:end] .= reshape(αⱼTmp,nY*nX)
+    αVec[1:nX*nY] .= reshape(αᵢTmp,nX*nY)
+    αVec[1+nX*nY:end] .= reshape(αⱼTmp,nX*nY)
     α = spdiagm(αVec)
 
     return α

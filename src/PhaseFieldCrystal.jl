@@ -48,16 +48,16 @@ function phaseFieldCrystal(imagePath,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFl
     # visualiseFlag Flag to control whether data are plotted  (=1 or 0)
     # integrator    Controls which integration scheme to use ="split" or "explicit"
 
-    imageMask, nY, nX = importImage(imagePath)
+    imageMask, nX, nY = importImage(imagePath)
 
-    α = setMobility(nY,nX,imageMask)
+    α = setMobility(nX,nY,imageMask)
 
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,mat1,mat2,h = initialConditions(imageMask,lSpace,nY,nX,ϕ0,1.0,1)
+    u0,mat1,mat2,h = initialConditions(imageMask,lSpace,nX,nY,ϕ0,1.0,1)
 
     # Create finite difference matrices for given system parameters
-    ∇² = createLaplacian(nY,nX,h)
-    divalphagrad = createGrad(nY,nX,h,α)
+    ∇² = createLaplacian(nX,nY,h)
+    divalphagrad = createGrad(nX,nY,h,α)
 
     # Create matrix for linaer component of PFC equation
     linearOperator = divalphagrad.*(1.0-r+a) .+ divalphagrad*∇²*∇²
@@ -73,17 +73,17 @@ function phaseFieldCrystal(imagePath,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFl
     sol = solve(prob, ETDRK2(krylov=true, m=50), dt=δt, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate and plot free energy
-    freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nY, nX, lSpace, r)
+    freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nX, nY, lSpace, r)
 
     if outputFlag==1
-        params = @strdict nY nX lSpace r ϕ0 a δt tMax
+        params = @strdict nX nY lSpace r ϕ0 a δt tMax
         # Save variables and results to file
         fileName = savename(params, "jld2")
         @info "Saving data to output/$fileName"
-        safesave("output/$fileName",@strdict sol freeEnergies params)
+        safesave("data/sims/$fileName",@strdict sol freeEnergies params)
         # Plot results as animated gif
         if visualiseFlag==1
-            visualise(sol, freeEnergies, params,"output/$fileName")
+            visualise(sol, freeEnergies, params,"data/sims/$fileName")
         end
     end
 

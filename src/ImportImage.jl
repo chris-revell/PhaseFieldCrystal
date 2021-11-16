@@ -15,10 +15,10 @@ using Images
 
     grayImage = Gray.(load(imagePath))
     imageMask = Float64.(grayImage .> 0.5)
-    nY = size(imageMask)[2]
-    nX = size(imageMask)[1]
+    nY = size(imageMask)[1]
+    nX = size(imageMask)[2]
 
-    return imageMask, nY, nX
+    return imageMask, nX, nY
 
 end
 
