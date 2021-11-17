@@ -11,19 +11,15 @@ module PhaseFieldCrystal
 # Import Julia packages
 using DifferentialEquations
 using LinearAlgebra
-using Random
-using NumericalIntegration
 using Logging: global_logger
 using TerminalLoggers: TerminalLogger
-using Plots
-using JLD2
 using SparseArrays
 using DrWatson
 
 # Import local modules
 include("Model.jl"); using .Model
 include("CreateLaplacian.jl"); using .CreateLaplacian
-include("CreateGrad.jl"); using .CreateGrad
+include("CreateDivAlphaGrad.jl"); using .CreateDivAlphaGrad
 include("InitialConditions.jl"); using .InitialConditions
 include("Visualise.jl"); using .Visualise
 include("FreeEnergy.jl"); using .FreeEnergy
@@ -57,7 +53,7 @@ function phaseFieldCrystal(imagePath,lSpace,r,ϕ0,a,δt,tMax,loggerFlag,outputFl
 
     # Create finite difference matrices for given system parameters
     ∇² = createLaplacian(nX,nY,h)
-    divalphagrad = createGrad(nX,nY,h,α)
+    divalphagrad = createDivAlphaGrad(nX,nY,h,α)
 
     # Create matrix for linaer component of PFC equation
     linearOperator = divalphagrad.*(1.0-r+a) .+ divalphagrad*∇²*∇²

@@ -13,7 +13,6 @@ module Visualise
 using CairoMakie
 using ColorSchemes
 using Printf
-using JLD2
 using UnPack
 using DifferentialEquations
 
@@ -31,7 +30,7 @@ function visualise(sol, freeEnergies, params, path)
     hidedecorations!(ax1)
     ax1.title = "t=0.0"
     ax1.yreversed = true
-    
+
     tSteps = range(1,length(sol.t),step=1)
 
     record(fig1,"$(path[1:end-5])_u.gif",tSteps; framerate=10) do i

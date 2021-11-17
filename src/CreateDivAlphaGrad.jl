@@ -7,7 +7,7 @@
 #
 #
 
-module CreateGrad
+module CreateDivAlphaGrad
 
 # Import Julia packages
 using LinearAlgebra
@@ -15,7 +15,7 @@ using SparseArrays
 
 arrayLoop(a,nGrid) = (nGrid+a-1)%(nGrid)+1
 
-function createGrad(nX, nY, h, α)
+function createDivAlphaGrad(nX, nY, h, α)
 
     incidence = spzeros(2*nX*nY,nX*nY)
     for x=1:nX
@@ -62,6 +62,6 @@ function createGrad(nX, nY, h, α)
 
 end
 
-export createGrad
+export createDivAlphaGrad
 
 end
