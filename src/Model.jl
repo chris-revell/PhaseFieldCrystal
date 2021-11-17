@@ -11,6 +11,7 @@ module Model
 # Import Julia packages
 using LinearAlgebra
 using SparseArrays
+using FastBroadcast
 
 function splitNonlinearPart!(du, u, p, t)
     # Defining model as a split ode problem as per the following two links
@@ -27,8 +28,8 @@ function splitNonlinearPart!(du, u, p, t)
     # Find 2nd derivative of u
     mul!(mat1,∇²,u)
     # Calculate inner component (u³ - au + 2∇²u)
-    mat1 .*= 2.0
-    mat1 .+= u.^3 .- a.*u
+    @.. thread=true mat1 *= 2.0
+    @.. thread=true mat1 += u^3 - a*u
 
     # Find 2nd derivative of (u³ - au + 2∇²u)
     mul!(du,divalphagrad,mat1)
