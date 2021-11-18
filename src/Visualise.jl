@@ -15,11 +15,12 @@ using ColorSchemes
 using Printf
 using UnPack
 using DifferentialEquations
+using JLD2
 
 function visualise(sol, freeEnergies, params, path)
 
-    @unpack nX, nY, lSpace, r, ϕ0, a, δt, tMax = params
-    println("test")
+    @unpack nX, nY, lX, r, ϕ0, a, δt, tMax = params
+
     uInternal = Observable(rand(nX,nY))
 
     fig1 = Figure()

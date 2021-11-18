@@ -15,6 +15,8 @@ using SparseArrays
 
 function setMobility(nX,nY,imageMask)
 
+    # Mobility stored as a vector twice as long as system vector
+    # 2 mobility values for each grid point corresponding to edges in x and y directions.
     αVec = zeros(2*nX*nY)
     αᵢTmp = ones(nY,nX)
     αⱼTmp = ones(nY,nX)

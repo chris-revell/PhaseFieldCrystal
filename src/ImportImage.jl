@@ -5,7 +5,7 @@
 #  Created by Christopher Revell on 07/07/2021.
 #
 #
-# In place Laplacian function
+# Import electron micrograph or test image as a matrix of 1s and 0s to map inter-cellular spaces
 
 module ImportImage
 

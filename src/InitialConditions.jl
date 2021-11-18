@@ -14,16 +14,16 @@ using GaussianRandomFields
 using SparseArrays
 using LinearAlgebra
 
-@views function initialConditions(imageMask,lSpace,nX,nY,ϕ0,λ,randomOrNot)
+@views function initialConditions(imageMask,lX,nX,nY,ϕ0,λ,randomOrNot)
 
-    h = lSpace/nX    # Spatial separation of grid points
+    h = lX/nX    # Spatial separation of grid points
 
     if randomOrNot == 1
         # Gaussian random field for initial u0 field
         # Lengthscale of gaussian noise (λ) set to equal lengthscale of PFC (q:=1.0)
         mean = fill(ϕ0, (nY,nX))
         cov = CovarianceFunction(2,Gaussian(λ,σ=0.1))
-        ptsX = range(0, stop=lSpace, length=nX)
+        ptsX = range(0, stop=lX, length=nX)
         ptsY = range(0, stop=h*nY, length=nY)
         grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsY, ptsX)
         # Set initial order parameter field from sample of Gaussian random field
