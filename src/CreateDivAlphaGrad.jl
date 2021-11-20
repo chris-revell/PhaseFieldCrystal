@@ -29,25 +29,25 @@ function createDivAlphaGrad(nX, nY, h, α)
             # Incidence matrix maps each vertex to 2 x directed edges with + and - directions, and 2 y directed edges with + and - directions
 
             # x dimension edge neighbours
-            xNew = arrayLoop(x-1,nY)
-            yNew = arrayLoop(y,nX)
-            indexEdge = (xNew-1)*nX + yNew
+            xNew = arrayLoop(x-1,nX)
+            yNew = y
+            indexEdge = (xNew-1)*nY + yNew
             incidence[indexEdge,indexVertex] = -1
 
-            xNew = arrayLoop(x,nY)
-            yNew = arrayLoop(y,nX)
-            indexEdge = (xNew-1)*nX + yNew
+            xNew = x
+            yNew = y
+            indexEdge = (xNew-1)*nY + yNew
             incidence[indexEdge,indexVertex] = 1
 
             # y dimension edge neighbours
-            xNew = arrayLoop(x,nY)
-            yNew = arrayLoop(y-1,nX)
-            indexEdge = (xNew-1)*nX + yNew + nX*nY
+            xNew = x
+            yNew = arrayLoop(y-1,nY)
+            indexEdge = (xNew-1)*nY + yNew + nX*nY
             incidence[indexEdge,indexVertex] = -1
 
-            xNew = arrayLoop(x,nY)
-            yNew = arrayLoop(y,nX)
-            indexEdge = (xNew-1)*nX + yNew + nX*nY
+            xNew = x
+            yNew = y
+            indexEdge = (xNew-1)*nY + yNew + nX*nY
             incidence[indexEdge,indexVertex] = 1
 
         end

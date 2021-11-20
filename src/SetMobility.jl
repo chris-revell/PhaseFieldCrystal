@@ -1,5 +1,5 @@
 #
-#  SetMobility.jl
+#  SetMobility.xl
 #  PhaseFieldCrystal
 #
 #  Created by Christopher Revell on 08/11/2021.
@@ -20,17 +20,17 @@ function setMobility(nX,nY,imageMask)
     αVec = zeros(2*nX*nY)
     αᵢTmp = ones(nY,nX)
     αⱼTmp = ones(nY,nX)
-    for j=1:nX
-        for i=1:nY
-            if imageMask[i,j] == 0.0 || imageMask[(nY+i+1-1)%(nY)+1,j] == 0.0
-                αᵢTmp[i,j] = 0.0
+    for x=1:nX
+        for y=1:nY
+            if imageMask[y,x] == 0.0 || imageMask[(nY+y+1-1)%(nY)+1,x] == 0.0
+                αᵢTmp[y,x] = 0.0
             end
         end
     end
-    for j=1:nX
-        for i=1:nY
-            if imageMask[i,j] == 0.0 || imageMask[i,(nX+j+1-1)%(nX)+1] == 0.0
-                αⱼTmp[i,j] = 0.0
+    for x=1:nX
+        for y=1:nY
+            if imageMask[y,x] == 0.0 || imageMask[y,(nX+x+1-1)%(nX)+1] == 0.0
+                αⱼTmp[y,x] = 0.0
             end
         end
     end
