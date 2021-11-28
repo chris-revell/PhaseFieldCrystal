@@ -27,7 +27,7 @@ function visualise(sol, freeEnergies, params, path)
     ga1 = fig1[1,1] = GridLayout()
     ax1 = Axis(ga1[1,1],aspect=DataAspect())
     heatmap!(ax1,uInternal,colorrange=(-1.0, 1.0),colormap=:viridis)
-    Colorbar(ga1[1, 2],colormap=:viridis,vertical=true)
+    #Colorbar(ga1[1, 2],colormap=:viridis,vertical=true)
     hidedecorations!(ax1)
     ax1.title = "t=0.0"
     ax1.yreversed = true

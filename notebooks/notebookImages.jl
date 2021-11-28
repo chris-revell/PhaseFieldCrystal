@@ -15,10 +15,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ 30895b10-cd1b-11eb-13f1-e75fc2519aa0
-using Images, ImageBinarization,PlutoUI
-
-# ╔═╡ 3ea82f68-0723-4f02-8422-3f090fb1e6b7
-using FileIO
+using Images, ImageBinarization,PlutoUI, FileIO, ImageSegmentation, ImageTransformations
 
 # ╔═╡ d375a2f1-133a-4d08-96ed-b4bd1d446dce
 function myBinarise(image,thresh)
@@ -29,42 +26,41 @@ function myBinarise(image,thresh)
 	end
 end
 
-# ╔═╡ 74827c20-61a7-416a-88c0-cdd6c30f5d5e
-imagePath0 = "$(homedir())/Postdoc/Code/PhaseFieldCrystal/data/exp_pro/2mmp13ko-3wiew_4800X_hui_0002.png"
-
 # ╔═╡ 30b498d2-6c3c-4800-978c-2eddf1338fe6
-imagePath = "$(homedir())/Dropbox (The University of Manchester)/EM-images/mmp13ko3view/mmp13ko-3wiew_4800X_hui_0002.tif"
+imagePath = "$(homedir())/Dropbox (The University of Manchester)/EM-images/mmp13ko3view/mmp13ko-3wiew_4800X_hui_0002.tif";
 
 # ╔═╡ 9efeaf42-ee30-4efa-9455-29c87353270c
-imagePath2 = "$(homedir())/Dropbox (The University of Manchester)/EM-images/e13.5tail(TS)/637.tif"
+imagePath2 = "$(homedir())/Dropbox (The University of Manchester)/EM-images/e13.5tail(TS)/637.tif";
 
 # ╔═╡ 0213ead1-9a5f-4e3a-a2c3-c258e299b301
-image = Gray.(load(imagePath0))
+image = load(imagePath);
+
+# ╔═╡ 06e269b6-ec70-46d7-85c0-dba7a03d6b1c
+binariseFun = Intermodes()#AdaptiveThreshold(image;window_size=50,percentage=10);
 
 # ╔═╡ e3f67fa5-c972-4381-993d-3929afeb50cb
 @bind distance Slider(0:0.1:20)
 
-# ╔═╡ 3e70be30-3c21-4f53-82b3-97a0326c28ca
-@bind thresh Slider(0:0.1:1)
+# ╔═╡ 83578257-a3e6-4ed7-bb54-e42f73ebfeff
+distance
 
-# ╔═╡ 244b65d1-2e50-460c-b3e4-04cc927e5da7
+# ╔═╡ 5a3f971b-ae67-4460-93f1-b7f58b0363c3
 begin
-	image2 = copy(image)
-	image2 = imfilter(image2,Kernel.gaussian(distance))
-	binarize!(image2,Intermodes())
-	#image2 = dilate(dilate(image2))
-	#image2 = erode(erode(erode(erode(erode(image2)))))
-	image2 = dilate(dilate(dilate(dilate(dilate(image2)))))
-	
-	#image = myBinarise.(image,thresh)#,MinimumError())
-	#f = AdaptiveThreshold(window_size = 512)
-	image2
+	image2 = copy(image);
+	image2 .= imfilter(image2,Kernel.gaussian(distance))
+	binarize!(Gray.(image2),binariseFun)
 end
+
+# ╔═╡ 8ca03b7e-c060-4b6b-b6bd-af7dc0a2271a
+image .= imresize(image, size(image).*(1024/size(image2)[1]))
+
+# ╔═╡ 46dd8bf9-4552-412c-ad65-7718aa1dacc9
+saveName = "$(homedir())/Postdoc/Code/PhaseFieldCrystal/data/exp_pro/MaskDist=$distance$(split(split(imagePath,"/")[end],".")[1]).png"
 
 # ╔═╡ 3dcc5fb8-491a-4135-8e53-ebcbf94fba0a
 begin
-	restrict(image)
-	save("test3.png",image)
+	image .= imresize(image, size(image).*(1024/size(image2)[1]))
+	save(saveName,imageOut)
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -72,12 +68,16 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 ImageBinarization = "cbc4b850-ae4b-5111-9e64-df94c024a13d"
+ImageSegmentation = "80713f31-8817-5129-9cf8-209ff8fb23e1"
+ImageTransformations = "02fcd773-0e25-5acc-982a-7f6622650795"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 FileIO = "~1.11.2"
 ImageBinarization = "~0.2.7"
+ImageSegmentation = "~1.5.1"
+ImageTransformations = "~0.8.13"
 Images = "~0.24.1"
 PlutoUI = "~0.7.19"
 """
@@ -106,6 +106,12 @@ version = "3.3.1"
 
 [[ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
+
+[[ArnoldiMethod]]
+deps = ["LinearAlgebra", "Random", "StaticArrays"]
+git-tree-sha1 = "f87e559f87a45bece9c9ed97458d3afe98b1ebb9"
+uuid = "ec485272-7323-5ecc-a04f-4719b315124d"
+version = "0.1.0"
 
 [[ArrayInterface]]
 deps = ["Compat", "IfElse", "LinearAlgebra", "Requires", "SparseArrays", "Static"]
@@ -153,6 +159,12 @@ deps = ["LinearAlgebra", "Test"]
 git-tree-sha1 = "9a1d594397670492219635b35a3d830b04730d62"
 uuid = "9e997f8a-9a97-42d5-a9f1-ce6bfc15e2c0"
 version = "0.1.1"
+
+[[Clustering]]
+deps = ["Distances", "LinearAlgebra", "NearestNeighbors", "Printf", "SparseArrays", "Statistics", "StatsBase"]
+git-tree-sha1 = "75479b7df4167267d75294d14b58244695beb2ac"
+uuid = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
+version = "0.14.2"
 
 [[ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -284,6 +296,12 @@ git-tree-sha1 = "1c5a84319923bea76fa145d49e93aa4394c73fc2"
 uuid = "a2bd30eb-e257-5431-a919-1863eab51364"
 version = "1.1.1"
 
+[[Graphs]]
+deps = ["ArnoldiMethod", "DataStructures", "Distributed", "Inflate", "LinearAlgebra", "Random", "SharedArrays", "SimpleTraits", "SparseArrays", "Statistics"]
+git-tree-sha1 = "92243c07e786ea3458532e199eb3feee0e7e08eb"
+uuid = "86223c79-3864-5bf0-83f7-82e725a168b6"
+version = "1.4.1"
+
 [[HistogramThresholding]]
 deps = ["LinearAlgebra"]
 git-tree-sha1 = "2209954a25238b5f95ce3e1ca270dcef6013463a"
@@ -390,6 +408,12 @@ git-tree-sha1 = "1198f85fa2481a3bb94bf937495ba1916f12b533"
 uuid = "2996bd0c-7a13-11e9-2da2-2f5ce47296a9"
 version = "0.2.2"
 
+[[ImageSegmentation]]
+deps = ["Clustering", "DataStructures", "Distances", "ImageFiltering", "Images", "LightGraphs", "LinearAlgebra", "MetaGraphs", "RegionTrees", "SimpleWeightedGraphs", "StaticArrays", "Statistics"]
+git-tree-sha1 = "772ac2627c74b63a6502ab8c45df185bf63f476a"
+uuid = "80713f31-8817-5129-9cf8-209ff8fb23e1"
+version = "1.5.1"
+
 [[ImageShow]]
 deps = ["Base64", "FileIO", "ImageCore", "OffsetArrays", "Requires", "StackViews"]
 git-tree-sha1 = "832abfd709fa436a562db47fd8e81377f72b01f9"
@@ -474,6 +498,12 @@ git-tree-sha1 = "05110a2ab1fc5f932622ffea2a003221f4782c18"
 uuid = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
 version = "1.3.0"
 
+[[JLD2]]
+deps = ["DataStructures", "FileIO", "MacroTools", "Mmap", "Pkg", "Printf", "Reexport", "TranscodingStreams", "UUIDs"]
+git-tree-sha1 = "46b7834ec8165c541b0b5d1c8ba63ec940723ffb"
+uuid = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+version = "0.4.15"
+
 [[JLLWrappers]]
 deps = ["Preferences"]
 git-tree-sha1 = "642a199af8b68253517b80bd3bfd17eb4e84df6e"
@@ -521,6 +551,12 @@ git-tree-sha1 = "340e257aada13f95f98ee352d316c3bed37c8ab9"
 uuid = "89763e89-9b03-5906-acba-b20f662cd828"
 version = "4.3.0+0"
 
+[[LightGraphs]]
+deps = ["ArnoldiMethod", "DataStructures", "Distributed", "Inflate", "LinearAlgebra", "Random", "SharedArrays", "SimpleTraits", "SparseArrays", "Statistics"]
+git-tree-sha1 = "432428df5f360964040ed60418dd5601ecd240b6"
+uuid = "093fc24a-ae57-5d10-9952-331d41423f4d"
+version = "1.3.5"
+
 [[LinearAlgebra]]
 deps = ["Libdl"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -559,6 +595,12 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
 
+[[MetaGraphs]]
+deps = ["JLD2", "LightGraphs", "Random"]
+git-tree-sha1 = "81c0488104fb0dc977f38b4acaff81e6e79efc4d"
+uuid = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
+version = "0.6.8"
+
 [[Missings]]
 deps = ["DataAPI"]
 git-tree-sha1 = "bf210ce90b6c9eed32d25dbcae1ebc565df2687f"
@@ -593,6 +635,12 @@ version = "0.3.0"
 git-tree-sha1 = "bfe47e760d60b82b66b61d2d44128b62e3a369fb"
 uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 version = "0.3.5"
+
+[[NearestNeighbors]]
+deps = ["Distances", "StaticArrays"]
+git-tree-sha1 = "16baacfdc8758bc374882566c9187e785e85c2f0"
+uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
+version = "0.4.9"
 
 [[Netpbm]]
 deps = ["ColorVectorSpace", "FileIO", "ImageCore"]
@@ -727,6 +775,12 @@ git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
 
+[[RegionTrees]]
+deps = ["IterTools", "LinearAlgebra", "StaticArrays"]
+git-tree-sha1 = "4618ed0da7a251c7f92e869ae1a19c74a7d2a7f9"
+uuid = "dee08c22-ab7f-5625-9660-a9af2021b33f"
+version = "0.3.2"
+
 [[Requires]]
 deps = ["UUIDs"]
 git-tree-sha1 = "4036a3bd08ac7e968e27c203d45f5fff15020621"
@@ -754,6 +808,12 @@ deps = ["InteractiveUtils", "MacroTools"]
 git-tree-sha1 = "5d7e3f4e11935503d3ecaf7186eac40602e7d231"
 uuid = "699a6c99-e7fa-54fc-8d76-47d257e15c1d"
 version = "0.9.4"
+
+[[SimpleWeightedGraphs]]
+deps = ["Graphs", "LinearAlgebra", "Markdown", "SparseArrays", "Test"]
+git-tree-sha1 = "a6f404cc44d3d3b28c793ec0eb59af709d827e4e"
+uuid = "47aef6b3-ad0c-573a-a1e2-d07658019622"
+version = "1.2.1"
 
 [[Sockets]]
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
@@ -843,6 +903,12 @@ git-tree-sha1 = "8de32288505b7db196f36d27d7236464ef50dba1"
 uuid = "f269a46b-ccf7-5d73-abea-4c690281aa53"
 version = "1.6.2"
 
+[[TranscodingStreams]]
+deps = ["Random", "Test"]
+git-tree-sha1 = "216b95ea110b5972db65aa90f88d8d89dcb8851c"
+uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
+version = "0.9.6"
+
 [[UUIDs]]
 deps = ["Random", "SHA"]
 uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
@@ -889,14 +955,15 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 # ╔═╡ Cell order:
 # ╠═30895b10-cd1b-11eb-13f1-e75fc2519aa0
 # ╠═d375a2f1-133a-4d08-96ed-b4bd1d446dce
-# ╠═74827c20-61a7-416a-88c0-cdd6c30f5d5e
 # ╠═30b498d2-6c3c-4800-978c-2eddf1338fe6
 # ╠═9efeaf42-ee30-4efa-9455-29c87353270c
 # ╠═0213ead1-9a5f-4e3a-a2c3-c258e299b301
+# ╠═8ca03b7e-c060-4b6b-b6bd-af7dc0a2271a
+# ╠═06e269b6-ec70-46d7-85c0-dba7a03d6b1c
 # ╠═e3f67fa5-c972-4381-993d-3929afeb50cb
-# ╠═3e70be30-3c21-4f53-82b3-97a0326c28ca
-# ╠═244b65d1-2e50-460c-b3e4-04cc927e5da7
-# ╠═3ea82f68-0723-4f02-8422-3f090fb1e6b7
+# ╠═83578257-a3e6-4ed7-bb54-e42f73ebfeff
+# ╠═5a3f971b-ae67-4460-93f1-b7f58b0363c3
+# ╠═46dd8bf9-4552-412c-ad65-7718aa1dacc9
 # ╠═3dcc5fb8-491a-4135-8e53-ebcbf94fba0a
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
