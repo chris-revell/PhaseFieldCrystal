@@ -10,7 +10,7 @@ data/exp_pro
 data/testinputs
 papers/*
 #notebooks
-#_research
+_research
 
 ################################################################################
 #                                    Julia                                     #
