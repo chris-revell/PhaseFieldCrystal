@@ -18,14 +18,22 @@ using DrWatson
 using Dates
 
 # Import local modules
-include("Model.jl"); using .Model
-include("CreateLaplacian.jl"); using .CreateLaplacian
-include("CreateDivAlphaGrad.jl"); using .CreateDivAlphaGrad
-include("InitialConditions.jl"); using .InitialConditions
-include("Visualise.jl"); using .Visualise
-include("FreeEnergy.jl"); using .FreeEnergy
-include("ImportImage.jl"); using .ImportImage
-include("SetMobility.jl"); using .SetMobility
+# include("Model.jl"); using .Model
+using Model
+# include("CreateLaplacian.jl"); using .CreateLaplacian
+using CreateLaplacian
+# include("CreateDivAlphaGrad.jl"); using .CreateDivAlphaGrad
+using CreateDivAlphaGrad
+# include("InitialConditions.jl"); using .InitialConditions
+using InitialConditions
+# include("Visualise.jl"); using .Visualise
+using Visualise
+# include("FreeEnergy.jl"); using .FreeEnergy
+using FreeEnergy
+# include("ImportImage.jl"); using .ImportImage
+using ImportImage
+# include("SetMobility.jl"); using .SetMobility
+using SetMobility
 
 function phaseFieldCrystal(imagePath,lX,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,nBlasThreads)
 
