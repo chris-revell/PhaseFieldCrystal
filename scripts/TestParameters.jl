@@ -1,0 +1,11 @@
+imagePath     = "data/exp_pro/OtsuFastScanningPrunedMask.png"
+lX            = 500.0
+r             = 0.5
+ϕ0            = -0.37
+a             = 2.0
+δt            = 0.01
+tMax          = 50.0
+loggerFlag    = 1
+outputFlag    = 1
+visualiseFlag = 1
+nBlasThreads  = 4

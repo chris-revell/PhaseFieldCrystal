@@ -28,8 +28,10 @@ function splitNonlinearPart!(du, u, p, t)
     # Find 2nd derivative of u
     mul!(mat1,∇²,u)
     # Calculate inner component (u³ - au + 2∇²u)
-    @.. thread=true mat1 *= 2.0
-    @.. thread=true mat1 += u^3 - a*u
+    # @.. thread=true mat1 .*= 2.0
+    @.. thread=false mat1 .*= 2.0
+    # @.. thread=true mat1 .+= u.^3 .- a.*u
+    @.. thread=false mat1 .+= u.^3 .- a.*u
 
     # Find 2nd derivative of (u³ - au + 2∇²u)
     mul!(du,divalphagrad,mat1)

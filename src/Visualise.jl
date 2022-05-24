@@ -35,7 +35,7 @@ function visualise(sol, freeEnergies, params, path)
     tSteps = range(1,length(sol.t),step=1)
 
     record(fig1,"$(path[1:end-5])_u.gif",tSteps; framerate=10) do i
-        ax1.title = "t=$(sol.t[i])"
+        ax1.title = "t=$(@sprintf("%04d", sol.t[i]))"
         uInternal[] = transpose(reshape(sol.u[i],(nY,nX)))
         uInternal[] = uInternal[]
     end

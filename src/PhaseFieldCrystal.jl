@@ -80,7 +80,7 @@ function phaseFieldCrystal(imagePath,lX,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,v
 
     # Define split ODE problem
     prob = SplitODEProblem(DiffEqArrayOperator(linearOperator),splitNonlinearPart!,u0,(0.0,tMax),p)
-    sol = solve(prob, ETDRK2(krylov=true, m=50), dt=δt, saveat=(tMax/100), rel_tol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+    sol = solve(prob, ETDRK2(krylov=true, m=50), dt=δt, saveat=(tMax/100), reltol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate free energy at each time point of solution
     freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nX, nY, lX, r)
