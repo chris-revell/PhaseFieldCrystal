@@ -6,7 +6,7 @@
 #
 #
 
-module Model
+# module Model
 
 # Import Julia packages
 using LinearAlgebra
@@ -54,6 +54,6 @@ function PFC!(du, u, p, t)
     return du
 end
 
-export splitNonlinearPart!, PFC!
+# export splitNonlinearPart!, PFC!
 
-end
+# end

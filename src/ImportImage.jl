@@ -7,7 +7,7 @@
 #
 # Import electron micrograph or test image as a matrix of 1s and 0s to map inter-cellular spaces
 
-module ImportImage
+# module ImportImage
 
 using Images
 
@@ -22,6 +22,6 @@ using Images
 
 end
 
-export importImage
+# export importImage
 
-end
+# end

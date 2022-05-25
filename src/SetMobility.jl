@@ -8,7 +8,7 @@
 # Function to set mobility matrix based on imported image
 
 
-module SetMobility
+# module SetMobility
 
 using LinearAlgebra
 using SparseArrays
@@ -42,6 +42,6 @@ function setMobility(nX,nY,imageMask)
 
 end
 
-export setMobility
+# export setMobility
 
-end
+# end

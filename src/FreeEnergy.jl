@@ -9,7 +9,7 @@
 # F[ϕ] ≡ ∫dx[(ϕ/2)(r + (q² + ∇²)²)ϕ + ϕ⁴/4]
 # F[ϕ] ≡ ∫dx[(ϕ/2)(r + q⁴ + 2q²∇²ϕ + ∇⁴ϕ) + ϕ⁴/4]
 
-module FreeEnergy
+# module FreeEnergy
 
 # Import Julia packages
 using LinearAlgebra
@@ -45,6 +45,6 @@ using NumericalIntegration
 
 end
 
-export freeEnergy
+# export freeEnergy
 
-end
+# end

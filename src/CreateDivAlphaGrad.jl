@@ -7,13 +7,11 @@
 #
 #
 
-module CreateDivAlphaGrad
+# module CreateDivAlphaGrad
 
 # Import Julia packages
 using LinearAlgebra
 using SparseArrays
-
-arrayLoop(a,nGrid) = (nGrid+a-1)%(nGrid)+1
 
 function createDivAlphaGrad(nX, nY, h, α)
 
@@ -62,6 +60,6 @@ function createDivAlphaGrad(nX, nY, h, α)
 
 end
 
-export createDivAlphaGrad
+# export createDivAlphaGrad
 
-end
+# end

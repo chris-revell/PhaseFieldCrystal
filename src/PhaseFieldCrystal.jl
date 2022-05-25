@@ -17,23 +17,17 @@ using SparseArrays
 using DrWatson
 using Dates
 
-# Import local modules
-# include("Model.jl"); using .Model
-using Model
-# include("CreateLaplacian.jl"); using .CreateLaplacian
-using CreateLaplacian
-# include("CreateDivAlphaGrad.jl"); using .CreateDivAlphaGrad
-using CreateDivAlphaGrad
-# include("InitialConditions.jl"); using .InitialConditions
-using InitialConditions
-# include("Visualise.jl"); using .Visualise
-using Visualise
-# include("FreeEnergy.jl"); using .FreeEnergy
-using FreeEnergy
-# include("ImportImage.jl"); using .ImportImage
-using ImportImage
-# include("SetMobility.jl"); using .SetMobility
-using SetMobility
+arrayLoop(a,nGrid) = (nGrid+a-1)%(nGrid)+1
+
+# Import local files
+include("Model.jl")
+include("CreateLaplacian.jl")
+include("CreateDivAlphaGrad.jl")
+include("InitialConditions.jl")
+include("Visualise.jl")
+include("FreeEnergy.jl")
+include("ImportImage.jl")
+include("SetMobility.jl")
 
 function phaseFieldCrystal(imagePath,lX,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,nBlasThreads)
 

@@ -7,7 +7,7 @@
 #
 # Function to define necessary matrices and set initial conditions for order parameter and mobility fields
 
-module InitialConditions
+# module InitialConditions
 
 # Import Julia packages
 using GaussianRandomFields
@@ -46,6 +46,6 @@ return u0,mat1,mat2,h
 
 end
 
-export initialConditions
+# export initialConditions
 
-end
+# end
