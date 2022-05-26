@@ -1,3 +1,6 @@
+using DrWatson
+@quickactivate
+
 using Images
 using ImageBinarization
 using FileIO
@@ -16,11 +19,21 @@ function get_random_color(seed)
     rand(RGB{N0f8})
 end
 
+function maskColour(i,seg)
+    if seg.segment_pixel_count[i]==maximum(values(seg.segment_pixel_count))
+        return RGB{}(0,0,0)
+    else
+        return RGB{}(1,1,1)
+    end
+end
+
 fileName = "data/exp_raw/Cropped1_mmp13ko-3wiew_4800X_hui_0002.png"
 
 image = load(fileName)
 
 grayImage = Gray.(image)
+
+distance = 2.0
 
 filteredImage  = imfilter(Gray.(image),Kernel.gaussian(distance))
 

@@ -1,3 +1,6 @@
+using DrWatson
+@quickactivate
+
 using Images
 using ImageBinarization
 using FileIO
@@ -8,7 +11,7 @@ using ImageSegmentation
 using Random
 
 #imagePath = "$(homedir())/Dropbox (The University of Manchester)/EM-images/mmp13ko3view/mmp13ko-3wiew_4800X_hui_0002.tif";
-imagePath = "$(homedir())/Postdoc/Code/PhaseFieldCrystal/data/exp_raw/mmp13ko-3wiew_4800X_hui_0002.png";
+imagePath = "$(datadir())/exp_raw/mmp13ko-3wiew_4800X_hui_0002.png";
 
 image = load(imagePath)
 
@@ -45,6 +48,6 @@ binarizeFunNames = ["Intermodes()",
 
 for (n,fun) in enumerate(binarizeFuns)
     image2 = binarize(Gray.(image),fun)
-    saveName = "$(homedir())/Postdoc/Code/PhaseFieldCrystal/data/exp_pro/binarizeFuns/$(binarizeFunNames[n]).png"
+    saveName = "$(datadir())/exp_pro/binarizeFuns/$(binarizeFunNames[n]).png"
     save(saveName,image2)
 end
