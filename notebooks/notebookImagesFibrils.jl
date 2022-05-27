@@ -11,7 +11,7 @@ using ImageSegmentation
 using Random
 using Base.Filesystem
 using ImageSmooth
-
+using GeometryBasics
 
 
 function get_random_color(seed)
@@ -21,9 +21,9 @@ end
 
 function maskColour(i,seg)
     if seg.segment_pixel_count[i]==maximum(values(seg.segment_pixel_count))
-        return RGB{}(0,0,0)
+        return Gray{}(0)
     else
-        return RGB{}(1,1,1)
+        return Gray{}(1)
     end
 end
 
@@ -33,18 +33,59 @@ image = load(fileName)
 
 grayImage = Gray.(image)
 
-distance = 2.0
+distance = 1.0
 
 filteredImage  = imfilter(Gray.(image),Kernel.gaussian(distance))
 
-binarizedImage = binarize(grayImage,Otsu())
+binarizedImage = binarize(filteredImage,Otsu())
 
-seg = fast_scanning(binarizedImage, 0.1)
+# closedImage = closing(binarizedImage)
 
-biggestSegment = sort(collect(seg.segment_pixel_count), by=x->x[2])[end][1]
+doubleDilate = dilate(dilate(dilate(binarizedImage)))
 
-seg2 = prune_segments(seg, i->(segment_pixel_count(seg,i)>1200), (i,j)->(biggestSegment))
-seg3 = prune_segments(seg2, i->(segment_pixel_count(seg2,i)<500), (i,j)->(biggestSegment))
-segmentedImage = map(i->maskColour(i,seg), labels_map(seg))
-prunedImage1 = map(i->maskColour(i,seg2), labels_map(seg2))
+doubleErodeDilated = erode(erode(doubleDilate))
+
+# mgImage = morpholaplace(binarizedImage)
+
+seg = fast_scanning(doubleDilate, 0.1)
+
+# biggestSegment = sort(collect(seg.segment_pixel_count), by=x->x[2])[end][1]
+# diff_fun(i,neighbour) = -segment_pixel_count(seg,neighbour)
+
+seg2 = prune_segments(seg, i->(segment_pixel_count(seg,i)>1000), (i,j)->(-segment_pixel_count(seg,j)))
+seg3 = prune_segments(seg2, i->(segment_pixel_count(seg2,i)<100), (i,j)->(-segment_pixel_count(seg2,j)))
+# segmentedImage = map(i->get_random_color(i), labels_map(seg))
+# prunedImage1 = map(i->maskColour(i,seg2), labels_map(seg2))
 prunedImage2 = map(i->maskColour(i,seg3), labels_map(seg3))
+
+
+
+# segmentLocations = Dict(seg3.segment_labels .=> fill(Tuple[],length(seg3.segment_labels)))
+# for i=1:size(prunedImage2)[1]
+#     for j=1:size(prunedImage2)[2]
+#         segmentLocations[seg3.image_indexmap[i,j]] = push!(segmentLocations[seg3.image_indexmap[i,j]],(i,j))
+#         # display(seg3.image_indexmap[i,j])
+#     end
+# end
+
+centroidLocations = Point2f[]
+for k in seg3.segment_labels
+    pixels = zeros(2)
+    count = 0
+    for i=1:size(prunedImage2)[1]
+        for j=1:size(prunedImage2)[2]
+            if seg3.image_indexmap[i,j] == k
+                pixels .+= [j,-i]
+                count += 1
+            end
+        end
+    end
+    if count<1000
+        push!(centroidLocations,Point2f(pixels./count))
+    end
+end
+
+fig = Figure(); ax = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
+scatter!(ax,centroidLocations)
+
+display(fig)
