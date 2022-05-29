@@ -12,7 +12,7 @@ using Random
 using Base.Filesystem
 using ImageSmooth
 using GeometryBasics
-using CairoMakie
+
 
 function get_random_color(seed)
     Random.seed!(seed)
@@ -39,30 +39,37 @@ filteredImage  = imfilter(Gray.(image),Kernel.gaussian(distance))
 
 binarizedImage = binarize(filteredImage,Otsu())
 
-# closedImage = closing(binarizedImage)
-
 doubleDilate = dilate(dilate(dilate(binarizedImage)))
 
 doubleErodeDilated = erode(erode(doubleDilate))
 
-# mgImage = morpholaplace(binarizedImage)
+seg = fast_scanning(doubleErodeDilated, 0.01)
+# seg = felzenszwalb(image, 300,100)
 
-# seg = felzenszwalb(doubleDilate, 300,100)
-seg = fast_scanning(doubleDilate, 0.01)
+seg4 = prune_segments(seg, i->(segment_pixel_count(seg,i)<1000), (i,j)->(segment_pixel_count(seg,j)))
+vals = [seg4.segment_pixel_count[i] for i in keys(seg4.segment_pixel_count)]
+segmentLabelsOrderedBySize = [i for i in keys(seg4.segment_pixel_count)]
+segmentLabelsOrderedBySize .= segmentLabelsOrderedBySize[sortperm(vals)]
+seg5 = prune_segments(seg4, i->(segment_pixel_count(seg4,i)<segment_pixel_count(seg4,segmentLabelsOrderedBySize[end-1])), (i,j)->(-segment_pixel_count(seg4,j)))
+segmentedImage = map(i->get_random_color(i), labels_map(seg5))
+sorted = sort(collect(seg5.segment_pixel_count), by=x->x[2])
 
-# biggestSegment = sort(collect(seg.segment_pixel_count), by=x->x[2])[end][1]
-# diff_fun(i,neighbour) = -segment_pixel_count(seg,neighbour)
+newGrayImage = doubleDilate
+for i=1:size(image)[1]
+    for j=1:size(image)[2]
+        if seg5.image_indexmap[i,j] == sorted[1][1]
+            newGrayImage[i,j] = Gray(1)
+        end
+    end
+end
+# display(newGrayImage)
 
+seg = fast_scanning(newGrayImage, 0.1)
 seg2 = prune_segments(seg, i->(segment_pixel_count(seg,i)>1000), (i,j)->(-segment_pixel_count(seg,j)))
 seg3 = prune_segments(seg2, i->(segment_pixel_count(seg2,i)<100), (i,j)->(-segment_pixel_count(seg2,j)))
-segmentedImage = map(i->Gray(values(seg.segment_pixel_count[i])/maximum(values(seg.segment_pixel_count))), labels_map(seg))
+# segmentedImage = map(i->get_random_color(i), labels_map(seg))
 # prunedImage1 = map(i->maskColour(i,seg2), labels_map(seg2))
 prunedImage2 = map(i->maskColour(i,seg3), labels_map(seg3))
-
-
-seg4 = prune_segments(seg, i->(segment_pixel_count(seg,i)<1000), (i,j)->(-segment_pixel_count(seg,j)))
-seg5 = prune_segments(seg, i->(segment_pixel_count(seg,i)<39000), (i,j)->(-segment_pixel_count(seg,j)))
-segmentedImage5 = map(i->get_random_color(i), labels_map(seg5))
 
 
 # segmentLocations = Dict(seg3.segment_labels .=> fill(Tuple[],length(seg3.segment_labels)))
@@ -73,7 +80,9 @@ segmentedImage5 = map(i->get_random_color(i), labels_map(seg5))
 #     end
 # end
 
-centroidLocations = Point2f[]
+# using VoronoiDelaunay
+
+centroidLocations = Point2[]
 for k in seg3.segment_labels
     pixels = zeros(2)
     count = 0
@@ -86,11 +95,29 @@ for k in seg3.segment_labels
         end
     end
     if count<1000
-        push!(centroidLocations,Point2f(pixels./count))
+        push!(centroidLocations,Point2(pixels./count))
     end
 end
 
-fig = CairoMakie.Figure(); ax = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
-scatter!(ax,centroidLocations)
+# fig = Figure(); ax = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
+# scatter!(ax,centroidLocations)
 
+# display(fig)
+
+maxX = maximum([x[1] for x in centroidLocations])
+minX = minimum([x[1] for x in centroidLocations])
+maxY = maximum([x[2] for x in centroidLocations])
+minY = minimum([x[2] for x in centroidLocations])
+
+maxRange = max(maxX-minX,maxY-minY)
+minPoint = Point2(minX,minY)
+
+shiftedCentroids = (centroidLocations.-minPoint)./maxRange
+shiftedCentroids .+= Point2([1.0,1.0])
+fig = Figure(); ax = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
+scatter!(ax,shiftedCentroids)
 display(fig)
+
+# using VoronoiDelaunay
+# tess = DelaunayTessellation()
+# push!(tess, shiftedCentroids)
