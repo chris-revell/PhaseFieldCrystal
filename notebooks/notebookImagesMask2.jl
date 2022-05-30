@@ -59,57 +59,9 @@ newGrayImage = doubleDilate
 for i=1:size(image)[1]
     for j=1:size(image)[2]
         if seg5.image_indexmap[i,j] == sorted[1][1]
+            newGrayImage[i,j] = Gray(0)
+        else
             newGrayImage[i,j] = Gray(1)
         end
     end
 end
-
-seg = fast_scanning(newGrayImage, 0.1)
-seg2 = prune_segments(seg, i->(segment_pixel_count(seg,i)>1000), (i,j)->(-segment_pixel_count(seg,j)))
-seg3 = prune_segments(seg2, i->(segment_pixel_count(seg2,i)<100), (i,j)->(-segment_pixel_count(seg2,j)))
-
-# segmentedImage = map(i->get_random_color(i), labels_map(seg))
-# prunedImage1 = map(i->maskColour(i,seg2), labels_map(seg2))
-# prunedImage2 = map(i->maskColour(i,seg3), labels_map(seg3))
-# segmentLocations = Dict(seg3.segment_labels .=> fill(Tuple[],length(seg3.segment_labels)))
-# for i=1:size(prunedImage2)[1]
-#     for j=1:size(prunedImage2)[2]
-#         segmentLocations[seg3.image_indexmap[i,j]] = push!(segmentLocations[seg3.image_indexmap[i,j]],(i,j))
-#         # display(seg3.image_indexmap[i,j])
-#     end
-# end
-
-
-centroidLocations = Point2[]
-for k in seg3.segment_labels
-    pixels = zeros(2)
-    count = 0
-    for i=1:size(prunedImage2)[1]
-        for j=1:size(prunedImage2)[2]
-            if seg3.image_indexmap[i,j] == k
-                pixels .+= [j,-i]
-                count += 1
-            end
-        end
-    end
-    if count<1000
-        push!(centroidLocations,Point2(pixels./count))
-    end
-end
-
-fig = Figure(); ax = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
-
-scatter!(ax,centroidLocations)
-
-xs = [x[1] for x in centroidLocations]
-ys = [x[2] for x in centroidLocations]
-n, tri = delaunay(xs,ys)
-
-for i=1:n
-    poly!(ax,centroidLocations[tri[i,:]],color=(:white,0.0),strokecolor=(:black,1.0),strokewidth=1.0)
-end
-
-display(fig)
-
-using LazySets
-hull = convex_hull(Vector.(centroidLocations))
