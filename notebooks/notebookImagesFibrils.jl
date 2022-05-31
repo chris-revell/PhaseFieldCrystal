@@ -23,9 +23,9 @@ end
 
 function maskColour(i,seg)
     if seg.segment_pixel_count[i]==maximum(values(seg.segment_pixel_count))
-        return Gray{}(0)
-    else
         return Gray{}(1)
+    else
+        return Gray{}(0)
     end
 end
 
@@ -43,7 +43,7 @@ binarizedImage = binarize(filteredImage,Otsu())
 
 doubleDilate = dilate(dilate(dilate(binarizedImage)))
 
-# doubleErodeDilated = erode(erode(doubleDilate))
+doubleErodeDilated = erode(erode(doubleDilate))
 
 seg = fast_scanning(doubleErodeDilated, 0.01)
 
@@ -52,7 +52,7 @@ vals = [seg4.segment_pixel_count[i] for i in keys(seg4.segment_pixel_count)]
 segmentLabelsOrderedBySize = [i for i in keys(seg4.segment_pixel_count)]
 segmentLabelsOrderedBySize .= segmentLabelsOrderedBySize[sortperm(vals)]
 seg5 = prune_segments(seg4, i->(segment_pixel_count(seg4,i)<segment_pixel_count(seg4,segmentLabelsOrderedBySize[end-1])), (i,j)->(-segment_pixel_count(seg4,j)))
-segmentedImage = map(i->get_random_color(i), labels_map(seg5))
+segmentedImage = map(i->maskColour(i,seg5), labels_map(seg5))
 sorted = sort(collect(seg5.segment_pixel_count), by=x->x[2])
 
 newGrayImage = doubleDilate
@@ -70,7 +70,7 @@ seg3 = prune_segments(seg2, i->(segment_pixel_count(seg2,i)<100), (i,j)->(-segme
 
 # segmentedImage = map(i->get_random_color(i), labels_map(seg))
 # prunedImage1 = map(i->maskColour(i,seg2), labels_map(seg2))
-# prunedImage2 = map(i->maskColour(i,seg3), labels_map(seg3))
+prunedImage2 = map(i->maskColour(i,seg3), labels_map(seg3))
 # segmentLocations = Dict(seg3.segment_labels .=> fill(Tuple[],length(seg3.segment_labels)))
 # for i=1:size(prunedImage2)[1]
 #     for j=1:size(prunedImage2)[2]
@@ -97,7 +97,10 @@ for k in seg3.segment_labels
     end
 end
 
-fig = Figure(); ax = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
+fig = Figure()
+ax = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
+hidedecorations!(ax)
+hidespines!(ax)
 
 scatter!(ax,centroidLocations)
 
@@ -109,7 +112,19 @@ for i=1:n
     poly!(ax,centroidLocations[tri[i,:]],color=(:white,0.0),strokecolor=(:black,1.0),strokewidth=1.0)
 end
 
-display(fig)
+nNeighbours = [length(findall(x->x==i,tri)) for i=1:length(centroidLocations)]
 
-using LazySets
-hull = convex_hull(Vector.(centroidLocations))
+
+ax2 = CairoMakie.Axis(fig[2,1],aspect=DataAspect())
+hidedecorations!(ax2)
+hidespines!(ax2)
+
+scatter!(ax2,centroidLocations,markersize=nNeighbours)
+
+colsize!(fig.layout,1,Aspect(1,1))
+rowgap!(fig.layout,Relative(0.0))
+resize_to_layout!(fig)
+display(fig)
+#
+# using LazySets
+# hull = convex_hull(Vector.(centroidLocations))
