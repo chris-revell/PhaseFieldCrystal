@@ -98,11 +98,11 @@ for k in seg3.segment_labels
 end
 
 fig = Figure()
-ax = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
-hidedecorations!(ax)
-hidespines!(ax)
-
-scatter!(ax,centroidLocations)
+# ax = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
+# hidedecorations!(ax)
+# hidespines!(ax)
+#
+# scatter!(ax,centroidLocations)
 
 xs = [x[1] for x in centroidLocations]
 ys = [x[2] for x in centroidLocations]
@@ -115,16 +115,28 @@ end
 nNeighbours = [length(findall(x->x==i,tri)) for i=1:length(centroidLocations)]
 
 
-ax2 = CairoMakie.Axis(fig[2,1],aspect=DataAspect())
+ax2 = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
 hidedecorations!(ax2)
 hidespines!(ax2)
 
-scatter!(ax2,centroidLocations,markersize=nNeighbours)
+# colours=([RGBA((x-minimum(nNeighbours))/(maximum(nNeighbours)-minimum(nNeighbours)),0,0,1) for x in nNeighbours])
+scatter!(ax2,centroidLocations,color=nNeighbours,colormap=:inferno)
+
+# ax3 = CairoMakie.Axis(fig[3,1],aspect=DataAspect())
+# filteredCentroids = [x for (i,x) in enumerate(centroidLocations) if nNeighbours[i]!=6.0]
+# scatter!(ax3,filteredCentroids)
+# hidedecorations!(ax3)
+# hidespines!(ax3)
+
+ax4 = CairoMakie.Axis(fig[2,1],aspect=DataAspect())
+hidedecorations!(ax4)
+hidespines!(ax4)
+image!(ax4,rotr90(grayImage))
 
 colsize!(fig.layout,1,Aspect(1,1))
 rowgap!(fig.layout,Relative(0.0))
 resize_to_layout!(fig)
 display(fig)
 #
-# using LazySets
-# hull = convex_hull(Vector.(centroidLocations))
+using LazySets
+hull = convex_hull(Vector.(centroidLocations))
