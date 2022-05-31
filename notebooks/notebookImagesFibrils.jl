@@ -80,7 +80,7 @@ prunedImage2 = map(i->maskColour(i,seg3), labels_map(seg3))
 # end
 
 
-centroidLocations = Point2[]
+centroidLocations = Point2f[]
 for k in seg3.segment_labels
     pixels = zeros(2)
     count = 0
@@ -93,29 +93,33 @@ for k in seg3.segment_labels
         end
     end
     if count<1000
-        push!(centroidLocations,Point2(pixels./count))
+        push!(centroidLocations,Point2f(pixels./count))
     end
 end
 
-fig = Figure()
-# ax = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
-# hidedecorations!(ax)
-# hidespines!(ax)
-#
-# scatter!(ax,centroidLocations)
+set_theme!(figure_padding=1, backgroundcolor=(:white,1.0), font="Helvetica",fontsize=48)
+fig = Figure(resolution=(1000,1000))
+ax1 = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
+hidedecorations!(ax1)
+hidespines!(ax1)
+
+scatter!(ax1,centroidLocations)
 
 xs = [x[1] for x in centroidLocations]
 ys = [x[2] for x in centroidLocations]
 n, tri = delaunay(xs,ys)
 
+areas = abs.(area.([ centroidLocations[tri[i,:]] for i=1:n]))
+lims=(minimum(areas),maximum(areas))
+
 for i=1:n
-    poly!(ax,centroidLocations[tri[i,:]],color=(:white,0.0),strokecolor=(:black,1.0),strokewidth=1.0)
+    poly!(ax1,centroidLocations[tri[i,:]],color=[areas[i]],colorrange=lims,colormap=:inferno,strokecolor=(:black,1.0),strokewidth=1.0)
 end
 
 nNeighbours = [length(findall(x->x==i,tri)) for i=1:length(centroidLocations)]
 
 
-ax2 = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
+ax2 = CairoMakie.Axis(fig[2,1],aspect=DataAspect())
 hidedecorations!(ax2)
 hidespines!(ax2)
 
@@ -128,7 +132,7 @@ scatter!(ax2,centroidLocations,color=nNeighbours,colormap=:inferno)
 # hidedecorations!(ax3)
 # hidespines!(ax3)
 
-ax4 = CairoMakie.Axis(fig[2,1],aspect=DataAspect())
+ax4 = CairoMakie.Axis(fig[3,1],aspect=DataAspect())
 hidedecorations!(ax4)
 hidespines!(ax4)
 image!(ax4,rotr90(grayImage))
@@ -138,5 +142,5 @@ rowgap!(fig.layout,Relative(0.0))
 resize_to_layout!(fig)
 display(fig)
 #
-using LazySets
-hull = convex_hull(Vector.(centroidLocations))
+# using LazySets
+# hull = convex_hull(Vector.(centroidLocations))

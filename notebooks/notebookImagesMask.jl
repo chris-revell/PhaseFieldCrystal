@@ -43,7 +43,7 @@ segmentedImage = map(i->get_random_color(i), labels_map(seg))
 # saveName = "$(homedir())/Postdoc/Code/PhaseFieldCrystal/data/exp_pro/Segmented$(split(split(imagePath,"/")[end],".")[1]).png"
 # save(saveName,segmentedImage)
 
-seg2 = prune_segments(seg, i->(segment_pixel_count(seg,i)<10000), (i,j)->(-segment_pixel_count(seg,j)))
+seg2 = prune_segments(seg, i->(segment_pixel_count(seg,i)<30000), (i,j)->(-segment_pixel_count(seg,j)))
 
 # segmentedImage2 = map(i->get_random_color(i), labels_map(seg2))
 # saveName = "$(homedir())/Postdoc/Code/PhaseFieldCrystal/data/exp_pro/SegmentedPruned$(split(split(imagePath,"/")[end],".")[1]).png"
