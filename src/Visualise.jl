@@ -25,8 +25,8 @@ function visualise(sol, freeEnergies, params, path)
 
     fig1 = Figure()
     ga1 = fig1[1,1] = GridLayout()
-    ax1 = Axis(ga1[1,1],aspect=DataAspect())
-    heatmap!(ax1,uInternal,colorrange=(-1.0, 1.0),colormap=:viridis)
+    ax1 = CairoMakie.Axis(ga1[1,1],aspect=DataAspect())
+    heatmap!(ax1,uInternal,colorrange=(-1.0, 1.0),colormap=:bwr)
     #Colorbar(ga1[1, 2],colormap=:viridis,vertical=true)
     hidedecorations!(ax1)
     ax1.title = "t=0.0"
@@ -41,11 +41,18 @@ function visualise(sol, freeEnergies, params, path)
     end
 
     fig2 = Figure()
-    ax2 = Axis(fig2[1,1])
+    ax2 = CairoMakie.Axis(fig2[1,1])
     lines!(ax2,sol.t,freeEnergies)
     ax2.xlabel = "Time"
     ax2.ylabel = "Free Energy"
     save("$(path[1:end-5])_freeEnergyVsTime.png",fig2)
+
+    fig3 = Figure()
+    ax3 = CairoMakie.Axis(fig3[1,1])
+    heatmap!(ax1,transpose(reshape(sol.u[end],(nY,nX))),colorrange=(-1.0, 1.0),colormap=:bwr)
+    hidedecorations!(ax3)
+    hidespines!(ax3)
+    save("$(path[1:end-5])_finalState.png",fig3)
 
     return nothing
 
