@@ -6,7 +6,6 @@ using ImageBinarization
 using FileIO
 using ImageSegmentation
 using ImageTransformations
-using ImageView
 using ImageSegmentation
 using Random
 using Base.Filesystem
@@ -15,12 +14,13 @@ using CairoMakie
 using GR
 using GeometryBasics
 
-
+# Function to set random colour for each segment
 function get_random_color(seed)
     Random.seed!(seed)
     rand(RGB{N0f8})
 end
 
+# Function to set white for the largest segment and black for others
 function maskColour(i,seg)
     if seg.segment_pixel_count[i]==maximum(values(seg.segment_pixel_count))
         return Gray{}(1)
@@ -29,24 +29,26 @@ function maskColour(i,seg)
     end
 end
 
+# Import image file and convert to grayscale
 fileName = "data/exp_raw/Cropped1_mmp13ko-3wiew_4800X_hui_0002.png"
-
 image = load(fileName)
-
 grayImage = Gray.(image)
 
+# Apply Gaussian filter
 distance = 1.0
-
 filteredImage  = imfilter(grayImage,Kernel.gaussian(distance))
 
+# Binarise with Otsu algorithm
 binarizedImage = binarize(filteredImage,Otsu())
 
+# Erode and dilate
 doubleDilate = dilate(dilate(dilate(binarizedImage)))
-
 doubleErodeDilated = erode(erode(doubleDilate))
 
+# Initial segmentation of eroded and dilated image
 seg = fast_scanning(doubleErodeDilated, 0.01)
 
+# Prune segments below
 seg4 = prune_segments(seg, i->(segment_pixel_count(seg,i)<1000), (i,j)->(segment_pixel_count(seg,j)))
 vals = [seg4.segment_pixel_count[i] for i in keys(seg4.segment_pixel_count)]
 segmentLabelsOrderedBySize = [i for i in keys(seg4.segment_pixel_count)]
@@ -68,17 +70,7 @@ seg = fast_scanning(newGrayImage, 0.1)
 seg2 = prune_segments(seg, i->(segment_pixel_count(seg,i)>1000), (i,j)->(-segment_pixel_count(seg,j)))
 seg3 = prune_segments(seg2, i->(segment_pixel_count(seg2,i)<100), (i,j)->(-segment_pixel_count(seg2,j)))
 
-# segmentedImage = map(i->get_random_color(i), labels_map(seg))
-# prunedImage1 = map(i->maskColour(i,seg2), labels_map(seg2))
 prunedImage2 = map(i->maskColour(i,seg3), labels_map(seg3))
-# segmentLocations = Dict(seg3.segment_labels .=> fill(Tuple[],length(seg3.segment_labels)))
-# for i=1:size(prunedImage2)[1]
-#     for j=1:size(prunedImage2)[2]
-#         segmentLocations[seg3.image_indexmap[i,j]] = push!(segmentLocations[seg3.image_indexmap[i,j]],(i,j))
-#         # display(seg3.image_indexmap[i,j])
-#     end
-# end
-
 
 centroidLocations = Point2f[]
 for k in seg3.segment_labels
@@ -97,50 +89,11 @@ for k in seg3.segment_labels
     end
 end
 
-set_theme!(figure_padding=1, backgroundcolor=(:white,1.0), font="Helvetica",fontsize=48)
-fig = Figure(resolution=(1000,1000))
-ax1 = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
-hidedecorations!(ax1)
-hidespines!(ax1)
-
-scatter!(ax1,centroidLocations)
-
 xs = [x[1] for x in centroidLocations]
 ys = [x[2] for x in centroidLocations]
 n, tri = delaunay(xs,ys)
-
-areas = abs.(area.([ centroidLocations[tri[i,:]] for i=1:n]))
-lims=(minimum(areas),maximum(areas))
-
-for i=1:n
-    poly!(ax1,centroidLocations[tri[i,:]],color=[areas[i]],colorrange=lims,colormap=:inferno,strokecolor=(:black,1.0),strokewidth=1.0)
-end
-
 nNeighbours = [length(findall(x->x==i,tri)) for i=1:length(centroidLocations)]
 
-
-ax2 = CairoMakie.Axis(fig[2,1],aspect=DataAspect())
-hidedecorations!(ax2)
-hidespines!(ax2)
-
-# colours=([RGBA((x-minimum(nNeighbours))/(maximum(nNeighbours)-minimum(nNeighbours)),0,0,1) for x in nNeighbours])
-scatter!(ax2,centroidLocations,color=nNeighbours,colormap=:inferno)
-
-# ax3 = CairoMakie.Axis(fig[3,1],aspect=DataAspect())
-# filteredCentroids = [x for (i,x) in enumerate(centroidLocations) if nNeighbours[i]!=6.0]
-# scatter!(ax3,filteredCentroids)
-# hidedecorations!(ax3)
-# hidespines!(ax3)
-
-ax4 = CairoMakie.Axis(fig[3,1],aspect=DataAspect())
-hidedecorations!(ax4)
-hidespines!(ax4)
-image!(ax4,rotr90(grayImage))
-
-colsize!(fig.layout,1,Aspect(1,1))
-rowgap!(fig.layout,Relative(0.0))
-resize_to_layout!(fig)
-display(fig)
-#
-# using LazySets
-# hull = convex_hull(Vector.(centroidLocations))
+nVerts = length(nNeighbours)
+nEdges = sum(nNeighbours)÷2
+nCells = size(tri)[1]

@@ -6,7 +6,6 @@ using ImageBinarization
 using FileIO
 using ImageSegmentation
 using ImageTransformations
-using ImageView
 using ImageSegmentation
 using Random
 using Base.Filesystem
@@ -47,11 +46,35 @@ doubleErodeDilated = erode(erode(doubleDilate))
 
 seg = fast_scanning(doubleErodeDilated, 0.01)
 
+segmentedImage = map(i->get_random_color(i), labels_map(seg))
+
 seg4 = prune_segments(seg, i->(segment_pixel_count(seg,i)<1000), (i,j)->(segment_pixel_count(seg,j)))
 vals = [seg4.segment_pixel_count[i] for i in keys(seg4.segment_pixel_count)]
 segmentLabelsOrderedBySize = [i for i in keys(seg4.segment_pixel_count)]
 segmentLabelsOrderedBySize .= segmentLabelsOrderedBySize[sortperm(vals)]
 seg5 = prune_segments(seg4, i->(segment_pixel_count(seg4,i)<segment_pixel_count(seg4,segmentLabelsOrderedBySize[end-1])), (i,j)->(-segment_pixel_count(seg4,j)))
-segmentedImage = map(i->maskColour(i,seg5), labels_map(seg5))
+prunedImage = map(i->maskColour(i,seg5), labels_map(seg5))
 
-save()
+save(datadir("exp_pro","mask_$(Filesystem.splitpath(fileName)[end])"),prunedImage) #Need to resize too
+
+# set_theme!(figure_padding=1, backgroundcolor=(:white,1.0), font="Helvetica",fontsize=48)
+# fig = Figure(resolution=(1000,1000))
+# axImage = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
+# hidedecorations!(axImage)
+# hidespines!(axImage)
+# image!(axImage,rotr90(image))
+# axSegmented = CairoMakie.Axis(fig[1,2],aspect=DataAspect())
+# hidedecorations!(axSegmented)
+# hidespines!(axSegmented)
+# image!(axSegmented,rotr90(segmentedImage))
+# axPruned = CairoMakie.Axis(fig[1,3],aspect=DataAspect())
+# hidedecorations!(axPruned)
+# hidespines!(axPruned)
+# image!(axPruned,rotr90(prunedImage))
+# Label(fig[1,1,Bottom()],L"a",textsize = 48)
+# Label(fig[1,2,Bottom()],L"b",textsize = 48)
+# Label(fig[1,3,Bottom()],L"c",textsize = 48)
+# rowsize!(fig.layout,1,Aspect(1,1))
+# resize_to_layout!(fig)
+# display(fig)
+# save("maskSegmentation.png",fig)
