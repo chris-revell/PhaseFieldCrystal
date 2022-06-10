@@ -13,6 +13,7 @@ using ImageSmooth
 using CairoMakie
 using GR
 using GeometryBasics
+using SparseArrays
 
 # Function to set random colour for each segment
 function get_random_color(seed)
@@ -94,6 +95,30 @@ ys = [x[2] for x in centroidLocations]
 n, tri = delaunay(xs,ys)
 nNeighbours = [length(findall(x->x==i,tri)) for i=1:length(centroidLocations)]
 
-nVerts = length(nNeighbours)
-nEdges = sum(nNeighbours)÷2
-nCells = size(tri)[1]
+pairs = Vector{Int64}[]
+# lengths = Float64[]
+triEdges = [[1,2],[1,3],[2,3]]
+for t=1:size(tri)[1]
+    for e in triEdges
+        if sort(tri[t,e]) ∉ pairs
+            push!(pairs,sort(tri[t,e]))
+            # push!(lengths,norm(centroidLocations[tri[t,e][1]].-centroidLocations[tri[t,e][2]]))
+        end
+    end
+end
+# lengths./=size(image)[2]
+
+
+nVerts = length(centroidLocations)
+nEdges = length(pairs)
+nFaces = size(tri)[1]
+
+A = spzeros(Int64,nEdges,nVerts)
+B = spzeros(Int64,nFaces,nEdges)
+
+for (i,p) in enumerate(pairs)
+    display(i)
+    display(p)
+    A[i,p[1]] = -1
+    A[i,p[2]] = 1
+end

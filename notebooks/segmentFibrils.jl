@@ -88,20 +88,20 @@ for k in seg3.segment_labels
         end
     end
     if count<1000
-        push!(centroidLocations,Point2(pixels./count))
+        push!(centroidLocations,Point2(pixels./count...))
     end
 end
+centroidLocations .+= Point2(0.0,size(image)[1]*1.0)
 xs = [x[1] for x in centroidLocations]
 ys = [x[2] for x in centroidLocations]
 scalingFactor = maximum([xs ys])/(1-3eps(Float64))
-shiftedCentroidLocations = centroidLocations .+ Point2(0.0,size(image)[1]*1.0)
-shiftedCentroidLocations ./= scalingFactor
+shiftedCentroidLocations = centroidLocations./scalingFactor
 
 n, tri = delaunay(xs,ys)
-nNeighbours = [length(findall(x->x==i,tri)) for i=1:length(centroidLocations)]
+nNeighbours = [length(findall(x->x==i,tri)) for i=1:length(shiftedCentroidLocations)]
 
 using ConcaveHull
-hull = concave_hull(shiftedCentroidLocations)
+hull = concave_hull(shiftedCentroidLocations,3)
 hullInds = sort([findall(x->Point2(x...)==v,shiftedCentroidLocations)[1] for v in hull.vertices])
 
 internalCentroids = copy(shiftedCentroidLocations)
@@ -119,7 +119,7 @@ for t=1:size(tri)[1]
     end
 end
 lengths./=size(image)[2]
-deleteat!(lengths,hullInds)
+# deleteat!(lengths,hullInds)
 
 using VoronoiCells
 rect = Rectangle(Point2(0, 0), Point2(1, 1))
@@ -152,10 +152,8 @@ hidedecorations!(axNeighbour)
 nNeighbours = [length(findall(x->x==i,tri)) for i=1:length(shiftedCentroidLocations)]
 xlims!(axNeighbour,0,size(image)[2]/scalingFactor)
 ylims!(axNeighbour,0,size(image)[1]/scalingFactor)
-# lims = (-maximum(abs.(nNeighbours)),maximum(abs.(nNeighbours)))
 coloursDict = Dict(2=>:black, 3=>:violet, 4=>:indigo, 5=>:blue, 6=>:white, 7=>:red, 8=>:orange)
 colours = [coloursDict[x] for x in nNeighbours]
-# scatter!(axNeighbour,shiftedCentroidLocations,color=colours,markersize=10)
 poly!(axNeighbour,hull.vertices,color=(:black,0.5))
 for (i,c) in enumerate(tess.Cells)
     if i ∉ hullInds

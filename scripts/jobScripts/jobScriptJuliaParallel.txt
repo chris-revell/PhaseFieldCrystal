@@ -1,7 +1,7 @@
 #!/bin/bash --login
 #$ -cwd               # Application will run from current working directory
 #$ -N juliaPFC        # Name given to batch job (optional)
-#$ -pe smp.pe 12      # Request 12 cores using SMP parallel environment
+#$ -pe smp.pe 16      # Request 16 cores using SMP parallel environment
 #$ -m bea
 #$ -M christopher.revell@manchester.ac.uk
 
