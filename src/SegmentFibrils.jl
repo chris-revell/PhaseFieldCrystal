@@ -32,16 +32,6 @@ function maskColour(i,seg)
     end
 end
 
-# fileName = "data/exp_raw/Cropped1_mmp13ko-3wiew_4800X_hui_0002.png"
-# distance = 1.0
-# nDilate = 3
-# nErode = 0
-# thresh1 = 1000
-# thresh2 = 1000
-# thresh3 = 100
-# displayFlag = 1
-# saveFlag = 0
-
 function segmentFibrils(fileName,distance,nDilate,nErode,thresh1,thresh2,thresh3,displayFlag,saveFlag)
 
     # Import image file and convert to grayscale
