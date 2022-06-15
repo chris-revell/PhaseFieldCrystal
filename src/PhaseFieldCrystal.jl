@@ -5,6 +5,24 @@
 #  Created by Christopher Revell on 22/03/2021.
 #
 #
+# Input parameters
+# imagePath     Location in filesystem of image to use as solution domain
+# lX            Spatial dimensions of domain
+# r             Parameter in Swift-Hohenberg equation     (eg. = 0.5  )
+# ϕ0            Mean order parameter across domain        (eg. = -0.37)
+# a             Parameter in splitting scheme             (eg. = 2.0  )
+# δt            Time step for implicit semi-linear scheme (eg. = 0.01 )
+# tMax          Run time of simulation                    (eg. = 20.0 )
+# loggerFlag    Display progress bar in REPL when =1; Always set to 0 on HPC
+# outputFlag    Flag to control whether data are saved to file (=1 or 0)
+# visualiseFlag Flag to control whether data are plotted  (=1 or 0)
+# nBlasThreads  Number of threads to allow for BLAS operations
+
+# Derived parameters
+# imageMask     Binarised array of 0s and 1s representing inter-cell spaces and cell regions in image
+# nY            Number of grid points in x dimension (horizontal in image; 2nd matrix dimension)
+# nX            Number of grid points in y dimension (vertical in image; 1st matrix dimension)
+# h             Spatial step between grid points
 
 module PhaseFieldCrystal
 
@@ -16,39 +34,19 @@ using TerminalLoggers: TerminalLogger
 using SparseArrays
 using DrWatson
 using Dates
-
-arrayLoop(a,nGrid) = (nGrid+a-1)%(nGrid)+1
+using FromFile
 
 # Import local files
-include("Model.jl")
-include("CreateLaplacian.jl")
-include("CreateDivAlphaGrad.jl")
-include("InitialConditions.jl")
-include("Visualise.jl")
-include("FreeEnergy.jl")
-include("ImportImage.jl")
-include("SetMobility.jl")
+@from "Model.jl" using Model
+@from "CreateLaplacian.jl" using CreateLaplacian
+@from "CreateDivAlphaGrad.jl" using CreateDivAlphaGrad
+@from "InitialConditions.jl" using InitialConditions
+@from "Visualise.jl" using Visualise
+@from "FreeEnergy.jl" using FreeEnergy
+@from "ImportImage.jl" using ImportImage
+@from "SetMobility.jl" using SetMobility
 
 function phaseFieldCrystal(imagePath,lX,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,nBlasThreads)
-
-    # Input parameters
-    # imagePath     Location in filesystem of image to use as solution domain
-    # lX            Spatial dimensions of domain
-    # r             Parameter in Swift-Hohenberg equation     (eg. = 0.5  )
-    # ϕ0            Mean order parameter across domain        (eg. = -0.37)
-    # a             Parameter in splitting scheme             (eg. = 2.0  )
-    # δt            Time step for implicit semi-linear scheme (eg. = 0.01 )
-    # tMax          Run time of simulation                    (eg. = 20.0 )
-    # loggerFlag    Display progress bar in REPL when =1; Always set to 0 on HPC
-    # outputFlag    Flag to control whether data are saved to file (=1 or 0)
-    # visualiseFlag Flag to control whether data are plotted  (=1 or 0)
-    # nBlasThreads  Number of threads to allow for BLAS operations
-
-    # Derived parameters
-    # imageMask     Binarised array of 0s and 1s representing inter-cell spaces and cell regions in image
-    # nY            Number of grid points in x dimension (horizontal in image; 2nd matrix dimension)
-    # nX            Number of grid points in y dimension (vertical in image; 1st matrix dimension)
-    # h             Spatial step between grid points
 
     BLAS.set_num_threads(nBlasThreads)
 
@@ -71,6 +69,12 @@ function phaseFieldCrystal(imagePath,lX,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,v
 
     # Start progress logger if loggerFlag argument is 1
     loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
+
+    # tStopsArray = Float64[]
+    # push!(tStopsArray,0.0)
+    # tTmp = 0.0
+    # while tTmp<tMax
+
 
     # Define split ODE problem
     prob = SplitODEProblem(DiffEqArrayOperator(linearOperator),splitNonlinearPart!,u0,(0.0,tMax),p)

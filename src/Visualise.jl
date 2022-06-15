@@ -7,7 +7,7 @@
 #
 # Function to visualise results as animated gif; second function to import existing results from file
 
-# module Visualise
+module Visualise
 
 # Import Julia packages
 using CairoMakie
@@ -72,6 +72,6 @@ function importData(path)
 
 end
 
-# export visualise, importData
+export visualise, importData
 
-# end
+end

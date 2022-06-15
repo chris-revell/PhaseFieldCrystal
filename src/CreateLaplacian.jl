@@ -7,11 +7,13 @@
 #
 # In place Laplacian function
 
-# module CreateLaplacian
+module CreateLaplacian
 
 # Import Julia packages
 using LinearAlgebra
 using SparseArrays
+
+arrayLoop(a,nGrid) = (nGrid+a-1)%(nGrid)+1
 
 function createLaplacian(nX, nY, h)
 
@@ -39,6 +41,6 @@ function createLaplacian(nX, nY, h)
 
 end
 
-# export createLaplacian
+export createLaplacian
 
-# end
+end

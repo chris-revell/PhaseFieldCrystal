@@ -1,8 +1,5 @@
 module SegmentFibrils
 
-using DrWatson
-@quickactivate
-
 using Images
 using ImageBinarization
 using FileIO
