@@ -12,8 +12,9 @@ module CreateLaplacian
 # Import Julia packages
 using LinearAlgebra
 using SparseArrays
+using FromFile
 
-arrayLoop(a,nGrid) = (nGrid+a-1)%(nGrid)+1
+@from "ArrayLoop.jl" using ArrayLoop
 
 function createLaplacian(nX, nY, h)
 
