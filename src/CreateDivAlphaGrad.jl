@@ -12,7 +12,7 @@ module CreateDivAlphaGrad
 # Import Julia packages
 using LinearAlgebra
 using SparseArrays
-using FromFile
+using FromFile: @from
 
 @from "ArrayLoop.jl" using ArrayLoop
 
