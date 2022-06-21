@@ -78,7 +78,7 @@ function phaseFieldCrystal(imagePath,lX,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,v
         push!(tStopsArray,tTmp)
     end
     while tTmp<tMax
-        tTmp += 10.0*δt
+        tTmp += 2.0*δt
         push!(tStopsArray,tTmp)
     end
 
