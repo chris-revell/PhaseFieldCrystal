@@ -46,7 +46,7 @@ using FromFile: @from
 @from "ImportImage.jl" using ImportImage
 @from "SetMobility.jl" using SetMobility
 
-function phaseFieldCrystal(imagePath,lX,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,nBlasThreads)
+function phaseFieldCrystal(imagePath,lX,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,nBlasThreads;subFolder="")
 
     BLAS.set_num_threads(nBlasThreads)
 
@@ -95,12 +95,12 @@ function phaseFieldCrystal(imagePath,lX,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,v
         # Create filename from parameters; prefix filename with current data and time
         fileName = savename(Dates.format(Dates.now(),"yy-mm-dd-HH-MM-SS"),params,"jld2",connector="",ignores=["a"])
         # Save variables and results to file
-        safesave("$(datadir())/sims/$fileName",@strdict sol freeEnergies params)
+        safesave(datadir("sims",subFolder,fileName),@strdict sol freeEnergies params)
         # Plot results as animated gif and free energies as png
         if visualiseFlag==1
-            visualise(sol, freeEnergies, params,"$(datadir())/sims/$fileName")
+            visualise(sol, freeEnergies, params,datadir("sims",subFolder,fileName))
         end
-        @info "Saved data to $(datadir())/sims/$fileName"
+        @info "Saved data to $(datadir("sims",subFolder,fileName))"
     end
 
     return nothing
