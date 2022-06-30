@@ -6,10 +6,10 @@ using PhaseFieldCrystal
 imagePath     = "data/exp_pro/croppedMask.png"
 lX            = 200.0
 r             = 0.5
-ϕ0            = [-0.41,-0.42,-0.43,-0.44,-0.45,-0.46,-0.37]
+ϕ0            = [-0.401,-0.402,-0.403,-0.404,-0.405,-0.406,-0.407]
 a             = 2.0
 δt            = 0.5
-tMax          = 4000.0
+tMax          = 20000.0
 loggerFlag    = 0
 outputFlag    = 1
 visualiseFlag = 0

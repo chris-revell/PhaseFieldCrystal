@@ -5,4 +5,4 @@
 #$ -m bea
 #$ -M christopher.revell@manchester.ac.uk
 
-/mnt/iusers01/maths01/x85521cr/julia-1.7.2/bin/julia -t $NSLOTS --project=. scripts/run1.jl
+/mnt/iusers01/maths01/x85521cr/julia-1.7.2/bin/julia -t $NSLOTS --project=. scripts/runScripts/run1.jl
