@@ -5,11 +5,11 @@ using Images
 using ImageBinarization
 using FileIO
 using ImageSegmentation
-using ImageTransformations
+# using ImageTransformations
 using ImageSegmentation
 using Random
 using Base.Filesystem
-using ImageSmooth
+# using ImageSmooth
 using CairoMakie
 using GR
 using GeometryBasics
@@ -28,7 +28,7 @@ function maskColour(i,seg)
     end
 end
 
-fileName = "data/exp_raw/Cropped1_mmp13ko-3wiew_4800X_hui_0002.png"
+fileName = "data/exp_raw/cropped/cropped_mp13ko-3wiew_4800X_hui_0002_0.png"
 
 image = load(fileName)
 
@@ -38,13 +38,17 @@ distance = 1.0
 
 filteredImage  = imfilter(grayImage,Kernel.gaussian(distance))
 
-binarizedImage = binarize(filteredImage,Otsu())
+binarizedImage = binarize(filteredImage,Intermodes())
 
-doubleDilate = dilate(dilate(dilate(binarizedImage)))
+dilate!(binarizedImage)
+dilate!(binarizedImage)
+dilate!(binarizedImage)
 
-doubleErodeDilated = erode(erode(doubleDilate))
+erode!(binarizedImage)
+erode!(binarizedImage)
+erode!(binarizedImage)
 
-seg = fast_scanning(doubleErodeDilated, 0.01)
+seg = fast_scanning(binarizedImage, 0.01)
 
 segmentedImage = map(i->get_random_color(i), labels_map(seg))
 
@@ -54,6 +58,7 @@ segmentLabelsOrderedBySize = [i for i in keys(seg4.segment_pixel_count)]
 segmentLabelsOrderedBySize .= segmentLabelsOrderedBySize[sortperm(vals)]
 seg5 = prune_segments(seg4, i->(segment_pixel_count(seg4,i)<segment_pixel_count(seg4,segmentLabelsOrderedBySize[end-1])), (i,j)->(-segment_pixel_count(seg4,j)))
 prunedImage = map(i->maskColour(i,seg5), labels_map(seg5))
+display(prunedImage)
 
 save(datadir("exp_pro","mask_$(Filesystem.splitpath(fileName)[end])"),prunedImage) #Need to resize too
 
