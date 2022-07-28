@@ -46,7 +46,7 @@ using FromFile: @from
 @from "ImportImage.jl" using ImportImage
 @from "SetMobility.jl" using SetMobility
 
-function phaseFieldCrystal(imagePath,lX,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,nBlasThreads;subFolder="")
+function phaseFieldCrystal(imagePath,lX,r,ϕ0,m,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,nBlasThreads;subFolder="")
 
     BLAS.set_num_threads(nBlasThreads)
 
@@ -55,7 +55,7 @@ function phaseFieldCrystal(imagePath,lX,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,v
     α = setMobility(nX,nY,imageMask)
 
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,mat1,mat2,h = initialConditions(imageMask,lX,nX,nY,ϕ0,1.0,1)
+    u0,mat1,mat2,h = initialConditions(imageMask,m,lX,nX,nY,ϕ0,1.0)
 
     # Create finite difference matrices for given system parameters
     ∇² = createLaplacian(nX,nY,h)
@@ -84,23 +84,23 @@ function phaseFieldCrystal(imagePath,lX,r,ϕ0,a,δt,tMax,loggerFlag,outputFlag,v
 
     # Define split ODE problem
     prob = SplitODEProblem(DiffEqArrayOperator(linearOperator),splitNonlinearPart!,u0,(0.0,tMax),p,tstops=tStopsArray)
-    sol = solve(prob, ETDRK2(krylov=true, m=50), dt=δt, saveat=(tMax/100), reltol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+    sol = solve(prob, ETDRK2(krylov=true, m=50), dt=δt, saveat=[tMax], reltol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate free energy at each time point of solution
-    freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nX, nY, lX, r)
+    # freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nX, nY, lX, r)
 
     # Save results in JLD2 format with unique filename
     if outputFlag==1
-        params = @strdict nX nY lX r ϕ0 a δt tMax
+        params = @strdict  ϕ0 r m nX nY lX a δt tMax
         # Create filename from parameters; prefix filename with current data and time
-        fileName = savename(Dates.format(Dates.now(),"yy-mm-dd-HH-MM-SS"),params,"jld2",connector="",ignores=["a"])
+        fileName = savename(Dates.format(Dates.now(),"mm-dd-HH-MM"),params,connector="",ignores=["a", "δt", "nX", "nY", "lX", "tMax"])
         # Save variables and results to file
-        safesave(datadir("sims",subFolder,fileName),@strdict sol freeEnergies params)
+        safesave(datadir("sims",subFolder,"$fileName.jld2"),@strdict sol params)
         # Plot results as animated gif and free energies as png
         if visualiseFlag==1
-            visualise(sol, freeEnergies, params,datadir("sims",subFolder,fileName))
+            visualise(sol,params,subFolder,fileName)
         end
-        @info "Saved data to $(datadir("sims",subFolder,fileName))"
+        @info "Saved data to $(datadir("sims",subFolder,"$fileName.jld2"))"
     end
 
     return nothing
