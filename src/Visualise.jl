@@ -17,9 +17,10 @@ using UnPack
 using DifferentialEquations
 using JLD2
 using DifferentialEquations
+using DrWatson
 
-function visualise(sol,freeEnergies,params,subFolder,fileName)
-
+function visualise(sol,params,subFolder,fileName)
+    
     @unpack nX, nY, lX, r, ϕ0, a, δt, tMax = params
 
     # uInternal = Observable(rand(nX,nY))
@@ -56,7 +57,7 @@ function visualise(sol,freeEnergies,params,subFolder,fileName)
     hidedecorations!(ax3)
     hidespines!(ax3)
     resize_to_layout!(fig3)
-    save(datadir("sims",subFolder,"$(fileName)_finalState.png",fig3))
+    save(datadir("sims",subFolder,"$(fileName)_finalState.png"),fig3)
 
     return nothing
 
