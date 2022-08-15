@@ -19,8 +19,11 @@ nBlasThreads  = Threads.nthreads()
 
 # Warmup
 phaseFieldCrystal(imagePath,lX,0.5,-0.4,0.1,a,δt,10.0,0,0,0,nBlasThreads;subFolder="")
-r = rs[3]
-for m in ms
+r = rs[1]
+for ϕ0 in ϕ0s[end-1:end]
+    phaseFieldCrystal(imagePath,lX,r,ϕ0,0.7,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,nBlasThreads;subFolder="PhaseSpace2")
+end
+for m in ms[end-1:end]
     for ϕ0 in ϕ0s
         phaseFieldCrystal(imagePath,lX,r,ϕ0,m,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,nBlasThreads;subFolder="PhaseSpace2")
     end

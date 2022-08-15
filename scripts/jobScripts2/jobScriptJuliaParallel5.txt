@@ -1,6 +1,12 @@
+#!/bin/bash --login
+#$ -cwd               # Application will run from current working directory
+#$ -N juliaPFC        # Name given to batch job (optional)
+#$ -pe smp.pe 16      # Request 16 cores using SMP parallel environment
+#$ -m bea
+#$ -M christopher.revell@manchester.ac.uk
 
-using DrWatson
-@quickactivate
+/mnt/iusers01/maths01/x85521cr/julia-1.7.2/bin/julia -t $NSLOTS --project=. << EOF
+
 using PhaseFieldCrystal
 
 imagePath     = "data/exp_pro/croppedMask.png"
@@ -16,12 +22,14 @@ outputFlag    = 1
 visualiseFlag = 0
 nBlasThreads  = Threads.nthreads()
 
-
 # Warmup
 phaseFieldCrystal(imagePath,lX,0.5,-0.4,0.1,a,δt,10.0,0,0,0,nBlasThreads;subFolder="")
-r = rs[3]
-for m in ms
+# Run 
+m = ms[5]
+for r in rs
     for ϕ0 in ϕ0s
         phaseFieldCrystal(imagePath,lX,r,ϕ0,m,a,δt,tMax,loggerFlag,outputFlag,visualiseFlag,nBlasThreads;subFolder="PhaseSpace2")
     end
 end
+
+EOF
