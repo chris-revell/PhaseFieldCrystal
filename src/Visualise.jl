@@ -16,7 +16,6 @@ using Printf
 using UnPack
 using DifferentialEquations
 using JLD2
-using DifferentialEquations
 using DrWatson
 
 function visualise(sol,params,subFolder,fileName)
@@ -57,7 +56,7 @@ function visualise(sol,params,subFolder,fileName)
     hidedecorations!(ax3)
     hidespines!(ax3)
     resize_to_layout!(fig3)
-    save(datadir("sims",subFolder,"$(fileName)_finalState.png"),fig3)
+    save(datadir(subFolder,"$(fileName)_finalState.png"),fig3)
 
     return nothing
 
@@ -68,9 +67,9 @@ end
 function importData(path)
 
     data = load(path)
-    @unpack sol, freeEnergies, params = data
+    @unpack sol, params = data
 
-    return sol, freeEnergies, params, path
+    return sol, params
 
 end
 
