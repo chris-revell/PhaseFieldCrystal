@@ -95,7 +95,7 @@ function phaseFieldCrystal(imagePath,lX,r,ϕ0,m,a,δt,tMax,loggerFlag,outputFlag
         # Create filename from parameters; prefix filename with current data and time
         fileName = savename(params,connector="",ignores=["a"])
         # Save variables and results to file
-        safesave(datadir("sims",subFolder,"$fileName.jld2"),@strdict sol params)
+        safesave(datadir("sims",subFolder,"$fileName.jld2"),@dict sol ϕ0 r m nX nY lX a δt tMax)
         # Plot results as animated gif and free energies as png
         if visualiseFlag==1
             visualise(sol,params,subFolder,fileName)
