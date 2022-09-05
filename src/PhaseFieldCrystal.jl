@@ -70,20 +70,20 @@ function phaseFieldCrystal(imagePath,lX,r,ϕ0,m,a,δt,tMax,loggerFlag,outputFlag
     # Start progress logger if loggerFlag argument is 1
     loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
 
-    tStopsArray = Float64[]
-    push!(tStopsArray,0.0)
-    tTmp = 0.0
-    while tTmp<100.0
-        tTmp += δt
-        push!(tStopsArray,tTmp)
-    end
-    while tTmp<tMax
-        tTmp += 2.0*δt
-        push!(tStopsArray,tTmp)
-    end
+    # tStopsArray = Float64[]
+    # push!(tStopsArray,0.0)
+    # tTmp = 0.0
+    # while tTmp<100.0
+    #     tTmp += δt
+    #     push!(tStopsArray,tTmp)
+    # end
+    # while tTmp<tMax
+    #     tTmp += 2.0*δt
+    #     push!(tStopsArray,tTmp)
+    # end
 
     # Define split ODE problem
-    prob = SplitODEProblem(DiffEqArrayOperator(linearOperator),splitNonlinearPart!,u0,(0.0,tMax),p,tstops=tStopsArray)
+    prob = SplitODEProblem(DiffEqArrayOperator(linearOperator),splitNonlinearPart!,u0,(0.0,tMax),p)#,tstops=tStopsArray)
     sol = solve(prob, ETDRK2(krylov=true, m=50), dt=δt, saveat=[tMax], reltol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate free energy at each time point of solution
@@ -95,7 +95,9 @@ function phaseFieldCrystal(imagePath,lX,r,ϕ0,m,a,δt,tMax,loggerFlag,outputFlag
         # Create filename from parameters; prefix filename with current data and time
         fileName = savename(params,connector="",ignores=["a"])
         # Save variables and results to file
-        safesave(datadir("sims",subFolder,"$fileName.jld2"),@dict sol ϕ0 r m nX nY lX a δt tMax)
+        u = sol.u[end]
+        t = sol.t[end]
+        safesave(datadir("sims",subFolder,"$fileName.jld2"),@strdict u t ϕ0 r m nX nY lX a δt tMax)
         # Plot results as animated gif and free energies as png
         if visualiseFlag==1
             visualise(sol,params,subFolder,fileName)
