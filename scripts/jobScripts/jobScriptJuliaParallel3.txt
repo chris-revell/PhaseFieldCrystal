@@ -15,7 +15,7 @@ c = Dict()
 
 c[:imagePath]     = "data/exp_pro/croppedMask.png"
 c[:lX]            = 200.0
-c[:r]            = [0.80]
+c[:r]            = [0.70]
 c[:m]            = [0.1]
 c[:ϕ0]           = [-0.44,-0.43,-0.42,-0.41,-0.40]
 c[:a]             = 2.0

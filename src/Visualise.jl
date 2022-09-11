@@ -18,9 +18,9 @@ using DifferentialEquations
 using JLD2
 using DrWatson
 
-function visualise(sol,params,subFolder,fileName)
+function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax,subFolder,fileName)
     
-    @unpack nX, nY, lX, r, ϕ0, a, δt, tMax = params
+    # @unpack nX, nY, lX, r, ϕ0, a, δt, tMax = params
 
     # uInternal = Observable(rand(nX,nY))
 
@@ -52,7 +52,7 @@ function visualise(sol,params,subFolder,fileName)
     fig3 = Figure(figure_padding=0,resolution=(1371,1049))
     ax3 = CairoMakie.Axis(fig3[1,1],aspect=DataAspect())
     ax3.yreversed = true
-    heatmap!(ax3,transpose(reshape(sol.u[end],(nY,nX))),colorrange=(-1.0, 1.0),colormap=:bwr)
+    heatmap!(ax3,transpose(reshape(u,(nY,nX))),colorrange=(-1.0, 1.0),colormap=:bwr)
     hidedecorations!(ax3)
     hidespines!(ax3)
     resize_to_layout!(fig3)
@@ -67,9 +67,11 @@ end
 function importData(path)
 
     data = load(path)
-    @unpack sol, params = data
+    @unpack u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax = data
 
-    return sol, params
+    pathparts = splitpath(path)
+
+    return u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, joinpath(pathparts[2:end-1]), pathparts[end][1:end-5]
 
 end
 
