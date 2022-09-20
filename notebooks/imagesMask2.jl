@@ -1,38 +1,23 @@
-using DrWatson
-@quickactivate
-
+using DrWatson; @quickactivate
+using FromFile
 using Images
 using ImageBinarization
 using FileIO
 using ImageSegmentation
-# using ImageTransformations
 using ImageSegmentation
 using Random
 using Base.Filesystem
-# using ImageSmooth
 using CairoMakie
 using GR
 using GeometryBasics
+using ImageView
+@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
+fileName = "data/exp_pro/cropped/cropped_mp13ko-3wiew_4800X_hui_0002_0.png"
 
-function get_random_color(seed)
-    Random.seed!(seed)
-    rand(RGB{N0f8})
-end
+imageIn = load(fileName)
 
-function maskColour(i,seg)
-    if seg.segment_pixel_count[i]==maximum(values(seg.segment_pixel_count))
-        return Gray{}(1)
-    else
-        return Gray{}(0)
-    end
-end
-
-fileName = "data/exp_raw/cropped/cropped_mp13ko-3wiew_4800X_hui_0002_0.png"
-
-image = load(fileName)
-
-grayImage = Gray.(image)
+grayImage = Gray.(imageIn)
 
 distance = 1.0
 
@@ -58,9 +43,15 @@ segmentLabelsOrderedBySize = [i for i in keys(seg4.segment_pixel_count)]
 segmentLabelsOrderedBySize .= segmentLabelsOrderedBySize[sortperm(vals)]
 seg5 = prune_segments(seg4, i->(segment_pixel_count(seg4,i)<segment_pixel_count(seg4,segmentLabelsOrderedBySize[end-1])), (i,j)->(-segment_pixel_count(seg4,j)))
 prunedImage = map(i->maskColour(i,seg5), labels_map(seg5))
-display(prunedImage)
+ImageView.imshow(prunedImage)
 
-save(datadir("exp_pro","mask_$(Filesystem.splitpath(fileName)[end])"),prunedImage) #Need to resize too
+# save(datadir("exp_pro","masks",splitpath(fileName)[end],prunedImage) #Need to resize too
+
+new_width = 500
+percentage_scale = new_width/size(imageIn,2)
+new_size = trunc.(Int64, size(prunedImage) .* percentage_scale)
+img_rescaled = imresize(prunedImage, new_size)
+save(datadir("exp_pro","masks",splitpath(fileName)[end]),img_rescaled)
 
 # set_theme!(figure_padding=1, backgroundcolor=(:white,1.0), font="Helvetica",fontsize=48)
 # fig = Figure(resolution=(1000,1000))

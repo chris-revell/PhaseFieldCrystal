@@ -32,7 +32,7 @@ maxSize = 500
 # Loop to process data from each run 
 for i=1:nrow(subset(results, :m => m -> m.== 0.1))
     display(i)
-    # Cinvert simulation result to a 2D matrix
+    # Convert simulation result to a 2D matrix
     uMat = reshape(results[i,:u],(results[i,:nY],results[i,:nX]))#transpose(reshape(results[i,:u],(results[i,:nY],results[i,:nX])))
     # Convert matrix to a grayscale image
     uImg = Gray.(uMat)
@@ -92,10 +92,6 @@ for i=1:nrow(subset(results, :m => m -> m.== 0.1))
     # Map parameters to axis in axes dictionary 
     axes[(results[i,:r],results[i,:ϕ0])] = ax
     
-    # Plot result as a heatmap 
-    # ax.yreversed = true
-    # heatmap!(ax,transpose(uMat),colorrange=(-1.0, 1.0),colormap=:bwr)
-    
     # Plot centroid locations and triangulation 
     # scatter!(ax,shiftedCentroidLocations,color=:green,markersize=10)
     # for i=1:n
@@ -132,7 +128,7 @@ resize_to_layout!(fig)
 
 display(fig)
 
-save(datadir("fromCSF",folderPath,"trianglephasespace_m=0.1.png"),fig)
+save(datadir("fromCSF",folderPath,"neighbourPhaseSpace.png"),fig)
 
 
 # internalCentroids = deleteat!(shiftedCentroidLocations,hullInds) # copy(shiftedCentroidLocations)

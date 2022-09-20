@@ -44,7 +44,7 @@ function cropEM(fileName)
     # Wait for the notification before proceeding ...
     wait(c)
 
-    savename = datadir("exp_raw","cropped","cropped_$(splitpath(fileName)[end])")
+    savename = datadir("exp_pro","cropped","cropped_$(splitpath(fileName)[end])")
     counter = 0
     nameNotFound = 1
     while nameNotFound==1
@@ -60,39 +60,39 @@ function cropEM(fileName)
 
     save(savename,croppedImage)
 
-    grayImage = Gray.(croppedImage)
-    distance = 1.0
-    filteredImage  = imfilter(grayImage,Kernel.gaussian(distance))
-    binarizedImage = binarize(filteredImage,Intermodes())
+    # grayImage = Gray.(croppedImage)
+    # distance = 1.0
+    # filteredImage  = imfilter(grayImage,Kernel.gaussian(distance))
+    # binarizedImage = binarize(filteredImage,Intermodes())
 
-    dilate!(binarizedImage)
-    dilate!(binarizedImage)
-    dilate!(binarizedImage)
+    # dilate!(binarizedImage)
+    # dilate!(binarizedImage)
+    # dilate!(binarizedImage)
 
-    erode!(binarizedImage)
-    erode!(binarizedImage)
-    erode!(binarizedImage)
+    # erode!(binarizedImage)
+    # erode!(binarizedImage)
+    # erode!(binarizedImage)
 
-    seg1 = fast_scanning(binarizedImage, 0.01)
+    # seg1 = fast_scanning(binarizedImage, 0.01)
 
-    seg2 = prune_segments(seg1, i->(segment_pixel_count(seg1,i)<1000), (i,j)->(segment_pixel_count(seg1,j)))
-    vals = [seg2.segment_pixel_count[i] for i in keys(seg2.segment_pixel_count)]
-    segmentLabelsOrderedBySize = [i for i in keys(seg2.segment_pixel_count)]
-    segmentLabelsOrderedBySize .= segmentLabelsOrderedBySize[sortperm(vals)]
-    seg3 = prune_segments(seg2, i->(segment_pixel_count(seg2,i)<segment_pixel_count(seg2,segmentLabelsOrderedBySize[end-1])), (i,j)->(-segment_pixel_count(seg2,j)))
-    prunedImage = map(i->maskColour(i,seg3), labels_map(seg3))
+    # seg2 = prune_segments(seg1, i->(segment_pixel_count(seg1,i)<1000), (i,j)->(segment_pixel_count(seg1,j)))
+    # vals = [seg2.segment_pixel_count[i] for i in keys(seg2.segment_pixel_count)]
+    # segmentLabelsOrderedBySize = [i for i in keys(seg2.segment_pixel_count)]
+    # segmentLabelsOrderedBySize .= segmentLabelsOrderedBySize[sortperm(vals)]
+    # seg3 = prune_segments(seg2, i->(segment_pixel_count(seg2,i)<segment_pixel_count(seg2,segmentLabelsOrderedBySize[end-1])), (i,j)->(-segment_pixel_count(seg2,j)))
+    # prunedImage = map(i->maskColour(i,seg3), labels_map(seg3))
 
-    savename = datadir("exp_pro","mask","mask_$(splitpath(fileName)[end])")
-    counter = 0
-    nameNotFound = 1
-    while nameNotFound==1
-        savename = datadir("exp_pro","mask","mask_$(splitpath(fileName)[end][1:end-4])_$counter.png")
-        if isfile(savename)
-            counter+=1
-        else
-            nameNotFound=0
-        end
-    end
+    # savename = datadir("exp_pro","mask","mask_$(splitpath(fileName)[end])")
+    # counter = 0
+    # nameNotFound = 1
+    # while nameNotFound==1
+    #     savename = datadir("exp_pro","mask","mask_$(splitpath(fileName)[end][1:end-4])_$counter.png")
+    #     if isfile(savename)
+    #         counter+=1
+    #     else
+    #         nameNotFound=0
+    #     end
+    # end
 
     # segmentedImage = map(i->get_random_color(i), labels_map(seg1))
     # guidict = imshow(segmentedImage)
@@ -105,7 +105,7 @@ function cropEM(fileName)
     # # Wait for the notification before proceeding ...
     # wait(c)
 
-    save(savename,prunedImage)
+    # save(savename,prunedImage)
 
 
 end

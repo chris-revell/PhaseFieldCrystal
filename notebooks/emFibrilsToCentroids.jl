@@ -31,7 +31,7 @@ function emFibrilsToCentroids(fileName,fibrilMinSize,distance,dilateCount,erodeC
     end
 
     # Initial segmentation 
-    seg1 = fast_scanning(dilatedImage, 0.01)
+    seg1 = fast_scanning(binarizedImage, 0.01)
     
     # Create inter-cellular space mask
     # Prune segments below threshold size, adding pruned segments to the largest neighbouring segment
@@ -55,7 +55,7 @@ function emFibrilsToCentroids(fileName,fibrilMinSize,distance,dilateCount,erodeC
     # Remove 0 segment, used to represent intra-cell space
     filter!(val->val≠0,labels)
     # Remove extraCellSpace segment, used to represent extra-cellular space
-    filter!(val->val≠extraCellSpace,labels)
+    # filter!(val->val≠extraCellSpace,labels)
     centroidLocations = Point2[]
     for k in labels
         pixels = zeros(2)
@@ -68,7 +68,8 @@ function emFibrilsToCentroids(fileName,fibrilMinSize,distance,dilateCount,erodeC
                 end
             end
         end
-        250<count<10000 ? push!(centroidLocations,Point2(pixels./count)) : nothing
+        # Filter objects smaller than fibrilMinSize and larger than some threshold big enough to only exclude the background segments. 
+        fibrilMinSize<count<10000 ? push!(centroidLocations,Point2(pixels./count)) : nothing
     end
     centroidLocations .+= Point2(0.0,imSize[1]*1.0)
 
@@ -79,13 +80,13 @@ function emFibrilsToCentroids(fileName,fibrilMinSize,distance,dilateCount,erodeC
     image!(ax,rotr90(imageIn))
     scatter!(ax,centroidLocations,color=(:orange,1.0),markersize=6)
     save(datadir("exp_pro","emCentroids","segmented_$(splitpath(fileName)[end])"),fig)
-    # safesave(datadir("exp_pro","emCentroids","segmented_$(splitpath(fileName)[end]).jld2"),@strdict fileName,fibrilMinSize,distance,dilateCount,erodeCount,centroidLocations,fig)
+    save(datadir("exp_pro","emCentroids","segmented_$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName fibrilMinSize distance dilateCount erodeCount centroidLocations fig)
     display(fig)
     return fig, centroidLocations, newIndexMap
 end
 
 fileName = "/Users/christopher/Postdoc/Code/PhaseFieldCrystal/data/exp_raw/cropped/cropped_mp13ko-3wiew_4800X_hui_0002_2.png"
-distance = 2.0
+distance = 1.0
 fibrilMinSize = 250
 dilateCount = 2
 erodeCount = 2
