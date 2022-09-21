@@ -8,19 +8,8 @@ using IntervalSets
 using ImageBinarization
 using ImageSegmentation
 using Random
-
-function maskColour(i,seg)
-    if seg.segment_pixel_count[i]==maximum(values(seg.segment_pixel_count))
-        return Gray{}(1)
-    else
-        return Gray{}(0)
-    end
-end
-
-function get_random_color(seed)
-    Random.seed!(seed)
-    rand(RGB{N0f8})
-end
+using FromFile
+@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 function cropEM(fileName)
 

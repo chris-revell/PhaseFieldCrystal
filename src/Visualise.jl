@@ -20,40 +20,39 @@ using DrWatson
 
 function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileName, freeEnergyFlag)
     
-    uInternal = Observable(rand(nX,nY))
-
-    fig1 = Figure()
-    ga1 = fig1[1,1] = GridLayout()
-    ax1 = CairoMakie.Axis(ga1[1,1],aspect=DataAspect())
+    fig1 = Figure(figure_padding=0,resolution=(1000,1000))
+    ax1 = CairoMakie.Axis(fig1[1,1],aspect=DataAspect())
+    uInternal = Observable(zeros(nX,nY))
     heatmap!(ax1,uInternal,colorrange=(-1.0, 1.0),colormap=:bwr)
     hidedecorations!(ax1)
     hidespines!(ax1)
     ax1.title = "t=0.0"
     ax1.yreversed = true
-    tSteps = range(1,length(sol.t),step=1)
-    record(fig1,"$(path[1:end-5])_u.mp4",tSteps; framerate=10) do i
-        ax1.title = "t=$(@sprintf("%.2f", sol.t[i]))"
-        uInternal[] = transpose(reshape(sol.u[i],(nY,nX)))
+    resize_to_layout!(fig1)
+    tSteps = range(1,length(t),step=1)
+    record(fig1,datadir("sims",subFolder,"$(fileName[1:end-5])_u.mp4"),tSteps; framerate=10) do i
+        ax1.title = "t=$(@sprintf("%.2f", t[i]))"
+        uInternal[] = transpose(reshape(u[i],(nY,nX)))
         uInternal[] = uInternal[]
     end
 
     if freeEnergyFlag==1
-        fig2 = Figure()
+        fig2 = Figure(figure_padding=0)
         ax2 = CairoMakie.Axis(fig2[1,1])
-        lines!(ax2,sol.t,freeEnergies)
+        lines!(ax2,t,freeEnergies)
         ax2.xlabel = "Time"
         ax2.ylabel = "Free Energy"
-        save("$(path[1:end-5])_freeEnergyVsTime.png",fig2)
+        safesave(datadir("sims","subFolder","$(fileName[1:end-5])_freeEnergyVsTime.png"),fig2)
     end
 
     fig3 = Figure(figure_padding=0,resolution=(1000,1000))
     ax3 = CairoMakie.Axis(fig3[1,1],aspect=DataAspect())
     ax3.yreversed = true
-    heatmap!(ax3,transpose(reshape(u,(nY,nX))),colorrange=(-1.0, 1.0),colormap=:bwr)
+    heatmap!(ax3,transpose(reshape(u[end],(nY,nX))),colorrange=(-1.0, 1.0),colormap=:bwr)
     hidedecorations!(ax3)
     hidespines!(ax3)
     resize_to_layout!(fig3)
-    save(datadir(subFolder,"$(fileName)_finalState.png"),fig3)
+    safesave(datadir("sims",subFolder,"$(fileName)_finalState.png"),fig3)
 
     return nothing
 
