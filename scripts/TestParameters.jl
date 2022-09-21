@@ -1,13 +1,17 @@
 imagePath     = "data/exp_pro/croppedMask.png"
 lX            = 200.0
 r             = 0.5
+m             = 0.1
 ϕ0            = -0.40
+λ             = 1.0
 a             = 2.0
-δt            = 0.5
+δt            = 0.1
 tMax          = 50.0
+outCount      = 1
 loggerFlag    = 1
 outputFlag    = 1
 visualiseFlag = 1
+freeEnergyFlag= 0
 nBlasThreads  = 4
 
 

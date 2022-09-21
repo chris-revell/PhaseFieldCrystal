@@ -5,11 +5,8 @@ using Images
 using ImageBinarization
 using FileIO
 using ImageSegmentation
-using ImageTransformations
-using ImageSegmentation
 using Random
 using Base.Filesystem
-using ImageSmooth
 using CairoMakie
 using GR
 using GeometryBasics
@@ -141,7 +138,7 @@ hidedecorations!(axTriangle)
 scatter!(axTriangle,shiftedCentroidLocations,color=:green,markersize=10)
 xlims!(axTriangle,0,size(image)[2]/scalingFactor)
 ylims!(axTriangle,0,size(image)[1]/scalingFactor)
-areas = abs.(area.([ shiftedCentroidLocations[tri[i,:]] for i=1:n]))
+areas = abs.(GeometryBasics.area.([shiftedCentroidLocations[tri[i,:]] for i=1:n]))
 lims=(minimum(areas),maximum(areas))
 for i=1:n
     poly!(axTriangle,shiftedCentroidLocations[tri[i,:]],color=(:white,0.0),strokecolor=(:black,1.0),strokewidth=1.0)

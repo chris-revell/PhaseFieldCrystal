@@ -1,0 +1,38 @@
+#!/bin/bash --login
+#$ -cwd               # Application will run from current working directory
+#$ -N juliaPFC        # Name given to batch job (optional)
+#$ -pe smp.pe 16      # Request 16 cores using SMP parallel environment
+#$ -m bea
+#$ -M christopher.revell@manchester.ac.uk
+
+/mnt/iusers01/maths01/x85521cr/julia-1.7.2/bin/julia -t $NSLOTS --project=. << EOF
+
+using DrWatson 
+@quickactivate
+using Base.Threads
+using PhaseFieldCrystal
+
+c = Dict()
+
+c[:imagePath]     = "data/exp_pro/croppedMask.png"
+c[:lX]            = 200.0
+c[:r]             = [0.55,0.60,0.65,0.70,0.75,0.80]
+c[:m]             = [0.1]
+c[:ϕ0]            = [-0.445,-0.435,-0.425,-0.415,-0.45]
+c[:a]             = 2.0
+c[:δt]            = 0.5
+c[:tMax]          = 5000.0
+c[:loggerFlag]    = 0
+c[:outputFlag]    = 1
+c[:visualiseFlag] = 0
+c[:nBlasThreads]  = 1
+c[:subFolderName] = "PhaseSpace3"
+
+# Warmup
+phaseFieldCrystal(c[:imagePath],c[:lX],0.5,-0.4,0.1,c[:a],c[:δt],10.0,0,0,0,c[:nBlasThreads];subFolder="")
+# Run 
+@threads for ps in dict_list(c)
+    phaseFieldCrystal(ps[:imagePath],ps[:lX],ps[:r],ps[:ϕ0],ps[:m],ps[:a],ps[:δt],ps[:tMax],ps[:loggerFlag],ps[:outputFlag],ps[:visualiseFlag],ps[:nBlasThreads];subFolder=ps[:subFolderName])
+end
+
+EOF

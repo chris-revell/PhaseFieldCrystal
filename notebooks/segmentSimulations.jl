@@ -31,7 +31,7 @@ function maskColour(i,seg)
     end
 end
 
-fileName = "$(datadir("fromCSF"))/22-06-09-19-14-13lX=200.0nX=500nY=383r=0.5tMax=500.0δt=0.01ϕ0=-0.37_finalState.png"
+fileName = "$(datadir("fromCSF","PhaseSpace3","lX=200.0m=0.1nX=500nY=383r=0.55tMax=5000.0δt=0.5ϕ0=-0.4_finalState.png"))"
 
 image = load(fileName)
 

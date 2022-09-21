@@ -1,3 +1,5 @@
+using DrWatson; @quickactivate
+using FromFile
 using Images
 using ImageBinarization
 using FileIO
@@ -6,11 +8,8 @@ using ImageTransformations
 using ImageView
 using ImageSegmentation
 using Random
+@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
-function get_random_color(seed)
-    Random.seed!(seed)
-    rand(RGB{N0f8})
-end
 function final(i)
     if i==2
         return RGB{}(0,0,0)

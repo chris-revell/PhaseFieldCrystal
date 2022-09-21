@@ -1,14 +1,7 @@
-push!(LOAD_PATH,"src/")
 using DrWatson
+using FromFile
 @quickactivate "PhaseFieldCrystal"
-
-println(
-"""
-Currently active project is: $(projectname())
-Path of active project: $(projectdir())
-"""
-)
 @info "Loading test parameters"
 include("scripts/TestParameters.jl")
-# @info "Precompiling PhaseFieldCrystal"
-using PhaseFieldCrystal
+@info "Precompiling PhaseFieldCrystal"
+@from "src/PhaseFieldCrystal.jl" using PhaseFieldCrystal
