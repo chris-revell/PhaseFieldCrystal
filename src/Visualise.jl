@@ -18,38 +18,35 @@ using DifferentialEquations
 using JLD2
 using DrWatson
 
-function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax,subFolder,fileName)
+function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileName, freeEnergyFlag)
     
-    # @unpack nX, nY, lX, r, ϕ0, a, δt, tMax = params
+    uInternal = Observable(rand(nX,nY))
 
-    # uInternal = Observable(rand(nX,nY))
+    fig1 = Figure()
+    ga1 = fig1[1,1] = GridLayout()
+    ax1 = CairoMakie.Axis(ga1[1,1],aspect=DataAspect())
+    heatmap!(ax1,uInternal,colorrange=(-1.0, 1.0),colormap=:bwr)
+    hidedecorations!(ax1)
+    hidespines!(ax1)
+    ax1.title = "t=0.0"
+    ax1.yreversed = true
+    tSteps = range(1,length(sol.t),step=1)
+    record(fig1,"$(path[1:end-5])_u.mp4",tSteps; framerate=10) do i
+        ax1.title = "t=$(@sprintf("%.2f", sol.t[i]))"
+        uInternal[] = transpose(reshape(sol.u[i],(nY,nX)))
+        uInternal[] = uInternal[]
+    end
 
-    # fig1 = Figure()
-    # ga1 = fig1[1,1] = GridLayout()
-    # ax1 = CairoMakie.Axis(ga1[1,1],aspect=DataAspect())
-    # heatmap!(ax1,uInternal,colorrange=(-1.0, 1.0),colormap=:bwr)
-    # #Colorbar(ga1[1, 2],colormap=:viridis,vertical=true)
-    # hidedecorations!(ax1)
-    # hidespines!(ax1)
-    # ax1.title = "t=0.0"
-    # ax1.yreversed = true
+    if freeEnergyFlag==1
+        fig2 = Figure()
+        ax2 = CairoMakie.Axis(fig2[1,1])
+        lines!(ax2,sol.t,freeEnergies)
+        ax2.xlabel = "Time"
+        ax2.ylabel = "Free Energy"
+        save("$(path[1:end-5])_freeEnergyVsTime.png",fig2)
+    end
 
-    # tSteps = range(1,length(sol.t),step=1)
-
-    # record(fig1,"$(path[1:end-5])_u.mp4",tSteps; framerate=10) do i
-    #     ax1.title = "t=$(@sprintf("%.2f", sol.t[i]))"
-    #     uInternal[] = transpose(reshape(sol.u[i],(nY,nX)))
-    #     uInternal[] = uInternal[]
-    # end
-
-    # fig2 = Figure()
-    # ax2 = CairoMakie.Axis(fig2[1,1])
-    # lines!(ax2,sol.t,freeEnergies)
-    # ax2.xlabel = "Time"
-    # ax2.ylabel = "Free Energy"
-    # save("$(path[1:end-5])_freeEnergyVsTime.png",fig2)
-
-    fig3 = Figure(figure_padding=0,resolution=(1371,1049))
+    fig3 = Figure(figure_padding=0,resolution=(1000,1000))
     ax3 = CairoMakie.Axis(fig3[1,1],aspect=DataAspect())
     ax3.yreversed = true
     heatmap!(ax3,transpose(reshape(u,(nY,nX))),colorrange=(-1.0, 1.0),colormap=:bwr)

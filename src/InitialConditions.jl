@@ -14,7 +14,7 @@ using GaussianRandomFields
 using SparseArrays
 using LinearAlgebra
 
-@views function initialConditions(imageMask,m,lX,nX,nY,ϕ0,λ)
+@views function initialConditions(imageMask,lX,nX,nY,ϕ0,λ,m)
 
     h = lX/nX    # Spatial separation of grid points
 
