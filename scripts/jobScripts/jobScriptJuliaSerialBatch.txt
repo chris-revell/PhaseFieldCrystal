@@ -32,10 +32,10 @@ c[:nBlasThreads]  = [1]
 c[:subFolderName] = "qPhaseSpace"
 
 # Warmup
-phaseFieldCrystal(c[:imagePath],c[:lX],0.5,-0.4,0.1,c[:a],c[:δt],10.0,0,0,0,c[:nBlasThreads];subFolder="")
+phaseFieldCrystal(c[:imagePath][1],200.0,0.5,-0.4,0.1,2.0,1.0,0.5,10.0,1,0,0,0,0,4)
 # Run 
 @threads for ps in dict_list(c)
-    phaseFieldCrystal(ps[:imagePath],ps[:lX],ps[:r],ps[:ϕ0],ps[:m],ps[:a],ps[:δt],ps[:tMax],ps[:loggerFlag],ps[:outputFlag],ps[:visualiseFlag],ps[:nBlasThreads];subFolder=ps[:subFolderName])
+    phaseFieldCrystal(ps[:imagePath],ps[:lX],ps[:r],ps[:ϕ0],ps[:m],ps[:a],ps[:λ],ps[:δt],ps[:tMax],ps[:outCount],ps[:loggerFlag],ps[:outputFlag],ps[:visualiseFlag],ps[:freeEnergyFlag],ps[:nBlasThreads];subFolder=ps[:subFolderName])
 end
 
 EOF
