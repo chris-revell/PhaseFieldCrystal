@@ -13,7 +13,7 @@ using GeometryBasics
 using ImageView
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
-fileName = "data/exp_pro/cropped/cropped_mp13ko-3wiew_4800X_hui_0002_0.png"
+fileName = "/Users/christopher/Postdoc/Code/PhaseFieldCrystal/data/exp_pro/cropped/mp13ko-3wiew_4800X_hui_0002_2.png"
 
 imageIn = load(fileName)
 
@@ -43,7 +43,8 @@ segmentLabelsOrderedBySize = [i for i in keys(seg4.segment_pixel_count)]
 segmentLabelsOrderedBySize .= segmentLabelsOrderedBySize[sortperm(vals)]
 seg5 = prune_segments(seg4, i->(segment_pixel_count(seg4,i)<segment_pixel_count(seg4,segmentLabelsOrderedBySize[end-1])), (i,j)->(-segment_pixel_count(seg4,j)))
 prunedImage = map(i->maskColour(i,seg5), labels_map(seg5))
-ImageView.imshow(prunedImage)
+# ImageView.imshow(prunedImage)
+display(prunedImage)
 
 # save(datadir("exp_pro","masks",splitpath(fileName)[end],prunedImage) #Need to resize too
 

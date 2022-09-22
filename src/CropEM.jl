@@ -37,7 +37,7 @@ function cropEM(fileName)
     counter = 0
     nameNotFound = 1
     while nameNotFound==1
-        savename = datadir("exp_raw","cropped","cropped_$(splitpath(fileName)[end][1:end-4])_$counter.png")
+        savename = datadir("exp_raw","cropped","$(splitpath(fileName)[end][1:end-4])_$counter.png")
         if isfile(savename)
             counter+=1
         else
