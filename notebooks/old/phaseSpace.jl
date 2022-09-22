@@ -25,7 +25,7 @@ for m in ms
     filteredRuns = [f for f in runs if occursin("m=$m",f)]
     
     fig = Figure(resolution=(6000,6000))
-    axes = Dict()
+    axesDict = Dict()
     for (i,f) in enumerate(filteredRuns)
         
         data = load(datadir("fromCSF",folderPath,f))
@@ -38,13 +38,13 @@ for m in ms
         hidedecorations!(ax)
         hidespines!(ax)
         # ax.title = "phi_0=$(ϕ0), r= $r"
-        axes[(r,ϕ0)] = ax
+        axesDict[(r,ϕ0)] = ax
     end
 
     for (i,r) in enumerate(rs)
         for (j,ϕ₀) in enumerate(ϕ0s)
             if (r,ϕ₀) in keys(axes)
-                fig[7-i,7-j][1,1] = axes[(r,ϕ₀)]
+                fig[7-i,7-j][1,1] = axesDict[(r,ϕ₀)]
                 Colorbar(fig[7-i,7-j][1,2], limits=(-1,1),colormap=:bwr)#, size = 25)
                 Label(fig[7-i,7-j,Bottom()],L"r=%$r, \phi_0=%$ϕ₀",textsize=64)
             end

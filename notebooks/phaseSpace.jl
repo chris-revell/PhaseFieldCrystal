@@ -18,7 +18,7 @@ results = collect_results!(datadir("fromCSF",folderPath); subfolders = true)
 
 # Set up figure canvas and dictionary to map parameters to axes
 fig = Figure(resolution=(6000,6000))
-axes = Dict()
+axesDict = Dict()
 
 # Loop to process data from each run 
 for i=1:nrow(subset(results, :m => m -> m.== 0.1))
@@ -34,7 +34,7 @@ for i=1:nrow(subset(results, :m => m -> m.== 0.1))
     hidedecorations!(ax)
     hidespines!(ax)
     # Map parameters to axis in axes dictionary 
-    axes[(results[i,:r],results[i,:ϕ0])] = ax
+    axesDict[(results[i,:r],results[i,:ϕ0])] = ax
     
 end 
 
@@ -43,7 +43,7 @@ sortedrs  = unique!(sort(first.(keys(axes))))
 sortedϕ0s = unique!(sort(last.(keys(axes))))
 for (i,r) in enumerate(sortedrs)
     for (j,ϕ0) in enumerate(sortedϕ0s)
-        fig[length(sortedrs)+1-i,length(sortedϕ0s)+1-j][1,1] = axes[(r,ϕ0)]
+        fig[length(sortedrs)+1-i,length(sortedϕ0s)+1-j][1,1] = axesDict[(r,ϕ0)]
         # Colorbar(fig[length(sortedrs)-i,length(sortedϕ0s)-j][1,2], limits=(-1,1),colormap=:bwr)#, size = 25)
         Label(fig[length(sortedrs)+1-i,length(sortedϕ0s)+1-j,Bottom()],L"r=%$r, \phi_0=%$ϕ0",textsize=64)
     end
