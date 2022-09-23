@@ -87,6 +87,7 @@ end
 
 # fileName = "/Users/christopher/Postdoc/Code/PhaseFieldCrystal/data/exp_pro/cropped/mp13ko-3wiew_4800X_hui_0002_2.png"
 runs = [f for f in readdir(datadir("exp_pro","cropped")) if f[end-3:end]==".png"]
+lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
 distance = 1.0
 fibrilMinSize = 250
 dilateCount = 2
