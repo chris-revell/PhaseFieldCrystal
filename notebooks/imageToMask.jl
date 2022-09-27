@@ -12,9 +12,9 @@ using FileIO
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 
-function imageToMask(fileName,fibrilMinSize,distance,dilateCount,erodeCount)
+function imageToMask(fileName,distance,dilateCount,erodeCount)
     
-    mkpath(datadir("exp_pro","masks"))
+    mkpath(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"compressed"))
     # Import image file and convert to grayscale
     imageIn = load(fileName)
     imSize = size(imageIn)
@@ -39,23 +39,40 @@ function imageToMask(fileName,fibrilMinSize,distance,dilateCount,erodeCount)
     size1 = 5000
     seg2 = prune_segments(seg1, i->(segment_pixel_count(seg1,i)<size1), (i,j)->(-segment_pixel_count(seg1,j)))
     seg3 = prune_segments(seg2, first.(sort(collect(seg2.segment_pixel_count), by=x->x[2])[1:end-2]), (i,j)->-segment_pixel_count(seg2,j))
-    intraCellSpace = (sort(collect(seg3.segment_pixel_count), by=x->x[2]))[1]
+    
+    centralSegment = seg3.image_indexmap[imSize.÷2...]
 
     newIndexMap = copy(imageIn)
-    for i=1:size(imageIn)[1]
-        for j=1:size(imageIn)[2]
-            if seg3.image_indexmap[i,j] == intraCellSpace.first
-                newIndexMap[i,j] = Gray(0)
-            else
+    for i=1:imSize[1]
+        for j=1:imSize[2]
+            if seg3.image_indexmap[i,j] == centralSegment
                 newIndexMap[i,j] = Gray(1)
+            else
+                newIndexMap[i,j] = Gray(0)
             end
         end
     end
 
-    # display(newIndexMap)
-    safesave(datadir("exp_pro","masks","$(splitpath(fileName)[end])"),newIndexMap)
-    save(datadir("exp_pro","masks","$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName fibrilMinSize distance dilateCount erodeCount newIndexMap)
+    safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],splitpath(fileName)[end]),newIndexMap)
     
+    percentage_scale = 500/size(imageIn,2)
+    new_size = trunc.(Int, size(imageIn) .* percentage_scale)
+    compressedMask = imresize(newIndexMap, new_size)
+    safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"compressed",splitpath(fileName)[end]), compressedMask)
+
+    fig = CairoMakie.Figure()
+    ax1 = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
+    hidedecorations!(ax1)
+    hidespines!(ax1)
+    image!(ax1,rotr90(imageIn))
+    ax2 = CairoMakie.Axis(fig[1,2],aspect=DataAspect())
+    hidedecorations!(ax2)
+    hidespines!(ax2)
+    image!(ax2,rotr90(newIndexMap))
+    safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4])_comparison.png"), fig)
+
+    safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName distance dilateCount erodeCount newIndexMap compressedMask)
+
     return newIndexMap
 end
 
@@ -65,7 +82,7 @@ fibrilMinSize = 250
 dilateCount = 2
 erodeCount = 2
 for r in runs
-    imageToMask(datadir("exp_pro","cropped",r),fibrilMinSize,distance,dilateCount,erodeCount)
+    imageToMask(datadir("exp_pro","cropped",r),distance,dilateCount,erodeCount)
 end
 
 
@@ -109,7 +126,7 @@ end
 #     return centroidLocations
 # end
 
-# function findIntraCellSpace(dilatedImage,size1)
+# function findintraCellSpace(dilatedImage,size1)
 #     # Initial segmentation of eroded and dilated image
 #     seg1 = fast_scanning(dilatedImage, 0.01)
 #     # Create inter-cellular space mask

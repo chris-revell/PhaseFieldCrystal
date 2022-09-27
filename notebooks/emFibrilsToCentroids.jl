@@ -9,11 +9,13 @@ using GeometryBasics
 using LinearAlgebra
 using FromFile
 using FileIO
+using CSV
+using DataFrames
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 
 function emFibrilsToCentroids(fileName,fibrilMinSize,distance,dilateCount,erodeCount)
-    mkpath(datadir("exp_pro","emCentroids"))
+    mkpath(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4]))
     # Import image file and convert to grayscale
     imageIn = load(fileName)
     imSize = size(imageIn)
@@ -38,16 +40,19 @@ function emFibrilsToCentroids(fileName,fibrilMinSize,distance,dilateCount,erodeC
     size1 = 5000
     seg2 = prune_segments(seg1, i->(segment_pixel_count(seg1,i)<size1), (i,j)->(-segment_pixel_count(seg1,j)))
     seg3 = prune_segments(seg2, first.(sort(collect(seg2.segment_pixel_count), by=x->x[2])[1:end-2]), (i,j)->-segment_pixel_count(seg2,j))
-    intraCellSpace = (sort(collect(seg3.segment_pixel_count), by=x->x[2]))[1]
+    
+    centralSegment = seg3.image_indexmap[imSize.÷2...]
 
     newIndexMap = copy(seg1.image_indexmap)
-    for i=1:size(imageIn)[1]
-        for j=1:size(imageIn)[2]
-            if seg3.image_indexmap[i,j] == intraCellSpace.first
+    for i=1:imSize[1]
+        for j=1:imSize[2]
+            if seg3.image_indexmap[i,j] != centralSegment
                 newIndexMap[i,j] = 0
             end
         end
     end
+
+    display(map(i->get_random_color(i), newIndexMap))
 
     # centroidLocations = findCentroidLocations(newIndexMap,size(imageIn),extraCellSpace)
     # Find segment labels within index map
@@ -79,14 +84,14 @@ function emFibrilsToCentroids(fileName,fibrilMinSize,distance,dilateCount,erodeC
     hidespines!(ax)
     image!(ax,rotr90(imageIn))
     scatter!(ax,centroidLocations,color=(:orange,1.0),markersize=6)
-    save(datadir("exp_pro","emCentroids","$(splitpath(fileName)[end])"),fig)
-    save(datadir("exp_pro","emCentroids","$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName fibrilMinSize distance dilateCount erodeCount centroidLocations fig)
-    display(fig)
+    save(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4],splitpath(fileName)[end]),fig)
+    save(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName fibrilMinSize distance dilateCount erodeCount centroidLocations fig)
+    # display(fig)
     return fig, centroidLocations, newIndexMap
 end
 
 # fileName = "/Users/christopher/Postdoc/Code/PhaseFieldCrystal/data/exp_pro/cropped/mp13ko-3wiew_4800X_hui_0002_2.png"
-runs = [f for f in readdir(datadir("exp_pro","cropped")) if f[end-3:end]==".png"]
+runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
 lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
 distance = 1.0
 fibrilMinSize = 250
