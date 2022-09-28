@@ -52,7 +52,7 @@ function emFibrilsToCentroids(fileName,fibrilMinSize,distance,dilateCount,erodeC
         end
     end
 
-    display(map(i->get_random_color(i), newIndexMap))
+    # display(map(i->get_random_color(i), newIndexMap))
 
     # centroidLocations = findCentroidLocations(newIndexMap,size(imageIn),extraCellSpace)
     # Find segment labels within index map
@@ -84,8 +84,8 @@ function emFibrilsToCentroids(fileName,fibrilMinSize,distance,dilateCount,erodeC
     hidespines!(ax)
     image!(ax,rotr90(imageIn))
     scatter!(ax,centroidLocations,color=(:orange,1.0),markersize=6)
-    save(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4],splitpath(fileName)[end]),fig)
-    save(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName fibrilMinSize distance dilateCount erodeCount centroidLocations fig)
+    safesave(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4],splitpath(fileName)[end]),fig)
+    safesave(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName fibrilMinSize distance dilateCount erodeCount centroidLocations fig)
     # display(fig)
     return fig, centroidLocations, newIndexMap
 end
