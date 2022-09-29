@@ -9,6 +9,8 @@ using GeometryBasics
 using LinearAlgebra
 using FromFile
 using FileIO
+using CSV
+using DataFrames
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 
@@ -72,7 +74,7 @@ function imageToMask(fileName,distance,dilateCount,erodeCount,lX,h)
     image!(ax2,rotr90(newIndexMap))
     safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4])_comparison.png"), fig)
 
-    safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName distance dilateCount erodeCount newIndexMap compressedMask)
+    safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName distance dilateCount erodeCount newIndexMap compressedMask lX h)
 
     return newIndexMap
 end
@@ -82,8 +84,16 @@ distance = 1.0
 fibrilMinSize = 250
 dilateCount = 2
 erodeCount = 2
-for r in runs
-    imageToMask(datadir("exp_pro","cropped",r),distance,dilateCount,erodeCount)
+
+croppedLX = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","croppedLX.csv")))
+okMasks   = [f for f in readdir(datadir("exp_pro","masks","ok","compressed")) if f[end-3:end]==".png"]
+subFrame  = filter(:file => f->f in okMasks, croppedLX)
+
+scalingLX = 200.0/1.82314
+
+for r in eachrow(croppedLX)
+    imageToMask(datadir("exp_pro","cropped",r[:file]),distance,dilateCount,erodeCount,r[:lX]*scalingLX,0.4)
+    # display(r[:lX])
 end
 
 
