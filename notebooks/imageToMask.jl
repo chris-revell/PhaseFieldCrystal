@@ -12,7 +12,7 @@ using FileIO
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 
-function imageToMask(fileName,distance,dilateCount,erodeCount)
+function imageToMask(fileName,distance,dilateCount,erodeCount,lX,h)
     
     mkpath(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"compressed"))
     # Import image file and convert to grayscale
@@ -55,7 +55,8 @@ function imageToMask(fileName,distance,dilateCount,erodeCount)
 
     safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],splitpath(fileName)[end]),newIndexMap)
     
-    percentage_scale = 500/size(imageIn,2)
+    compressedNX = lX/h
+    percentage_scale = compressedNX/size(imageIn,2)
     new_size = trunc.(Int, size(imageIn) .* percentage_scale)
     compressedMask = imresize(newIndexMap, new_size)
     safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"compressed",splitpath(fileName)[end]), compressedMask)
