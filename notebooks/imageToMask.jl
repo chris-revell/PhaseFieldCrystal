@@ -14,15 +14,16 @@ using DataFrames
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 
-function imageToMask(fileName,distance,dilateCount,erodeCount,lX,h)
+function imageToMask(fileName,distanceGaussian,dilateCount,erodeCount,lX,h)
     
-    mkpath(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"compressed"))
+    mkpath(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4]))
+    mkpath(datadir("exp_pro","masksCompressed",splitpath(fileName)[end][1:end-4]))
     # Import image file and convert to grayscale
     imageIn = load(fileName)
     imSize = size(imageIn)
     grayImage = Gray.(imageIn)
     # Apply Gaussian filter
-    filteredImage  = imfilter(grayImage,Kernel.gaussian(distance))
+    filteredImage  = imfilter(grayImage,Kernel.gaussian(distanceGaussian))
     # Binarise with Otsu algorithm
     binarizedImage = binarize(filteredImage,Otsu())
     # Erode and dilate    
@@ -61,7 +62,7 @@ function imageToMask(fileName,distance,dilateCount,erodeCount,lX,h)
     percentage_scale = compressedNX/size(imageIn,2)
     new_size = trunc.(Int, size(imageIn) .* percentage_scale)
     compressedMask = imresize(newIndexMap, new_size)
-    safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"compressed",splitpath(fileName)[end]), compressedMask)
+    safesave(datadir("exp_pro","masksCompressed",splitpath(fileName)[end][1:end-4],splitpath(fileName)[end]), compressedMask)
 
     fig = CairoMakie.Figure()
     ax1 = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
@@ -74,32 +75,28 @@ function imageToMask(fileName,distance,dilateCount,erodeCount,lX,h)
     image!(ax2,rotr90(newIndexMap))
     safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4])_comparison.png"), fig)
 
-    safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName distance dilateCount erodeCount newIndexMap compressedMask lX h)
+    safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName distanceGaussian dilateCount erodeCount newIndexMap compressedMask lX h)
 
     return newIndexMap
 end
 
-runs = [f for f in readdir(datadir("exp_pro","cropped")) if f[end-3:end]==".png"]
-distance = 1.0
-fibrilMinSize = 250
+runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+distanceGaussian = 1.0
 dilateCount = 2
 erodeCount = 2
-
 croppedLX = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","croppedLX.csv")))
-okMasks   = [f for f in readdir(datadir("exp_pro","masks","ok","compressed")) if f[end-3:end]==".png"]
-subFrame  = filter(:file => f->f in okMasks, croppedLX)
-
+lXDict = Dict(croppedLX[!,:file].=>croppedLX[!,:lX])
+# okMasks   = [f for f in readdir(datadir("exp_pro","masks","ok","compressed")) if f[end-3:end]==".png"]
+# subFrame  = filter(:file => f->f in okMasks, croppedLX)
 scalingLX = 200.0/1.82314
-
-for r in eachrow(croppedLX)
-    imageToMask(datadir("exp_pro","cropped",r[:file]),distance,dilateCount,erodeCount,r[:lX]*scalingLX,0.4)
-    # display(r[:lX])
+for r in runs
+    imageToMask(datadir("exp_pro","cropped",r),distanceGaussian,dilateCount,erodeCount,lXDict[r]*scalingLX,0.4)   
 end
 
 
-# function processImage(im,dilateCount,distance)
+# function processImage(im,dilateCount,distanceGaussian)
 #     # Apply Gaussian filter
-#     filteredImage  = imfilter(im,Kernel.gaussian(distance))
+#     filteredImage  = imfilter(im,Kernel.gaussian(distanceGaussian))
 #     # Binarise with Otsu algorithm
 #     binarizedImage = binarize(filteredImage,Otsu())
 #     # Erode and dilate    

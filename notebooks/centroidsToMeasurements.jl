@@ -12,69 +12,25 @@ using FileIO
 using ConcaveHull
 using VoronoiCells
 using GR: delaunay
+using CSV
+using DataFrames
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 
-function centroidsToMeasurements(fileName,distanceGaussian,dilateCount,erodeCount,size1,saveFlag)
-    mkpath(datadir("exp_pro","emCentroidMeasurements"))
+function centroidsToMeasurements(fileName)
+    mkpath(datadir("exp_pro","emCentroidMeasurements",splitpath(fileName)[end][1:end-4]))
+    
+    maskData = load(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"))
+    @unpack newIndexMap, lX, h = maskData
+    
+    centroidData = load(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"))
+    @unpack fibrilMinSize, fibrilMaxSize, distanceGaussian, dilateCount, erodeCount, centroidLocations = centroidData
+    
     # Import image file and convert to grayscale
     imageIn = load(fileName)
     imSize = size(imageIn)
     grayImage = Gray.(imageIn)
-    # Apply Gaussian filter
-    filteredImage  = imfilter(grayImage,Kernel.gaussian(distanceGaussian))
-    # Binarise with Otsu algorithm
-    binarizedImage = binarize(filteredImage,Otsu())
-    # Erode and dilate    
-    for i=1:dilateCount
-        dilate!(binarizedImage)
-    end
-    for i=1:erodeCount
-        erode!(binarizedImage)
-    end
-
-    # Initial segmentation 
-    seg1 = fast_scanning(binarizedImage, 0.01)
-    
-    # Create inter-cellular space mask
-    # Prune segments below threshold size, adding pruned segments to the largest neighbouring segment
-    seg2 = prune_segments(seg1, i->(segment_pixel_count(seg1,i)<size1), (i,j)->(-segment_pixel_count(seg1,j)))
-    seg3 = prune_segments(seg2, first.(sort(collect(seg2.segment_pixel_count), by=x->x[2])[1:end-2]), (i,j)->-segment_pixel_count(seg2,j))
-    intraCellSpace = (sort(collect(seg3.segment_pixel_count), by=x->x[2]))[1]
-
-    newIndexMap = copy(seg1.image_indexmap)
-    for i=1:size(imageIn)[1]
-        for j=1:size(imageIn)[2]
-            if seg3.image_indexmap[i,j] == intraCellSpace.first
-                newIndexMap[i,j] = 0
-            end
-        end
-    end
-
-    # centroidLocations = findCentroidLocations(newIndexMap,size(imageIn),extraCellSpace)
-    # Find segment labels within index map
-    labels = unique(newIndexMap)
-    # Remove 0 segment, used to represent intra-cell space
-    filter!(val->val≠0,labels)
-    # Remove extraCellSpace segment, used to represent extra-cellular space
-    # filter!(val->val≠extraCellSpace,labels)
-    centroidLocations = Point2[]
-    for k in labels
-        pixels = zeros(2)
-        count = 0
-        for i=1:imSize[1]
-            for j=1:imSize[2]
-                if newIndexMap[i,j] == k
-                    pixels .+= [j,-i]
-                    count += 1
-                end
-            end
-        end
-        # Filter objects smaller than fibrilMinSize and larger than some threshold big enough to only exclude the background segments. 
-        fibrilMinSize<count<10000 ? push!(centroidLocations,Point2(pixels./count)) : nothing
-    end
-    centroidLocations .+= Point2(0.0,imSize[1]*1.0)
 
     # Put centroid locations into a format for tessellation and triangulation 
     xs = [x[1] for x in centroidLocations]
@@ -122,28 +78,28 @@ function centroidsToMeasurements(fileName,distanceGaussian,dilateCount,erodeCoun
     ylims!(ax2,0,size(imageIn)[1]/scalingFactor)
     
 
-    if saveFlag == 1
-        save(datadir("exp_pro","emCentroids","$(splitpath(fileName)[end])"),fig)
-        save(datadir("exp_pro","emCentroids","$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName fibrilMinSize distanceGaussian dilateCount erodeCount centroidLocations fig)
-    end
-    display(fig)
-    display(maximum(nNeighbours))
-    display(minimum(nNeighbours))
+    # if saveFlag == 1
+        save(datadir("exp_pro","emCentroidMeasurements",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end])"),fig)
+        save(datadir("exp_pro","emCentroidMeasurements",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName fibrilMinSize distanceGaussian dilateCount erodeCount centroidLocations fig)
+    # end
+    # display(fig)
+    # display(maximum(nNeighbours))
+    # display(minimum(nNeighbours))
     
     return fig, centroidLocations, newIndexMap
 end
 
 # fileName = "/Users/christopher/Postdoc/Code/PhaseFieldCrystal/data/exp_pro/cropped/mp13ko-3wiew_4800X_hui_0002_2.png"
-runs = [f for f in readdir(datadir("exp_pro","cropped")) if f[end-3:end]==".png"]
+runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
 lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
-distanceGaussian = 1.0
-fibrilMinSize = 250
+distanceGaussian = 2.0
+fibrilMinSize = 10
 dilateCount = 2
 erodeCount = 2
-size1 = 5000
+fibrilMaxSize = 5000
 saveFlag=1
-# for r in runs
-#     emFibrilsToCentroids(datadir("exp_pro","cropped",r),fibrilMinSize,distanceGaussian,dilateCount,erodeCount,size1,saveFlag)
-# end
+for r in runs
+    centroidsToMeasurements(datadir("exp_pro","cropped",r),distanceGaussian,dilateCount,erodeCount,fibrilMinSize,fibrilMaxSize,saveFlag)
+end
 
 
