@@ -11,10 +11,11 @@ using FromFile
 using FileIO
 using CSV
 using DataFrames
+using DelimitedFiles
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 
-function emFibrilsToCentroids(fileName,distanceGaussian,dilateCount,erodeCount,fibrilMinSize,fibrilMaxSize)
+function emFibrilsToCentroids(fileName,distanceGaussian,dilateCount,erodeCount,fibrilMinSize,fibrilMaxSize,saveFlag)
     mkpath(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4]))
     
     # Import previously generated mask
@@ -30,11 +31,11 @@ function emFibrilsToCentroids(fileName,distanceGaussian,dilateCount,erodeCount,f
     # Binarise with Otsu algorithm
     binarizedImage = binarize(filteredImage,Otsu())
     # Erode and dilate    
-    for i=1:dilateCount
-        dilate!(binarizedImage)
-    end
     for i=1:erodeCount
         erode!(binarizedImage)
+    end
+    for i=1:dilateCount
+        dilate!(binarizedImage)
     end
 
     # Initial segmentation 
@@ -72,15 +73,28 @@ function emFibrilsToCentroids(fileName,distanceGaussian,dilateCount,erodeCount,f
     end
     centroidLocations .+= Point2(0.0,imSize[1]*1.0)
 
-    fig = Figure()
-    ax = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
-    hidedecorations!(ax)
-    hidespines!(ax)
-    image!(ax,rotr90(imageIn))
-    scatter!(ax,centroidLocations,color=(:orange,1.0),markersize=6)
-    safesave(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4],splitpath(fileName)[end]),fig)
-    safesave(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName fibrilMinSize fibrilMaxSize distanceGaussian dilateCount erodeCount centroidLocations fig)
-    # display(fig)
+    fig = Figure(resolution=(4000,4000))
+    ax1 = CairoMakie.Axis(fig[2,1],aspect=DataAspect())
+    ax2 = CairoMakie.Axis(fig[2,2],aspect=DataAspect())
+    ax3 = CairoMakie.Axis(fig[1,2],aspect=DataAspect())
+    ax4 = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
+    hidedecorations!(ax1); hidespines!(ax1)
+    hidedecorations!(ax2); hidespines!(ax2)
+    hidedecorations!(ax3); hidespines!(ax3)
+    hidedecorations!(ax4); hidespines!(ax4)
+    image!(ax1,rotr90(map(i->get_random_color(i), fibrilIndexMap)))
+    image!(ax3,rotr90(binarizedImage))
+    image!(ax4,rotr90(grayImage))
+    image!(ax2,rotr90(imageIn))
+    scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=30)
+    resize_to_layout!(fig)
+    display(fig)
+    
+    if saveFlag==1
+        safesave(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4],splitpath(fileName)[end]),fig)
+        safesave(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName fibrilMinSize fibrilMaxSize distanceGaussian dilateCount erodeCount centroidLocations fig)
+    end 
+
     return fig, centroidLocations, fibrilIndexMap
 end
 
