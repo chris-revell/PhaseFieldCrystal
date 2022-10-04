@@ -5,10 +5,8 @@ using DrWatson
 using CSV
 using DataFrames
 
-fileName = datadir("exp_pro","cropped","mp13ko-3wiew_4800X_hui_0002_2.png")
-
 function emToCentroidsInteractive(fileName)
-    mkpath(datadir("exp_pro","emCentroidsInteractive")
+    mkpath(datadir("exp_pro","emCentroidsInteractive"))
 
     imageIn = load(fileName)
 
