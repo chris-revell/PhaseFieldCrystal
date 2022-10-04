@@ -99,7 +99,7 @@ erodeCount = 2
 fibrilMaxSize = 5000
 saveFlag=1
 for r in runs
-    centroidsToMeasurements(datadir("exp_pro","cropped",r),distanceGaussian,dilateCount,erodeCount,fibrilMinSize,fibrilMaxSize,saveFlag)
+    centroidsToMeasurements(datadir("exp_pro","cropped",r))
 end
 
 

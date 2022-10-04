@@ -85,7 +85,7 @@ function phaseFieldCrystal(imagePath,lX,r,ϕ0,m,a,λ,δt,tMax,outCount,loggerFla
     # Save results in JLD2 format with unique filename
     if outputFlag==1
         maskFileName = splitpath(imagePath)[end][1:end-4]
-        mkpath(datadir("sims",subFolder))
+        mkpath(datadir("sims",subFolder,maskFileName))
         params = @strdict ϕ0 r m λ nX nY lX a δt tMax
         # Create filename from parameters; prefix filename with current data and time
         fileName = savename(params,connector="",ignores=["a"])
