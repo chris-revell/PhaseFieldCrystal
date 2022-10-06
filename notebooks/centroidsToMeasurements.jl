@@ -24,8 +24,8 @@ function centroidsToMeasurements(fileName)
     maskData = load(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"))
     @unpack newIndexMap, lX, h = maskData
     
-    centroidData = load(datadir("exp_pro","emCentroids",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"))
-    @unpack fibrilMinSize, fibrilMaxSize, distanceGaussian, dilateCount, erodeCount, centroidLocations = centroidData
+    centroidData = load(datadir("exp_pro","emCentroidsInteractive","$(splitpath(fileName)[end][1:end-4]).jld2"))
+    @unpack centroidLocations = centroidData
     
     # Import image file and convert to grayscale
     imageIn = load(fileName)
@@ -64,7 +64,19 @@ function centroidsToMeasurements(fileName)
 
     ax2 = CairoMakie.Axis(fig[1,2],aspect=DataAspect())
     # Plot voronoi cells around each fibril coloured by neighbour count
-    poly!(ax2,hull.vertices,color=(:black,0.5))
+
+    
+    # maskImage = copy(imageIn)
+    # for i=1:size(imageIn)[1]
+    #     for j=1:size(imageIn)[2]
+    #         if newIndexMap[i,j] == 0
+    #             maskImage[i,j] == (:black,0.0)
+    #         else
+    #             maskImage[i,j] == (:black,1.0)
+    #         end
+    #     end
+    # end
+
     # Map neighbour counts to colours 
     cmap = cgrad(:bwr, 5, categorical=true, rev=true)
     for (i,c) in enumerate(tess.Cells)
@@ -72,15 +84,19 @@ function centroidsToMeasurements(fileName)
             poly!(ax2, c, color=[nNeighbours[i]], colormap=cmap, colorrange=(4,8),highclip=:black,lowclip=:black)
         # end
     end
+
+    poly!(ax2,hull.vertices,color=(:grey,1.0))
+
+    # image!(ax2,maskImage)
     hidedecorations!(ax2)
     hidespines!(ax2)
     xlims!(ax2,0,size(imageIn)[2]/scalingFactor)
     ylims!(ax2,0,size(imageIn)[1]/scalingFactor)
     
-
+    display(fig)
     # if saveFlag == 1
-        save(datadir("exp_pro","emCentroidMeasurements",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end])"),fig)
-        save(datadir("exp_pro","emCentroidMeasurements",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName fibrilMinSize distanceGaussian dilateCount erodeCount centroidLocations fig)
+        # save(datadir("exp_pro","emCentroidMeasurements",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end])"),fig)
+        # save(datadir("exp_pro","emCentroidMeasurements",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName fibrilMinSize distanceGaussian dilateCount erodeCount centroidLocations fig)
     # end
     # display(fig)
     # display(maximum(nNeighbours))
