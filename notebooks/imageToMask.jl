@@ -11,6 +11,7 @@ using FromFile
 using FileIO
 using CSV
 using DataFrames
+using DelimitedFiles
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 
@@ -45,7 +46,7 @@ function imageToMask(fileName,distanceGaussian,dilateCount,erodeCount,lX,h)
     
     centralSegment = seg3.image_indexmap[imSize.÷2...]
 
-    newIndexMap = copy(imageIn)
+    newIndexMap = copy(grayImage)
     for i=1:imSize[1]
         for j=1:imSize[2]
             if seg3.image_indexmap[i,j] == centralSegment
@@ -89,7 +90,7 @@ lXDict = Dict(croppedLX[!,:file].=>croppedLX[!,:lX])
 # okMasks   = [f for f in readdir(datadir("exp_pro","masks","ok","compressed")) if f[end-3:end]==".png"]
 # subFrame  = filter(:file => f->f in okMasks, croppedLX)
 scalingLX = 200.0/1.82314
-for r in runs
+for r in runs[end-4:end]
     imageToMask(datadir("exp_pro","cropped",r),distanceGaussian,dilateCount,erodeCount,lXDict[r]*scalingLX,0.4)   
 end
 
