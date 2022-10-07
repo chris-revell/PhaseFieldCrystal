@@ -16,7 +16,7 @@ using DataFrames
 
 runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
 
-fig = Figure(resolution=(6000,6000),fontsize=64)
+fig = Figure(resolution=(6000,6000),fontsize=64,backgroundcolor=:grey)
 
 axes = Dict()
 sizes = Dict()
@@ -33,7 +33,7 @@ for (i,r) in enumerate(runs)
     imSize = size(imageIn)
     grayImage = Gray.(imageIn)
 
-    ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect())
+    ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect(),backgroundcolor=:grey)
     image!(ax2,rotr90(imageIn))
     #scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=ceil(Int64,10000/imSize[1]))
     scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=10)
@@ -44,23 +44,29 @@ for (i,r) in enumerate(runs)
     sizes[r] = imSize
 end 
 
-xMax = maximum(last.(values(sizes)))
-yMax = maximum(first.(values(sizes)))
-
 lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
 
 lengthPerPixel = lengthMeasurements[!,:length]./lengthMeasurements[!,:Pixels]
 lengthPerPixelDict = Dict()
+lengthDict = Dict()
 for r in runs 
     subsetLengths = subset(lengthMeasurements, :File => m -> occursin.(r[1:end-6],m))
     lengthPerPixelDict[r] = (subsetLengths[!,:length]./subsetLengths[!,:Pixels])[1]
+    lengthDict[r] = lengthPerPixelDict[r].*sizes[r]
 end
 
+xMax = maximum(first.(values(lengthDict)))
+yMax = maximum(last.(values(lengthDict)))
 
 for r in runs 
-    xlims!(axes[r],((last(sizes[r])-xMax)/2,(xMax+last(sizes[r]))/2).*lengthPerPixelDict[r])
-    ylims!(axes[r],((first(sizes[r])-yMax)/2,(yMax+first(sizes[r]))/2).*lengthPerPixelDict[r])
+    xlims!(axes[r],(0,xMax)./lengthPerPixelDict[r])
+    ylims!(axes[r],(0,yMax)./lengthPerPixelDict[r])
 end
+# for r in runs 
+#     xlims!(axes[r],(-xMax,xMax)./(2*lengthPerPixelDict[r]).+first(sizes[r])/2)
+#     ylims!(axes[r],(-yMax,yMax)./(2*lengthPerPixelDict[r]).+last(sizes[r])/2)
+# end
+
 
 resize_to_layout!(fig)
 display(fig)
