@@ -52,7 +52,6 @@ for (i,r) in enumerate(runs)
     subsetResults = subset(results, :path => m -> occursin.(r[1:end-4],m))
 
     maskIn = load(datadir("exp_pro","masksCompressed",r[1:end-4],"$(r[1:end-4]).png"))
-    # @unpack newIndexMap, lX, h = maskData
     maskImage = fill(RGBA(1,1,1,1),size(maskIn))
     for i=1:size(maskIn)[1]
         for j=1:size(maskIn)[2]
@@ -91,7 +90,6 @@ for (i,r) in enumerate(runs)
     scalingFactor = maximum(abs.([xs ys]))/(1-3eps(Float64))
     shiftedCentroidLocations = centroidLocations./scalingFactor
     shiftedCentroidLocations .+= Point2(0,1)
-    display(shiftedCentroidLocations)
 
     # Delaunay triangulation of centroid locations using function from GR
     n, tri = delaunay(xs,ys)
@@ -104,21 +102,21 @@ for (i,r) in enumerate(runs)
     hullInds = sort([findall(x->Point2(x...)==v,shiftedCentroidLocations)[1] for v in hull.vertices])
 
     # Voronoi tessellation of centroid positions within (0,0) (1,1) box
-    # display(shiftedCentroidLocations)
     tess = voronoicells(shiftedCentroidLocations, Rectangle(Point2(0, 0), Point2(1, 1)))
 
     ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect())
 
     for (i,c) in enumerate(tess.Cells)
         if i ∉ hullInds
-            poly!(ax2, c.*scalingFactor, color=neighbourColours(nNeighbours[i]),strokecolor=(:black,1.0),strokewidth=1.0)
+            vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
+            poly!(ax2, vertices, color=neighbourColours(nNeighbours[i]),strokecolor=(:black,1.0),strokewidth=1.0)
         else
             # poly!(ax2, c.*scalingFactor, color=:white,strokecolor=(:black,1.0),strokewidth=1.0)
         end
     end
     image!(ax2,rotr90(maskImage))
     # poly!(ax2,hull.vertices,color=(:grey,1.0))
-    scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=4)
+    # scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=4)
     hidedecorations!(ax2)
     hidespines!(ax2)
     
@@ -128,17 +126,6 @@ for (i,r) in enumerate(runs)
     sizes[r] = size(maskImage)
 end 
 
-# lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
-
-# lengthPerPixel = lengthMeasurements[!,:length]./lengthMeasurements[!,:Pixels]
-# lengthPerPixelDict = Dict()
-# lengthDict = Dict()
-# for r in runs 
-#     subsetLengths = subset(lengthMeasurements, :File => m -> occursin.(r[1:end-6],m))
-#     lengthPerPixelDict[r] = (subsetLengths[!,:length]./subsetLengths[!,:Pixels])[1]
-#     lengthDict[r] = lengthPerPixelDict[r].*sizes[r]
-# end
-
 xMax = maximum(first.(values(sizes)))
 yMax = maximum(last.(values(sizes)))
 
@@ -146,17 +133,8 @@ for r in runs
     xlims!(axes[r],(0,xMax))
     ylims!(axes[r],(0,yMax))
 end
-# for r in runs 
-#     xlims!(axes[r],(-xMax,xMax)./(2*lengthPerPixelDict[r]).+first(sizes[r])/2)
-#     ylims!(axes[r],(-yMax,yMax)./(2*lengthPerPixelDict[r]).+last(sizes[r])/2)
-# end
-
 
 resize_to_layout!(fig)
 display(fig)
 
-
 save(datadir("fromCSF","allMasks","allMasksSimulationNeighbourGrid.png"),fig)
-
-
-
