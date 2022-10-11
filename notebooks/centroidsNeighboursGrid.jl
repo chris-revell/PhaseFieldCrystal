@@ -46,7 +46,7 @@ for (i,r) in enumerate(runs)
     # Put centroid locations into a format for tessellation and triangulation 
     xs = [x[1] for x in centroidLocations]
     ys = [x[2] for x in centroidLocations]
-    scalingFactor = maximum(size(newIndexMap))/(1-3eps(Float64))
+    scalingFactor = maximum(abs.([xs ys]))/(1-3eps(Float64))
     shiftedCentroidLocations = centroidLocations./scalingFactor
 
     # Delaunay triangulation of centroid locations using function from GR

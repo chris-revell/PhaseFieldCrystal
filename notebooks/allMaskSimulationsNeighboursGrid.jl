@@ -25,7 +25,7 @@ fig = Figure(resolution=(6000,6000),fontsize=64)
 axes = Dict()
 sizes = Dict()
 
-fig = Figure(resolution=(6000,6000),backgroundcolor=:black,fontsize=64)
+fig = Figure(resolution=(6000,6000),fontsize=64)
 
 function neighbourColours(x)
     if x==6
@@ -38,6 +38,14 @@ function neighbourColours(x)
         return :black 
     end
 end
+
+function binariseSimulation!(uij)
+    if uij > 0.5
+        return 1.0
+    else
+        return 0.0
+    end
+end 
 
 for (i,r) in enumerate(runs)
     
@@ -61,42 +69,29 @@ for (i,r) in enumerate(runs)
     # Convert matrix to a grayscale image
     uImg = Gray.(uMat)
     # Binarise grayscale image
-    uBinarized = binarize(uImg,Otsu())
+    uBinarized = binariseSimulation!.(uImg)
     # Segment binarised image
     seg = fast_scanning(uBinarized, 0.01)    
-    # Prune segments larger than maxsize, adding their pixels to the largest neighbouring segment.
-    # Should leave segments for each fibril and one segment for the background.
-    seg2 = prune_segments(seg, i->(segment_pixel_count(seg,i)>500), (i,j)->(-segment_pixel_count(seg,j)))
-    seg2 = prune_segments(seg2, i->(segment_pixel_count(seg2,i)<50), (i,j)->(-segment_pixel_count(seg2,j)))
-    display(map(i->get_random_color(i), labels_map(seg2)))
     # Find centre of mass positions of all fibril segments. 
     centroidLocations = Point2{Float64}[]
     maxSize = 500
-    for k in seg2.segment_labels
-        pixels = zeros(2)
-        count = 0
-        for i=1:size(uImg)[1]
-            for j=1:size(uImg)[2]
-                if seg2.image_indexmap[i,j] == k
-                    pixels .+= [j,-i]
-                    count += 1
-                end
-            end
-        end
+    for k in seg.segment_labels
+        pixels = findall(x->x==k,seg.image_indexmap)
+        com = Tuple(sum(pixels))./length(pixels)        
         # Exclude the one remaining segment above size of maxSize, representing the system background
-        if count<maxSize
-            push!(centroidLocations,Point2{Float64}(pixels./count...))
+        if length(pixels)<maxSize
+            push!(centroidLocations,Point2{Float64}(com...))
         end
     end
-
-
+    display(map(i->get_random_color(i), seg.image_indexmap))
 
     # Put centroid locations into a format for tessellation and triangulation 
     xs = [x[1] for x in centroidLocations]
     ys = [x[2] for x in centroidLocations]
-    scalingFactor = maximum([xs ys])/(1-3eps(Float64))
+    scalingFactor = maximum(abs.([xs ys]))/(1-3eps(Float64))
     shiftedCentroidLocations = centroidLocations./scalingFactor
-    shiftedCentroidLocations .+= Point2(0,1)
+    # shiftedCentroidLocations .+= Point2(0,1)
+    display(shiftedCentroidLocations)
 
     # Delaunay triangulation of centroid locations using function from GR
     n, tri = delaunay(xs,ys)
@@ -112,7 +107,7 @@ for (i,r) in enumerate(runs)
     # display(shiftedCentroidLocations)
     tess = voronoicells(shiftedCentroidLocations, Rectangle(Point2(0, 0), Point2(1, 1)))
 
-    ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect(), backgroundcolor=:black)
+    ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect())
 
     for (i,c) in enumerate(tess.Cells)
         if i ∉ hullInds
@@ -133,24 +128,23 @@ for (i,r) in enumerate(runs)
     sizes[r] = size(maskImage)
 end 
 
+# lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
 
-lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
+# lengthPerPixel = lengthMeasurements[!,:length]./lengthMeasurements[!,:Pixels]
+# lengthPerPixelDict = Dict()
+# lengthDict = Dict()
+# for r in runs 
+#     subsetLengths = subset(lengthMeasurements, :File => m -> occursin.(r[1:end-6],m))
+#     lengthPerPixelDict[r] = (subsetLengths[!,:length]./subsetLengths[!,:Pixels])[1]
+#     lengthDict[r] = lengthPerPixelDict[r].*sizes[r]
+# end
 
-lengthPerPixel = lengthMeasurements[!,:length]./lengthMeasurements[!,:Pixels]
-lengthPerPixelDict = Dict()
-lengthDict = Dict()
+xMax = maximum(first.(values(sizes)))
+yMax = maximum(last.(values(sizes)))
+
 for r in runs 
-    subsetLengths = subset(lengthMeasurements, :File => m -> occursin.(r[1:end-6],m))
-    lengthPerPixelDict[r] = (subsetLengths[!,:length]./subsetLengths[!,:Pixels])[1]
-    lengthDict[r] = lengthPerPixelDict[r].*sizes[r]
-end
-
-xMax = maximum(first.(values(lengthDict)))
-yMax = maximum(last.(values(lengthDict)))
-
-for r in runs 
-    xlims!(axes[r],(0,xMax)./lengthPerPixelDict[r])
-    ylims!(axes[r],(0,yMax)./lengthPerPixelDict[r])
+    xlims!(axes[r],(0,xMax))
+    ylims!(axes[r],(0,yMax))
 end
 # for r in runs 
 #     xlims!(axes[r],(-xMax,xMax)./(2*lengthPerPixelDict[r]).+first(sizes[r])/2)
@@ -161,7 +155,8 @@ end
 resize_to_layout!(fig)
 display(fig)
 
-save(datadir("exp_pro","emCentroidNeighbours","grid.png"),fig)
+
+save(datadir("exp_pro","allMasksSimulationNeighbourGrid.png"),fig)
 
 
 

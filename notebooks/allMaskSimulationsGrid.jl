@@ -67,15 +67,20 @@ yMax = maximum(first.(values(sizes)))
 # end
 
 
+
 for r in runs 
     xlims!(axes[r],(0,xMax))
     ylims!(axes[r],(0,yMax))
 end
 
+for i=1:6
+    colsize!(fig.layout, i, Aspect(1, 1.0))
+end
+
 resize_to_layout!(fig)
 display(fig)
 
-save(datadir("fromCSF","allMasks","grid.png"),fig)
+# save(datadir("fromCSF","allMasks","grid.png"),fig)
 
 
 

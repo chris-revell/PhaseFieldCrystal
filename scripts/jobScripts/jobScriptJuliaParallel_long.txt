@@ -1,0 +1,50 @@
+#!/bin/bash --login
+#$ -cwd               # Application will run from current working directory
+#$ -N juliaPFC        # Name given to batch job (optional)
+#$ -pe smp.pe 16      # Request 16 cores using SMP parallel environment
+#$ -m bea
+#$ -M christopher.revell@manchester.ac.uk
+
+/mnt/iusers01/maths01/x85521cr/julia-1.7.2/bin/julia -t $NSLOTS --project=. << EOF
+
+using DrWatson 
+@quickactivate
+using Base.Threads
+using PhaseFieldCrystal
+using CSV
+using DataFrames
+
+fileName = "18tailT_4800X_HUI_0008_0.png"
+
+croppedLX = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","croppedLX.csv")))
+okMasks   = [f for f in readdir(datadir("exp_pro","masks","ok","compressed")) if f[end-3:end]==".png"]
+subFrame  = filter(:file => f->f==fileName, croppedLX)
+
+scalingLX = 200.0/1.82314
+
+c = Dict()
+
+c[:imagelXpairs]  = [Pair(fileName,subFrame[!,:lX][1])]
+c[:r]             = [0.70]
+c[:m]             = [0.1]
+c[:ϕ0]            = [0.41]
+c[:λ]             = [2.0]
+c[:a]             = [2.0]
+c[:δt]            = [0.1]
+c[:tMax]          = [10000.0]
+c[:loggerFlag]    = [1]
+c[:outCount]      = [1000]
+c[:outputFlag]    = [1]
+c[:visualiseFlag] = [1]
+c[:freeEnergyFlag]= [0]
+c[:nBlasThreads]  = [16]
+c[:subFolderName] = "longRuns"
+
+# Warmup
+phaseFieldCrystal("data/exp_pro/testMask.png",200.0,0.7,-0.41,0.1,2.0,1.0,0.5,10.0,1,0,0,0,0,4)
+# Run 
+for ps in dict_list(c)
+    phaseFieldCrystal(datadir("exp_pro","masks","ok","compressed",ps[:imagelXpairs].first),ps[:imagelXpairs].second*scalingLX,ps[:r],ps[:ϕ0],ps[:m],ps[:a],ps[:λ],ps[:δt],ps[:tMax],ps[:outCount],ps[:loggerFlag],ps[:outputFlag],ps[:visualiseFlag],ps[:freeEnergyFlag],ps[:nBlasThreads];subFolder=ps[:subFolderName])
+end
+
+EOF

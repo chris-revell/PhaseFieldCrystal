@@ -18,7 +18,7 @@ using DifferentialEquations
 using JLD2
 using DrWatson
 
-function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileName, freeEnergyFlag)
+function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileName)
     
     fig1 = Figure(figure_padding=0,resolution=(1000,1000))
     ax1 = CairoMakie.Axis(fig1[1,1],aspect=DataAspect())
@@ -30,7 +30,7 @@ function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileNam
     ax1.yreversed = true
     resize_to_layout!(fig1)
     tSteps = range(1,length(t),step=1)
-    record(fig1,datadir("sims",subFolder,"$(fileName[1:end-5])_u.mp4"),tSteps; framerate=10) do i
+    record(fig1,datadir(subFolder,"$(fileName[1:end-5])_u.mp4"),tSteps; framerate=10) do i
         ax1.title = "t=$(@sprintf("%.2f", t[i]))"
         uInternal[] = transpose(reshape(u[i],(nY,nX)))
         uInternal[] = uInternal[]
@@ -67,7 +67,7 @@ function importData(path)
 
     pathparts = splitpath(path)
 
-    return u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, joinpath(pathparts[2:end-1]), pathparts[end][1:end-5]
+    return u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, joinpath(pathparts[end-2:end-1]), pathparts[end][1:end-5], 0
 
 end
 
