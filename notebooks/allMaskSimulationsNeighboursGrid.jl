@@ -65,13 +65,13 @@ for (i,r) in enumerate(runs)
     end    
 
     # Convert simulation result to a 2D matrix
-    uMat = reshape(subsetResults[1,:u][end],(subsetResults[1,:nY],subsetResults[1,:nX]))#transpose(reshape(results[i,:u],(results[i,:nY],results[i,:nX])))
-    # Convert matrix to a grayscale image
-    uImg = Gray.(uMat)
+    uMat = reshape(subsetResults[1,:u][end],(subsetResults[1,:nY],subsetResults[1,:nX]))
     # Binarise grayscale image
-    uBinarized = binariseSimulation!.(uImg)
+    uImg = binariseSimulation!.(uMat)
+    # Convert matrix to a grayscale image
+    uGray = Gray.(uImg)
     # Segment binarised image
-    seg = fast_scanning(uBinarized, 0.01)    
+    seg = fast_scanning(uGray, 0.01)    
     # Find centre of mass positions of all fibril segments. 
     centroidLocations = Point2{Float64}[]
     maxSize = 500
@@ -80,17 +80,17 @@ for (i,r) in enumerate(runs)
         com = Tuple(sum(pixels))./length(pixels)        
         # Exclude the one remaining segment above size of maxSize, representing the system background
         if length(pixels)<maxSize
-            push!(centroidLocations,Point2{Float64}(com...))
+            push!(centroidLocations,Point2{Float64}(com[2],-com[1]))
         end
     end
-    display(map(i->get_random_color(i), seg.image_indexmap))
+    # display(map(i->get_random_color(i), seg.image_indexmap))
 
     # Put centroid locations into a format for tessellation and triangulation 
     xs = [x[1] for x in centroidLocations]
     ys = [x[2] for x in centroidLocations]
     scalingFactor = maximum(abs.([xs ys]))/(1-3eps(Float64))
     shiftedCentroidLocations = centroidLocations./scalingFactor
-    # shiftedCentroidLocations .+= Point2(0,1)
+    shiftedCentroidLocations .+= Point2(0,1)
     display(shiftedCentroidLocations)
 
     # Delaunay triangulation of centroid locations using function from GR
@@ -156,7 +156,7 @@ resize_to_layout!(fig)
 display(fig)
 
 
-save(datadir("exp_pro","allMasksSimulationNeighbourGrid.png"),fig)
+save(datadir("fromCSF","allMasks","allMasksSimulationNeighbourGrid.png"),fig)
 
 
 
