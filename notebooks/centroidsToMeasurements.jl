@@ -19,7 +19,9 @@ mkpath(datadir("exp_pro","emCentroidMeasurements"))
 
 runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
 
-fig = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=64)
+fig1 = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=64)
+fig2 = Figure(resolution=(1000,1000),backgroundcolor=:white,fontsize=32)
+axHist = Axis(fig2)
 
 lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
 lengthPerPixel = lengthMeasurements[!,:length]./lengthMeasurements[!,:Pixels]
@@ -31,6 +33,7 @@ end
 
 axes = Dict()
 sizes = Dict()
+imLengths = Dict()
 
 for (i,r) in enumerate(runs)
 
@@ -50,13 +53,36 @@ for (i,r) in enumerate(runs)
     # Count neighbours of each centroid in the triangulation 
     nNeighbours = [length(findall(x->x==i,tri)) for i=1:length(shiftedCentroidLocations)]
 
+    # Concave hull to identify boundary fibrils 
+    hull = concave_hull(shiftedCentroidLocations,1)
+    # Indices of fibrils within the hull 
+    hullInds = sort([findall(x->Point2(x...)==v,shiftedCentroidLocations)[1] for v in hull.vertices])
+
     pairs = Tuple[]
     for t in eachrow(tri)
         for i=1:3
             labelSizeOrder = sort(t)
-            (labelSizeOrder[1],labelSizeOrder[2]) in pairs ? nothing : push!(pairs,(labelSizeOrder[1],labelSizeOrder[2]))
-            (labelSizeOrder[1],labelSizeOrder[3]) in pairs ? nothing : push!(pairs,(labelSizeOrder[1],labelSizeOrder[3]))
-            (labelSizeOrder[2],labelSizeOrder[3]) in pairs ? nothing : push!(pairs,(labelSizeOrder[2],labelSizeOrder[3]))
+            if (labelSizeOrder[1],labelSizeOrder[2]) ∉ pairs 
+                if labelSizeOrder[1] ∈ hullInds && labelSizeOrder[2] ∈ hullInds
+                    nothing 
+                else 
+                    push!(pairs,(labelSizeOrder[1],labelSizeOrder[2]))
+                end
+            end 
+            if (labelSizeOrder[1],labelSizeOrder[3]) ∉ pairs 
+                if labelSizeOrder[1] ∈ hullInds && labelSizeOrder[3] ∈ hullInds
+                    nothing 
+                else 
+                    push!(pairs,(labelSizeOrder[1],labelSizeOrder[3]))
+                end
+            end 
+            if (labelSizeOrder[2],labelSizeOrder[3]) ∉ pairs 
+                if labelSizeOrder[2] ∈ hullInds && labelSizeOrder[3] ∈ hullInds
+                    nothing 
+                else 
+                    push!(pairs,(labelSizeOrder[2],labelSizeOrder[3]))
+                end
+            end
         end
     end 
 
@@ -73,7 +99,7 @@ for (i,r) in enumerate(runs)
     #     push!(lengths, norm(p[1]-p[2]))
     # end
 
-    ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect(),backgroundcolor=:white)
+    ax2 = CairoMakie.Axis(fig1[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect(),backgroundcolor=:white)
     image!(ax2,rotr90(imageIn))
     #scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=ceil(Int64,10000/imSize[1]))
     scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=10)
@@ -82,10 +108,11 @@ for (i,r) in enumerate(runs)
     end
     hidedecorations!(ax2)
     hidespines!(ax2)
-    Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], L"\mu=%$(round(mean(lengths),digits=1))nm,~\sigma=%$(round(std(lengths),digits=1))", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0))
+    Label(fig1[(i-1)%6+1,(i-1)÷6+1, Bottom()], L"\mu=%$(round(mean(lengths),digits=1))nm,~\sigma=%$(round(std(lengths),digits=1))", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0))
     
     axes[r] = ax2
     sizes[r] = size(imageIn)
+    imLengths[r] = lengths
 end 
 
 lengthDict = Dict()
@@ -101,7 +128,7 @@ for r in runs
     ylims!(axes[r],(0,yMax)./lengthPerPixelDict[r])
 end
 
-resize_to_layout!(fig)
-display(fig)
+resize_to_layout!(fig1)
+display(fig1)
 
-save(datadir("exp_pro","emCentroidMeasurements","grid.png"),fig)
+save(datadir("exp_pro","emCentroidMeasurements","grid.png"),fig1)
