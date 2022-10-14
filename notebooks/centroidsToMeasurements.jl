@@ -1,8 +1,5 @@
 using DrWatson; @quickactivate
 using Images
-using ImageBinarization
-using ImageSegmentation
-using Random
 using CairoMakie
 using Colors
 using GeometryBasics
@@ -14,39 +11,38 @@ using VoronoiCells
 using GR: delaunay
 using CSV
 using DataFrames
+using Statistics
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
-function neighbourColours(x)
-    if x==6
-        return :white
-    elseif x==5 
-        return :red 
-    elseif x==7
-        return :blue
-    else 
-        return :black 
-    end
+mkpath(datadir("exp_pro","emCentroidMeasurements"))
+
+runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
+
+fig = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=64)
+
+lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
+lengthPerPixel = lengthMeasurements[!,:length]./lengthMeasurements[!,:Pixels]
+lengthPerPixelDict = Dict()
+for r in runs 
+    subsetLengths = subset(lengthMeasurements, :File => m -> occursin.(r[1:end-6],m))
+    lengthPerPixelDict[r] = (subsetLengths[!,:length]./subsetLengths[!,:Pixels])[1]
 end
 
-function centroidsToMeasurements(fileName)
-    mkpath(datadir("exp_pro","emCentroidNeighbours"))
+axes = Dict()
+sizes = Dict()
+
+for (i,r) in enumerate(runs)
+
+    imageIn = load(datadir("exp_pro","cropped",r))
     
-    maskData = load(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"))
-    @unpack newIndexMap, lX, h = maskData
-    
-    centroidData = load(datadir("exp_pro","emCentroidsInteractive","$(splitpath(fileName)[end][1:end-4]).jld2"))
+    centroidData = load(datadir("exp_pro","emCentroidsInteractive","$(r[1:end-4]).jld2"))
     @unpack centroidLocations = centroidData
-    
-    # Import image file and convert to grayscale
-    imageIn = load(fileName)
-    imSize = size(imageIn)
-    grayImage = Gray.(imageIn)
 
     # Put centroid locations into a format for tessellation and triangulation 
     xs = [x[1] for x in centroidLocations]
     ys = [x[2] for x in centroidLocations]
-    scalingFactor = maximum([xs ys])/(1-3eps(Float64))
+    scalingFactor = maximum(abs.([xs ys]))/(1-3eps(Float64))
     shiftedCentroidLocations = centroidLocations./scalingFactor
 
     # Delaunay triangulation of centroid locations using function from GR
@@ -54,72 +50,58 @@ function centroidsToMeasurements(fileName)
     # Count neighbours of each centroid in the triangulation 
     nNeighbours = [length(findall(x->x==i,tri)) for i=1:length(shiftedCentroidLocations)]
 
-    # Concave hull to identify boundary fibrils 
-    hull = concave_hull(shiftedCentroidLocations,1)
-    # Indices of fibrils within the hull 
-    hullInds = sort([findall(x->Point2(x...)==v,shiftedCentroidLocations)[1] for v in hull.vertices])
-
-    # Voronoi tessellation of centroid positions within (0,0) (1,1) box
-    tess = voronoicells(shiftedCentroidLocations, Rectangle(Point2(0, 0), Point2(1, 1)))
-
-
-    fig = Figure(resolution=(1000,500))
-    ax1 = CairoMakie.Axis(fig[1,1],aspect=DataAspect())
-    hidedecorations!(ax1)
-    hidespines!(ax1)
-    image!(ax1,rotr90(imageIn))
-    scatter!(ax1,centroidLocations,color=(:orange,1.0),markersize=4)
-    for i=1:n
-        poly!(ax1,centroidLocations[tri[i,:]],color=(:white,0.0),strokecolor=(:orange,1.0),strokewidth=1.0)
-    end
-
-    ax2 = CairoMakie.Axis(fig[1,2],aspect=DataAspect())
-    # Plot voronoi cells around each fibril coloured by neighbour count
-
-    
-    maskImage = fill(RGBA(1,1,1,1),size(imageIn))
-    for i=1:size(imageIn)[1]
-        for j=1:size(imageIn)[2]
-            if newIndexMap[i,j] < 0.5
-                maskImage[i,j] = RGBA(0.0,0.0,0.0,1.0)
-            else
-                maskImage[i,j] = RGBA(0.0,0.0,0.0,0.0)
-            end
+    pairs = Tuple[]
+    for t in eachrow(tri)
+        for i=1:3
+            labelSizeOrder = sort(t)
+            (labelSizeOrder[1],labelSizeOrder[2]) in pairs ? nothing : push!(pairs,(labelSizeOrder[1],labelSizeOrder[2]))
+            (labelSizeOrder[1],labelSizeOrder[3]) in pairs ? nothing : push!(pairs,(labelSizeOrder[1],labelSizeOrder[3]))
+            (labelSizeOrder[2],labelSizeOrder[3]) in pairs ? nothing : push!(pairs,(labelSizeOrder[2],labelSizeOrder[3]))
         end
-    end    
+    end 
 
- 
+    lengths = norm.(centroidLocations[first.(pairs)]-centroidLocations[last.(pairs)])
 
+    lengths .*= lengthPerPixelDict[r]*1000.0
 
-    for (i,c) in enumerate(tess.Cells)
-        if i ∉ hullInds
-            poly!(ax2, c.*scalingFactor, color=neighbourColours(nNeighbours[i]),strokecolor=(:black,1.0),strokewidth=1.0)
-        else
-            # poly!(ax2, c.*scalingFactor, color=:white,strokecolor=(:black,1.0),strokewidth=1.0)
-        end
+    display(r)
+    display(lengthPerPixelDict[r])
+    display(mean(lengths))
+
+    # lengths = Float64[]
+    # for p in pairs 
+    #     push!(lengths, norm(p[1]-p[2]))
+    # end
+
+    ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect(),backgroundcolor=:white)
+    image!(ax2,rotr90(imageIn))
+    #scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=ceil(Int64,10000/imSize[1]))
+    scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=10)
+    for p in pairs
+        lines!(ax2,Point.(centroidLocations[[p[1],p[2]]]))
     end
-    image!(ax2,rotr90(maskImage))
-    # poly!(ax2,hull.vertices,color=(:grey,1.0))
-    scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=4)
     hidedecorations!(ax2)
     hidespines!(ax2)
-    resize_to_layout!(fig)
-    display(fig)
+    Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], L"\mu=%$(round(mean(lengths),digits=1))nm,~\sigma=%$(round(std(lengths),digits=1))", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0))
+    
+    axes[r] = ax2
+    sizes[r] = size(imageIn)
+end 
 
-    save(datadir("exp_pro","emCentroidNeighbours","$(splitpath(fileName)[end])"),fig)
+lengthDict = Dict()
+for r in runs 
+    lengthDict[r] = lengthPerPixelDict[r].*sizes[r]
 end
 
-# fileName = "/Users/christopher/Postdoc/Code/PhaseFieldCrystal/data/exp_pro/cropped/mp13ko-3wiew_4800X_hui_0002_2.png"
-runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
-# lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
-# distanceGaussian = 2.0
-# fibrilMinSize = 10
-# dilateCount = 2
-# erodeCount = 2
-# fibrilMaxSize = 5000
-# saveFlag=1
-for r in runs
-    centroidsToMeasurements(datadir("exp_pro","cropped",r))
+xMax = maximum(first.(values(lengthDict)))
+yMax = maximum(last.(values(lengthDict)))
+
+for r in runs 
+    xlims!(axes[r],(0,xMax)./lengthPerPixelDict[r])
+    ylims!(axes[r],(0,yMax)./lengthPerPixelDict[r])
 end
 
+resize_to_layout!(fig)
+display(fig)
 
+save(datadir("exp_pro","emCentroidMeasurements","grid.png"),fig)
