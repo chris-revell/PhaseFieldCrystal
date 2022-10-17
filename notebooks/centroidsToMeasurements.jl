@@ -12,6 +12,7 @@ using GR: delaunay
 using CSV
 using DataFrames
 using Statistics
+using StatsBase
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
@@ -20,8 +21,6 @@ mkpath(datadir("exp_pro","emCentroidMeasurements"))
 runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
 
 fig1 = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=64)
-fig2 = Figure(resolution=(1000,1000),backgroundcolor=:white,fontsize=32)
-axHist = Axis(fig2)
 
 lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
 lengthPerPixel = lengthMeasurements[!,:length]./lengthMeasurements[!,:Pixels]
@@ -90,21 +89,12 @@ for (i,r) in enumerate(runs)
 
     lengths .*= lengthPerPixelDict[r]*1000.0
 
-    display(r)
-    display(lengthPerPixelDict[r])
-    display(mean(lengths))
-
-    # lengths = Float64[]
-    # for p in pairs 
-    #     push!(lengths, norm(p[1]-p[2]))
-    # end
-
     ax2 = CairoMakie.Axis(fig1[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect(),backgroundcolor=:white)
     image!(ax2,rotr90(imageIn))
     #scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=ceil(Int64,10000/imSize[1]))
     scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=10)
     for p in pairs
-        lines!(ax2,Point.(centroidLocations[[p[1],p[2]]]))
+        lines!(ax2,Point.(centroidLocations[[p[1],p[2]]]),width=2,color=:orange)
     end
     hidedecorations!(ax2)
     hidespines!(ax2)
@@ -130,5 +120,47 @@ end
 
 resize_to_layout!(fig1)
 display(fig1)
-
 save(datadir("exp_pro","emCentroidMeasurements","grid.png"),fig1)
+
+
+means = Float64[]
+stds = Float64[]
+for r in runs
+    push!(means,mean(imLengths[r]))
+    push!(stds,std(imLengths[r]))
+end 
+spacingData = DataFrame(file=runs, mean=means, std=stds)
+CSV.write(datadir("exp_pro", "emCentroidMeasurements", "spacingData.csv"), spacingData)
+
+fig3 = Figure(resolution=(1000,1000),backgroundcolor=:white,fontsize=32)
+axErrorBars = CairoMakie.Axis(fig3[1,1])
+errorbars!(axErrorBars,Point2.(collect(1:length(runs)), means),stds./2, color=:black)
+scatter!(axErrorBars,Point2.(collect(1:length(runs)), means), color=:black)
+axErrorBars.xlabel="File"
+axErrorBars.ylabel="Mean spacing/nm"
+axErrorBars.xticks = 1:length(runs)
+axErrorBars.xtickformat = x -> runs[Int.(x)]
+axErrorBars.xticklabelrotation = -π/2
+resize_to_layout!(fig3)
+display(fig3)
+save(datadir("exp_pro","emCentroidMeasurements","means.png"),fig3)
+
+fig2 = Figure(resolution=(1000,1000),backgroundcolor=:white,fontsize=32)
+axHist = CairoMakie.Axis(fig2[1,1])
+for r in runs
+    points = Point2[]
+    # h = fit(Histogram, imLengths[r])
+    hNorm = normalize(fit(Histogram, imLengths[r]), mode=:pdf)
+    display(hNorm.weights)
+    edgeVec = collect(hNorm.edges[1])    
+    for i=1:length(hNorm.weights)
+        push!(points,Point2(mean(edgeVec[i:i+1]),hNorm.weights[i]))
+    end
+    lines!(axHist,points)
+end
+axHist.xlabel = L"Edge~length/nm"
+axHist.ylabel = L"Density"
+display(fig2)
+save(datadir("exp_pro","emCentroidMeasurements","lengthsHistogram.png"),fig2)
+
+
