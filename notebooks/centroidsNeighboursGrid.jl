@@ -14,10 +14,6 @@ using DataFrames
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
-runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
-
-fig = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=64)
-
 function neighbourColours(x)
     if x==6
         return (:white,0.0)
@@ -30,8 +26,11 @@ function neighbourColours(x)
     end
 end
 
-
 mkpath(datadir("exp_pro","emCentroidNeighbours"))
+
+runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
+
+fig = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=64)
 
 axes = Dict()
 sizes = Dict()
@@ -88,20 +87,17 @@ for (i,r) in enumerate(runs)
         end
     end
     # image!(ax2,rotr90(maskImage))
-    # poly!(ax2,hull.vertices,color=(:grey,1.0))
     scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=4)
     hidedecorations!(ax2)
     hidespines!(ax2)
     
-    Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0), color=:black)
+    Label(fig[(i-1)%6+1,(i-1)÷6+1, BottomLeft()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0), color=:black)
     
     axes[r] = ax2
     sizes[r] = size(maskImage)
 end 
 
-
 lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
-
 lengthPerPixel = lengthMeasurements[!,:length]./lengthMeasurements[!,:Pixels]
 lengthPerPixelDict = Dict()
 lengthDict = Dict()
@@ -118,16 +114,21 @@ for r in runs
     xlims!(axes[r],(0,xMax)./lengthPerPixelDict[r])
     ylims!(axes[r],(0,yMax)./lengthPerPixelDict[r])
 end
-# for r in runs 
-#     xlims!(axes[r],(-xMax,xMax)./(2*lengthPerPixelDict[r]).+first(sizes[r])/2)
-#     ylims!(axes[r],(-yMax,yMax)./(2*lengthPerPixelDict[r]).+last(sizes[r])/2)
-# end
 
+colgap!(fig.layout, 1, -700)
+colgap!(fig.layout, 2, -600)
+colgap!(fig.layout, 3, -600)
+colgap!(fig.layout, 4, -500)
+colgap!(fig.layout, 5, -100)
+
+rowgap!(fig.layout, 1, -100)
+rowgap!(fig.layout, 2, -100)
+rowgap!(fig.layout, 3, -200)
 
 resize_to_layout!(fig)
 display(fig)
 
-save(datadir("exp_pro","emCentroidNeighbours","grid.png"),fig)
+save(datadir("exp_pro","emCentroidNeighbours","emNeighboursGrid.png"),fig)
 
 
 

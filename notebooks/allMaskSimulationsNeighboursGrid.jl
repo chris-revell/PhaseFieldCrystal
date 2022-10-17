@@ -16,17 +16,6 @@ using ImageSegmentation
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
-results = collect_results!(datadir("fromCSF","allMasks"); subfolders = true)
-
-runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
-
-fig = Figure(resolution=(6000,6000),fontsize=64)
-
-axes = Dict()
-sizes = Dict()
-
-fig = Figure(resolution=(6000,6000),fontsize=64)
-
 function neighbourColours(x)
     if x==6
         return :white
@@ -46,6 +35,15 @@ function binariseSimulation!(uij)
         return 0.0
     end
 end 
+
+results = collect_results!(datadir("fromCSF","allMasks"); subfolders = true)
+
+runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
+
+fig = Figure(resolution=(6000,6000),fontsize=64)
+
+axes = Dict()
+sizes = Dict()
 
 for (i,r) in enumerate(runs)
     
@@ -120,7 +118,7 @@ for (i,r) in enumerate(runs)
     hidedecorations!(ax2)
     hidespines!(ax2)
     
-    Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0), color=:black)
+    Label(fig[(i-1)%6+1,(i-1)÷6+1, BottomLeft()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0), color=:black)
     
     axes[r] = ax2
     sizes[r] = size(maskImage)
@@ -133,6 +131,16 @@ for r in runs
     xlims!(axes[r],(0,xMax))
     ylims!(axes[r],(0,yMax))
 end
+
+colgap!(fig.layout, 1, -700)
+colgap!(fig.layout, 2, -600)
+colgap!(fig.layout, 3, -600)
+colgap!(fig.layout, 4, -500)
+colgap!(fig.layout, 5, -100)
+
+rowgap!(fig.layout, 1, -100)
+rowgap!(fig.layout, 2, -100)
+rowgap!(fig.layout, 3, -200)
 
 resize_to_layout!(fig)
 display(fig)

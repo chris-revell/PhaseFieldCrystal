@@ -29,7 +29,6 @@ for (i,r) in enumerate(runs)
     subsetResults = subset(results, :path => m -> occursin.(r[1:end-4],m))
 
     maskIn = load(datadir("exp_pro","masksCompressed",r[1:end-4],"$(r[1:end-4]).png"))
-    # @unpack newIndexMap, lX, h = maskData
     maskImage = fill(RGBA(1,1,1,1),size(maskIn))
     for i=1:size(maskIn)[1]
         for j=1:size(maskIn)[2]
@@ -42,31 +41,18 @@ for (i,r) in enumerate(runs)
     end    
 
     ax = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect())
-    # display(r)
-    # display(subsetResults[1,:path])
     uMat = reshape(subsetResults[1,:u][end],(subsetResults[1,:nY],subsetResults[1,:nX]))
     heatmap!(ax,rotr90(uMat),colorrange=(-1.0, 1.0),colormap=:bwr)
     image!(ax,rotr90(maskImage))
     hidedecorations!(ax)
     hidespines!(ax)
-    Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0))
+    Label(fig[(i-1)%6+1,(i-1)÷6+1, BottomLeft()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0))
     axes[r] = ax
     sizes[r] = size(maskImage)
 end 
 
 xMax = maximum(last.(values(sizes)))
 yMax = maximum(first.(values(sizes)))
-
-# lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
-
-# lengthPerPixel = lengthMeasurements[!,:length]./lengthMeasurements[!,:Pixels]
-# lengthPerPixelDict = Dict()
-# for r in runs 
-#     subsetLengths = subset(lengthMeasurements, :File => m -> occursin.(r[1:end-6],m))
-#     lengthPerPixelDict[r] = (subsetLengths[!,:length]./subsetLengths[!,:Pixels])[1]
-# end
-
-
 
 for r in runs 
     xlims!(axes[r],(0,xMax))
@@ -77,10 +63,32 @@ for i=1:6
     colsize!(fig.layout, i, Aspect(1, 1.0))
 end
 
+# colgap!(fig.layout, 1, -350)
+# colgap!(fig.layout, 2, -300)
+# colgap!(fig.layout, 3, -300)
+# colgap!(fig.layout, 4, -250)
+# colgap!(fig.layout, 5, -50)
+
+# rowgap!(fig.layout, 1, -200)
+# rowgap!(fig.layout, 2, -200)
+# rowgap!(fig.layout, 3, -300)
+
+
+colgap!(fig.layout, 1, -500)
+colgap!(fig.layout, 2, -400)
+colgap!(fig.layout, 3, -400)
+colgap!(fig.layout, 4, -300)
+colgap!(fig.layout, 5, -50)
+
+rowgap!(fig.layout, 1, -200)
+rowgap!(fig.layout, 2, -300)
+rowgap!(fig.layout, 3, -400)
+rowgap!(fig.layout, 4, -100)
+
 resize_to_layout!(fig)
 display(fig)
 
-# save(datadir("fromCSF","allMasks","grid.png"),fig)
+save(datadir("fromCSF","allMasks","grid.png"),fig)
 
 
 
