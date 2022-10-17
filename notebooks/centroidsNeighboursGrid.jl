@@ -16,17 +16,17 @@ using DataFrames
 
 runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
 
-fig = Figure(resolution=(6000,6000),backgroundcolor=:black,fontsize=64)
+fig = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=64)
 
 function neighbourColours(x)
     if x==6
-        return :white
+        return (:white,0.0)
     elseif x==5 
-        return :red 
+        return (:red,1.0)
     elseif x==7
-        return :blue
+        return (:blue,1.0)
     else 
-        return :black 
+        return (:black,1.0)
     end
 end
 
@@ -42,6 +42,10 @@ for (i,r) in enumerate(runs)
 
     centroidData = load(datadir("exp_pro","emCentroidsInteractive","$(r[1:end-4]).jld2"))
     @unpack centroidLocations = centroidData
+
+    imageIn = load(datadir("exp_pro","cropped",r))
+    imSize = size(imageIn)
+    grayImage = Gray.(imageIn)
 
     # Put centroid locations into a format for tessellation and triangulation 
     xs = [x[1] for x in centroidLocations]
@@ -62,7 +66,7 @@ for (i,r) in enumerate(runs)
     # Voronoi tessellation of centroid positions within (0,0) (1,1) box
     tess = voronoicells(shiftedCentroidLocations, Rectangle(Point2(0, 0), Point2(1, 1)))
 
-    maskImage = fill(RGBA(0,0,0,1),(maximum(size(newIndexMap)),maximum(size(newIndexMap))))
+    maskImage = fill(RGBA(0,0,0,1),size(newIndexMap))
     for i=1:size(newIndexMap)[1]
         for j=1:size(newIndexMap)[2]
             if newIndexMap[i,j] < 0.5
@@ -73,22 +77,23 @@ for (i,r) in enumerate(runs)
         end
     end    
 
-    ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect(), backgroundcolor=:black)
-
+    ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect(), backgroundcolor=:white)
+    image!(ax2,rotr90(grayImage))
     for (i,c) in enumerate(tess.Cells)
         if i ∉ hullInds
-            poly!(ax2, c.*scalingFactor, color=neighbourColours(nNeighbours[i]),strokecolor=(:black,1.0),strokewidth=1.0)
-        else
-            poly!(ax2, c.*scalingFactor, color=:white,strokecolor=(:black,1.0),strokewidth=1.0)
+            vertices = [v.*scalingFactor for v in c]
+            poly!(ax2, vertices, color=neighbourColours(nNeighbours[i]),strokecolor=(:black,1.0),strokewidth=1.0)
+        # else
+        #     poly!(ax2, c.*scalingFactor, color=:white,strokecolor=(:black,1.0),strokewidth=1.0)
         end
     end
-    image!(ax2,rotr90(maskImage))
+    # image!(ax2,rotr90(maskImage))
     # poly!(ax2,hull.vertices,color=(:grey,1.0))
     scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=4)
     hidedecorations!(ax2)
     hidespines!(ax2)
     
-    Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0), color=:white)
+    Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0), color=:black)
     
     axes[r] = ax2
     sizes[r] = size(maskImage)

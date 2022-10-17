@@ -115,12 +115,12 @@ for (i,r) in enumerate(runs)
         end
     end
     image!(ax2,rotr90(maskImage))
-    # poly!(ax2,hull.vertices,color=(:grey,1.0))
-    # scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=4)
+    poly!(ax2,hull.vertices,color=(:grey,1.0))
+    scatter!(ax2,centroidLocations.+ Point2(0,size(uImg)[1]),color=(:orange,1.0),markersize=4)
     hidedecorations!(ax2)
     hidespines!(ax2)
     
-    Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0), color=:white)
+    Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0), color=:black)
     
     axes[r] = ax2
     sizes[r] = size(maskImage)
