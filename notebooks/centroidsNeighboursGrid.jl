@@ -35,6 +35,9 @@ fig = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=64)
 axes = Dict()
 sizes = Dict()
 
+# Container to store defect counts 
+defectCountsDataFrame = DataFrame()
+
 for (i,r) in enumerate(runs)
     maskData = load(datadir("exp_pro","masks",r[1:end-4],"$(r[1:end-4]).jld2"))
     @unpack newIndexMap, lX, h = maskData
@@ -62,6 +65,20 @@ for (i,r) in enumerate(runs)
     # Indices of fibrils within the hull 
     hullInds = sort([findall(x->Point2(x...)==v,shiftedCentroidLocations)[1] for v in hull.vertices])
 
+    defectCountsDict = Dict()
+    for i in nNeighbours
+        if i ∉ hullInds
+            if "$i" ∈ keys(defectCountsDict)
+                defectCountsDict["$i"] += 1
+            else
+                defectCountsDict["$i"] = 1
+            end
+        end
+    end
+    dfLocal = DataFrame(defectCountsDict)
+    dfLocal[!,:file] = [r]
+    defectCountsDataFrame = vcat(defectCountsDataFrame,dfLocal,cols = :union)
+    
     # Voronoi tessellation of centroid positions within (0,0) (1,1) box
     tess = voronoicells(shiftedCentroidLocations, Rectangle(Point2(0, 0), Point2(1, 1)))
 
@@ -128,7 +145,9 @@ rowgap!(fig.layout, 3, -200)
 resize_to_layout!(fig)
 display(fig)
 
-save(datadir("exp_pro","emCentroidNeighbours","emNeighboursGrid.png"),fig)
+CSV.write(datadir("exp_pro", "emCentroidMeasurements", "defectCounts.csv"), defectCountsDataFrame)
+
+# save(datadir("exp_pro","emCentroidNeighbours","emNeighboursGrid.png"),fig)
 
 
 
