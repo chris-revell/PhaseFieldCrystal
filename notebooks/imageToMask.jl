@@ -63,6 +63,13 @@ function imageToMask(fileName,distanceGaussian,dilateCount,erodeCount,lX,h)
     percentage_scale = compressedNX/size(imageIn,2)
     new_size = trunc.(Int, size(imageIn) .* percentage_scale)
     compressedMask = imresize(newIndexMap, new_size)
+    for i in eachindex(compressedMask)
+        if compressedMask[i]>0.5
+            compressedMask[i]=Gray(1.0)
+        else
+            compressedMask[i]=Gray(0.0)
+        end
+    end
     safesave(datadir("exp_pro","masksCompressed",splitpath(fileName)[end][1:end-4],splitpath(fileName)[end]), compressedMask)
 
     fig = CairoMakie.Figure()
@@ -75,7 +82,6 @@ function imageToMask(fileName,distanceGaussian,dilateCount,erodeCount,lX,h)
     hidespines!(ax2)
     image!(ax2,rotr90(newIndexMap))
     safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4])_comparison.png"), fig)
-
     safesave(datadir("exp_pro","masks",splitpath(fileName)[end][1:end-4],"$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict fileName distanceGaussian dilateCount erodeCount newIndexMap compressedMask lX h)
 
     return newIndexMap
@@ -90,68 +96,6 @@ lXDict = Dict(croppedLX[!,:file].=>croppedLX[!,:lX])
 # okMasks   = [f for f in readdir(datadir("exp_pro","masks","ok","compressed")) if f[end-3:end]==".png"]
 # subFrame  = filter(:file => f->f in okMasks, croppedLX)
 scalingLX = 200.0/1.82314
-for r in runs[end-4:end]
+for r in runs
     imageToMask(datadir("exp_pro","cropped",r),distanceGaussian,dilateCount,erodeCount,lXDict[r]*scalingLX,0.4)   
 end
-
-
-# function processImage(im,dilateCount,distanceGaussian)
-#     # Apply Gaussian filter
-#     filteredImage  = imfilter(im,Kernel.gaussian(distanceGaussian))
-#     # Binarise with Otsu algorithm
-#     binarizedImage = binarize(filteredImage,Otsu())
-#     # Erode and dilate    
-#     for i=1:dilateCount
-#         dilate!(binarizedImage)
-#     end
-#     for i=1:dilateCount
-#         erode!(binarizedImage)
-#     end
-#     return binarizedImage    
-# end
-
-# function findCentroidLocations(indexMap,imSize,extraCellSpace)
-#     # Find segment labels within index map
-#     labels = unique(indexMap)
-#     # Remove 0 segment, used to represent intra-cell space
-#     filter!(val->val≠0,labels)
-#     # Remove extraCellSpace segment, used to represent extra-cellular space
-#     filter!(val->val≠extraCellSpace,labels)
-#     centroidLocations = Point2[]
-#     for k in labels
-#         pixels = zeros(2)
-#         count = 0
-#         for i=1:imSize[1]
-#             for j=1:imSize[2]
-#                 if newIndexMap[i,j] == k
-#                     pixels .+= [j,-i]
-#                     count += 1
-#                 end
-#             end
-#         end
-#         count>250 ? push!(centroidLocations,Point2(pixels./count)) : nothing
-#     end
-#     centroidLocations .+= Point2(0.0,imSize[1]*1.0)
-#     return centroidLocations
-# end
-
-# function findintraCellSpace(dilatedImage,size1)
-#     # Initial segmentation of eroded and dilated image
-#     seg1 = fast_scanning(dilatedImage, 0.01)
-#     # Create inter-cellular space mask
-#     # Prune segments below minSizeBackground, adding pruned segments to the largest neighbouring segment     
-#     seg2 = prune_segments(seg1, i->(segment_pixel_count(seg1,i)<size1), (i,j)->(-segment_pixel_count(seg1,j)))
-#     seg3 = prune_segments(seg2, first.(sort(collect(seg2.segment_pixel_count), by=x->x[2])[1:end-2]), (i,j)->-segment_pixel_count(seg2,j))
-
-#     return seg1,seg2,seg3
-# end 
-
-
-
-
-# vals = [seg4.segment_pixel_count[i] for i in keys(seg4.segment_pixel_count)]
-# segmentLabelsOrderedBySize = [i for i in keys(seg4.segment_pixel_count)]
-# segmentLabelsOrderedBySize .= segmentLabelsOrderedBySize[sortperm(vals)]
-# seg5 = prune_segments(seg4, i->(segment_pixel_count(seg4,i)<segment_pixel_count(seg4,segmentLabelsOrderedBySize[end-1])), (i,j)->(-segment_pixel_count(seg4,j)))
-# segmentedImage = map(i->maskColour(i,seg5), labels_map(seg5))
-# sorted = sort(collect(seg5.segment_pixel_count), by=x->x[2])

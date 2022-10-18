@@ -5,19 +5,25 @@ fileName = "data/fromCSF/longRuns/18tailT_4800X_HUI_0003_0/lX=246.0m=0.1nX=614nY
 
 dataIn = load(fileName)
 # @unpack u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax = data
-@unpack u, t = dataIn
+@unpack ϕ0, u, t = dataIn
 
 maskFileName = "18tailT_4800X_HUI_0003_0"
 maskImage = load(datadir("exp_pro","masksCompressed",maskFileName,"$maskFileName.png"))
 maskSpaceSize = length(filter(x->x>0.5,maskImage))
 
-fibrilThreshold = 0.9
+fibrilThreshold = ϕ0
 
 fibrilDensity = Float64[]
 
 for i=1:length(t)
-    filtered = filter(x->x>fibrilThreshold, u[i])
-    fibrilCount = length(filtered)
+    fibrilCount = 0
+    for j in eachindex(u[1])
+        if maskImage[j]>0.5
+            if u[i][j]>fibrilThreshold
+                fibrilCount+=1
+            end
+        end
+    end
     push!(fibrilDensity,fibrilCount/maskSpaceSize)
 end 
 
