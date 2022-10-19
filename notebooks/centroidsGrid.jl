@@ -14,7 +14,7 @@ using DataFrames
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
-runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
+runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
 
 fig = Figure(resolution=(6000,6000),fontsize=64,backgroundcolor=:white)
 

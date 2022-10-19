@@ -18,7 +18,7 @@ using StatsBase
 
 mkpath(datadir("exp_pro","emCentroidMeasurements"))
 
-runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
+runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
 
 fig1 = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=64)
 

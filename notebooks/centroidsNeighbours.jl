@@ -110,7 +110,7 @@ function centroidsToMeasurements(fileName)
 end
 
 # fileName = "/Users/christopher/Postdoc/Code/PhaseFieldCrystal/data/exp_pro/cropped/mp13ko-3wiew_4800X_hui_0002_2.png"
-runs = [f for f in readdir(datadir("exp_pro","masks","ok")) if f[end-3:end]==".png"]
+runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
 # lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
 # distanceGaussian = 2.0
 # fibrilMinSize = 10
