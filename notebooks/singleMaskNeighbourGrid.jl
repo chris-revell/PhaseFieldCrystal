@@ -28,7 +28,7 @@ function neighbourColours(x)
 end
 
 function binariseSimulation!(uij)
-    if uij > 0.8
+    if uij > 0.5
         return 1.0
     else
         return 0.0
@@ -69,26 +69,8 @@ for r in runs
         # # Concave hull to identify boundary fibrils 
         # hull = concave_hull(shiftedCentroidLocations,3)
         
-        ax = CairoMakie.Axis(fig[i%6+1,i÷6+1],aspect=DataAspect())
-        hidedecorations!(ax)
-        hidespines!(ax)
-        # Map parameters to axis in axes dictionary 
-        axesDict[(results[i,:r],results[i,:ϕ0])] = ax
-        
-        maskIn = load(datadir("exp_pro","masksCompressed",r[1:end-4],"$(r[1:end-4]).png"))
-        maskImage = fill(RGBA(1,1,1,1),size(maskIn))
-        for i=1:size(maskIn)[1]
-            for j=1:size(maskIn)[2]
-                if maskIn[i,j] < 0.5
-                    maskImage[i,j] = RGBA(0.0,0.0,0.0,1.0)
-                else
-                    maskImage[i,j] = RGBA(0.0,0.0,0.0,0.0)
-                end
-            end
-        end    
-
         # Convert simulation result to a 2D matrix
-        uMat = reshape(subsetResults[1,:u][end],(subsetResults[1,:nY],subsetResults[1,:nX]))
+        uMat = reshape(results[i,:u][end],(results[i,:nY],results[i,:nX]))
         # Binarise grayscale image
         uImg = binariseSimulation!.(uMat)
         # Convert matrix to a grayscale image
@@ -129,6 +111,10 @@ for r in runs
         tess = voronoicells(shiftedCentroidLocations, Rectangle(Point2(0, 0), Point2(1, 1)))
 
         ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect())
+        hidedecorations!(ax2)
+        hidespines!(ax2)
+        # Map parameters to axis in axes dictionary 
+        axesDict[(results[i,:r],results[i,:ϕ0])] = ax2
 
         for (i,c) in enumerate(tess.Cells)
             if i ∉ hullInds
@@ -143,11 +129,8 @@ for r in runs
         scatter!(ax2,centroidLocations.+ Point2(0,size(uImg)[1]),color=(:orange,1.0),markersize=4)
         hidedecorations!(ax2)
         hidespines!(ax2)
-        
-        Label(fig[(i-1)%6+1,(i-1)÷6+1, BottomLeft()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0), color=:black)
-        
-        axes[r] = ax2
-
+            
+        axesDict[(results[i,:r],results[i,:ϕ0])] = ax2
 
     end 
 
@@ -170,7 +153,7 @@ for r in runs
 
     display(fig)
 
-    save(datadir("fromCSF","allMasksPhasespaces",mask,"resultsPhaseSpaceGrid.png"),fig)
+    save(datadir("fromCSF","allMasksPhasespaces",mask,"$(mask)NeighbourGrid.png"),fig)
 end
 
 
