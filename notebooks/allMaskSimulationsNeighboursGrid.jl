@@ -29,14 +29,14 @@ function neighbourColours(x)
 end
 
 function binariseSimulation!(uij)
-    if uij > 0.5
+    if uij > 0.8
         return 1.0
     else
         return 0.0
     end
 end 
 
-results = collect_results!(datadir("fromCSF","allMasks"); subfolders = true)
+results = collect_results(datadir("fromCSF","allMasks"); subfolders = true)
 
 runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
 

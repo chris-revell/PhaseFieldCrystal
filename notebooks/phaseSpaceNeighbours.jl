@@ -18,7 +18,7 @@ using GR: delaunay
 folderPath = "PhaseSpace3"
 
 # Collate results as a dataframe 
-results = collect_results!(datadir("fromCSF",folderPath); subfolders = true)
+results = collect_results(datadir("fromCSF",folderPath); subfolders = true)
 
 # Set up figure canvas and dictionary to map parameters to axes
 fig = Figure(resolution=(6000,6000))

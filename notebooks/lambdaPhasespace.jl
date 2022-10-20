@@ -1,7 +1,7 @@
 using DataFrames
 using CairoMakie
 
-res = collect_results!(datadir("fromCSF","qPhaseSpace"))
+res = collect_results(datadir("fromCSF","qPhaseSpace"))
 
 fig = Figure(resolution=(6000,1000))
 

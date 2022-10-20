@@ -15,7 +15,7 @@ using DataFrames
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 # Collate results as a dataframe 
-results = collect_results!(datadir("fromCSF","allMasks"); subfolders = true)
+results = collect_results(datadir("fromCSF","allMasks"); subfolders = true)
 
 runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
 
