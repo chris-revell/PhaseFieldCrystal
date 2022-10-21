@@ -12,18 +12,19 @@ using GR: delaunay
 using CSV
 using DataFrames
 using DelimitedFiles
+using LaTeXStrings
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 function neighbourColours(x)
     if x==6
-        return :white
+        return (:white,0.0)
     elseif x==5 
-        return :red 
+        return (:red,1.0)
     elseif x==7
-        return :blue
+        return (:blue,1.0)
     else 
-        return :black 
+        return (:black,1.0)
     end
 end
 
@@ -37,6 +38,8 @@ end
 
 # mask = "17tailT_4800X_HUI_0001_0"
 runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+
+defectCountsDataFrame = DataFrame()
 
 for r in runs
     mask = r[1:end-4]
@@ -63,11 +66,6 @@ for r in runs
     # Loop to process data from each run 
     for i=1:nrow(results)
         display(i)
-        # Convert simulation result to a 2D matrix
-        uMat = reshape(results[i,:u][end],(results[i,:nY],results[i,:nX]))#transpose(reshape(results[i,:u],(results[i,:nY],results[i,:nX])))
-        
-        # # Concave hull to identify boundary fibrils 
-        # hull = concave_hull(shiftedCentroidLocations,3)
         
         # Convert simulation result to a 2D matrix
         uMat = reshape(results[i,:u][end],(results[i,:nY],results[i,:nX]))
@@ -110,25 +108,48 @@ for r in runs
         # Voronoi tessellation of centroid positions within (0,0) (1,1) box
         tess = voronoicells(shiftedCentroidLocations, Rectangle(Point2(0, 0), Point2(1, 1)))
 
+
+        defectCountsDict = Dict()
+        for j in eachindex(nNeighbours)
+            if j ∉ hullInds
+                if "$(nNeighbours[j])" ∈ keys(defectCountsDict)
+                    defectCountsDict["$(nNeighbours[j])"] += 1
+                else
+                    defectCountsDict["$(nNeighbours[j])"] = 1
+                end
+            end
+        end
+        dfLocal = DataFrame(defectCountsDict)
+        dfLocal[!,:file] = [r]
+        dfLocal[!,:ϕ0]   = [results[i,:ϕ0]]
+        dfLocal[!,:r]   = [results[i,:r]]
+        defectCountsDataFrame = vcat(defectCountsDataFrame,dfLocal,cols = :union)
+
+        runDefectProportion = 1-defectCountsDict["6"]/(length(nNeighbours)-length(hullInds))
+
+
         ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect())
         hidedecorations!(ax2)
         hidespines!(ax2)
         # Map parameters to axis in axes dictionary 
         axesDict[(results[i,:r],results[i,:ϕ0])] = ax2
 
-        for (i,c) in enumerate(tess.Cells)
-            if i ∉ hullInds
+        image!(ax2,rotr90(uImg))
+        for (j,c) in enumerate(tess.Cells)
+            if j ∉ hullInds
                 vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
-                poly!(ax2, vertices, color=neighbourColours(nNeighbours[i]),strokecolor=(:black,1.0),strokewidth=1.0)
+                poly!(ax2, vertices, color=neighbourColours(nNeighbours[j]),strokecolor=(:black,1.0),strokewidth=1.0)
             else
                 # poly!(ax2, c.*scalingFactor, color=:white,strokecolor=(:black,1.0),strokewidth=1.0)
             end
         end
-        image!(ax2,rotr90(maskImage))
-        poly!(ax2,hull.vertices,color=(:grey,1.0))
-        scatter!(ax2,centroidLocations.+ Point2(0,size(uImg)[1]),color=(:orange,1.0),markersize=4)
+        
+        # poly!(ax2,hull.vertices,color=(:grey,1.0))
+        # scatter!(ax2,centroidLocations.+ Point2(0,size(uImg)[1]),color=(:orange,1.0),markersize=4)
         hidedecorations!(ax2)
         hidespines!(ax2)
+
+        Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0]), $(round(runDefectProportion,digits=2))")#, valign = :bottom, padding = (0, 10, 10, 0), color=:black)
             
         axesDict[(results[i,:r],results[i,:ϕ0])] = ax2
 
@@ -141,7 +162,7 @@ for r in runs
         for (j,ϕ0) in enumerate(sortedϕ0s)
             fig[length(sortedrs)+1-i,j][1,1] = axesDict[(r,ϕ0)]
             # Colorbar(fig[length(sortedrs)-i,length(sortedϕ0s)-j][1,2], limits=(-1,1),colormap=:bwr)#, size = 25)
-            Label(fig[length(sortedrs)+1-i,j,Bottom()],L"r=%$r, \phi_0=%$ϕ0",textsize=64)
+            # Label(fig[length(sortedrs)+1-i,j,BottomLeft()],L"r=%$r, \phi_0=%$ϕ0",textsize=64)
         end
     end
 
@@ -153,7 +174,7 @@ for r in runs
 
     display(fig)
 
-    save(datadir("fromCSF","allMasksPhasespaces",mask,"$(mask)NeighbourGrid.png"),fig)
+    save(datadir("fromCSF","allMasksPhasespaces",mask,"$(mask)NeighbourGridWithDefectProportion.png"),fig)
 end
 
 

@@ -11,6 +11,7 @@ using VoronoiCells
 using GR: delaunay
 using CSV
 using DataFrames
+using DelimitedFiles
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
@@ -38,7 +39,7 @@ sizes = Dict()
 # Container to store defect counts 
 defectCountsDataFrame = DataFrame()
 
-for (i,r) in enumerate(runs)
+for (k,r) in enumerate(runs)
     maskData = load(datadir("exp_pro","masks",r[1:end-4],"$(r[1:end-4]).jld2"))
     @unpack newIndexMap, lX, h = maskData
 
@@ -66,18 +67,20 @@ for (i,r) in enumerate(runs)
     hullInds = sort([findall(x->Point2(x...)==v,shiftedCentroidLocations)[1] for v in hull.vertices])
 
     defectCountsDict = Dict()
-    for i in nNeighbours
+    for i in eachindex(nNeighbours)
         if i ∉ hullInds
-            if "$i" ∈ keys(defectCountsDict)
-                defectCountsDict["$i"] += 1
+            if "$(nNeighbours[i])" ∈ keys(defectCountsDict)
+                defectCountsDict["$(nNeighbours[i])"] += 1
             else
-                defectCountsDict["$i"] = 1
+                defectCountsDict["$(nNeighbours[i])"] = 1
             end
         end
     end
     dfLocal = DataFrame(defectCountsDict)
     dfLocal[!,:file] = [r]
     defectCountsDataFrame = vcat(defectCountsDataFrame,dfLocal,cols = :union)
+
+    runDefectProportion = 1-defectCountsDict["6"]/(length(nNeighbours)-length(hullInds))
     
     # Voronoi tessellation of centroid positions within (0,0) (1,1) box
     tess = voronoicells(shiftedCentroidLocations, Rectangle(Point2(0, 0), Point2(1, 1)))
@@ -93,7 +96,7 @@ for (i,r) in enumerate(runs)
         end
     end    
 
-    ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect(), backgroundcolor=:white)
+    ax2 = CairoMakie.Axis(fig[(k-1)%6+1,(k-1)÷6+1],aspect=DataAspect(), backgroundcolor=:white)
     image!(ax2,rotr90(grayImage))
     for (i,c) in enumerate(tess.Cells)
         if i ∉ hullInds
@@ -108,8 +111,10 @@ for (i,r) in enumerate(runs)
     hidedecorations!(ax2)
     hidespines!(ax2)
     
-    Label(fig[(i-1)%6+1,(i-1)÷6+1, BottomLeft()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0), color=:black)
-    
+    Label(fig[(k-1)%6+1,(k-1)÷6+1, BottomLeft()], "$k, $(round(runDefectProportion,digits=2))", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0), color=:black)
+
+
+
     axes[r] = ax2
     sizes[r] = size(maskImage)
 end 
@@ -132,22 +137,22 @@ for r in runs
     ylims!(axes[r],(0,yMax)./lengthPerPixelDict[r])
 end
 
-colgap!(fig.layout, 1, -700)
-colgap!(fig.layout, 2, -600)
-colgap!(fig.layout, 3, -600)
-colgap!(fig.layout, 4, -500)
-colgap!(fig.layout, 5, -100)
+# colgap!(fig.layout, 1, -700)
+# colgap!(fig.layout, 2, -600)
+# colgap!(fig.layout, 3, -600)
+# colgap!(fig.layout, 4, -500)
+# colgap!(fig.layout, 5, -100)
 
-rowgap!(fig.layout, 1, -100)
-rowgap!(fig.layout, 2, -100)
-rowgap!(fig.layout, 3, -200)
+# rowgap!(fig.layout, 1, -100)
+# rowgap!(fig.layout, 2, -100)
+# rowgap!(fig.layout, 3, -200)
 
 resize_to_layout!(fig)
 display(fig)
 
 CSV.write(datadir("exp_pro", "emCentroidMeasurements", "defectCounts.csv"), defectCountsDataFrame)
 
-# save(datadir("exp_pro","emCentroidNeighbours","emNeighboursGrid.png"),fig)
+save(datadir("exp_pro","emCentroidNeighbours","emNeighboursGridWithDefectProportion.png"),fig)
 
 
 

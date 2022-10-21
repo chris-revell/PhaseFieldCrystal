@@ -11,7 +11,8 @@ maskFileName = "18tailT_4800X_HUI_0003_0"
 maskImage = load(datadir("exp_pro","masksCompressed",maskFileName,"$maskFileName.png"))
 maskSpaceSize = length(filter(x->x>0.5,maskImage))
 
-fibrilThreshold = ϕ0
+fibrilThreshold = ϕ0+0.1
+emptySpaceThreshold = ϕ0-0.1
 
 fibrilDensity = Float64[]
 
@@ -19,7 +20,7 @@ for i=1:length(t)
     fibrilCount = 0
     for j in eachindex(u[1])
         if maskImage[j]>0.5
-            if u[i][j]>fibrilThreshold
+            if emptySpaceThreshold<u[i][j]<fibrilThreshold
                 fibrilCount+=1
             end
         end
@@ -28,8 +29,9 @@ for i=1:length(t)
 end 
 
 fig = CairoMakie.Figure()
-ax = CairoMakie.Axis(fig[1,1])
+ax = CairoMakie.Axis(fig[1,1],xscale = Makie.pseudolog10)
 lines!(t,fibrilDensity)
 ax.xlabel = "Time"
-ax.ylabel = "Fibril density"
+# ax.ylabel = "Fibril density"
 display(fig)
+save("test.png",fig)
