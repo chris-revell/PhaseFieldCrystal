@@ -30,7 +30,7 @@ function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileNam
     ax1.yreversed = true
     resize_to_layout!(fig1)
     tSteps = range(1,length(t),step=1)
-    record(fig1,datadir(subFolder,"$(fileName[1:end-5])_u.mp4"),tSteps; framerate=10) do i
+    record(fig1,datadir(subFolder,"$(fileName[1:end-5])_u.mp4"),tSteps; framerate=100) do i
         ax1.title = "t=$(@sprintf("%.2f", t[i]))"
         uInternal[] = transpose(reshape(u[i],(nY,nX)))
         uInternal[] = uInternal[]

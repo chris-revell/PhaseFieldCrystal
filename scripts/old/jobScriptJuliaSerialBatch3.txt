@@ -18,12 +18,12 @@ croppedLX = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","croppedLX
 okMasks   = [f for f in readdir(datadir("exp_pro","masks","ok","compressed")) if f[end-3:end]==".png"]
 subFrame  = filter(:file => f->f in okMasks, croppedLX)
 
-# scalingLX = (fibril spacing in q units)/(fibril spacing in nm)
-scalingLX = 7.2/55.0
+scalingLX = 200.0/1.82314
 
 c = Dict()
 
 c[:imagelXpairs]  = Pair.(subFrame[!,:file],subFrame[!,:lX])
+c[:lX]            = [200.0]
 c[:r]             = [0.55, 0.60, 0.65, 0.70, 0.75, 0.80]
 c[:m]             = [0.1]
 c[:ϕ0]            = [0.40, 0.41, 0.42, 0.43, 0.44, 0.45]
@@ -39,12 +39,22 @@ c[:freeEnergyFlag]= [0]
 c[:nBlasThreads]  = [1]
 c[:subFolderName] = "allMasks"
 
+finished = DataFrame(CSV.File(datadir("finished.csv")))
 
 # Warmup
 phaseFieldCrystal("data/exp_pro/testMask.png",200.0,0.7,-0.41,0.1,2.0,1.0,0.5,10.0,1,0,0,0,0,4)
 # Run 
-@threads for ps in dict_list(c)[1*216+1:2*216]
-    phaseFieldCrystal(datadir("exp_pro","masks","ok","compressed",ps[:imagelXpairs].first),ps[:imagelXpairs].second*1000.0/scalingLX,ps[:r],ps[:ϕ0],ps[:m],ps[:a],ps[:λ],ps[:δt],ps[:tMax],ps[:outCount],ps[:loggerFlag],ps[:outputFlag],ps[:visualiseFlag],ps[:freeEnergyFlag],ps[:nBlasThreads];subFolder=(ps[:imagelXpairs].first)[1:end-4])
+@threads for ps in dict_list(c)
+
+    finishedFlag = 0
+    for fin in eachrow(finished)
+        if occursin(fin[:file],ps[:imagelXpairs].first) && ps[:ϕ0]==fin[:ϕ0] && ps[:r]==fin[:r]
+            finishedFlag=1
+        end
+    end
+    if finishedFlag==0
+        phaseFieldCrystal(datadir("exp_pro","masks","ok","compressed",ps[:imagelXpairs].first),ps[:imagelXpairs].second*scalingLX,ps[:r],ps[:ϕ0],ps[:m],ps[:a],ps[:λ],ps[:δt],ps[:tMax],ps[:outCount],ps[:loggerFlag],ps[:outputFlag],ps[:visualiseFlag],ps[:freeEnergyFlag],ps[:nBlasThreads];subFolder=(ps[:imagelXpairs].first)[1:end-4])
+    end 
 end
 
 EOF

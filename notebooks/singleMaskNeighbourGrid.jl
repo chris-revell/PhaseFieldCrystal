@@ -24,22 +24,22 @@ function neighbourColours(x)
     elseif x==7
         return (:blue,1.0)
     else 
-        return (:black,1.0)
+        return (:grey,1.0)
     end
 end
 
 function binariseSimulation!(uij)
-    if uij > 0.5
-        return 1.0
+    if uij < -0.5
+        return Gray(1.0)
     else
-        return 0.0
+        return Gray(0.0)
     end
 end 
 
 # mask = "17tailT_4800X_HUI_0001_0"
 runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
 
-defectCountsDataFrame = DataFrame()
+# defectCountsDataFrame = DataFrame()
 
 for r in runs
     mask = r[1:end-4]
@@ -50,6 +50,7 @@ for r in runs
     fig = Figure(resolution=(6000,6000),fontsize=64)
 
     axesDict = Dict()
+    labelsDict = Dict()
 
     maskIn = load(datadir("exp_pro","masksCompressed",mask,"$mask.png"))
     maskImage = fill(RGBA(1,1,1,1),size(maskIn))
@@ -71,10 +72,8 @@ for r in runs
         uMat = reshape(results[i,:u][end],(results[i,:nY],results[i,:nX]))
         # Binarise grayscale image
         uImg = binariseSimulation!.(uMat)
-        # Convert matrix to a grayscale image
-        uGray = Gray.(uImg)
         # Segment binarised image
-        seg = fast_scanning(uGray, 0.01)    
+        seg = fast_scanning(uImg, 0.01)    
         # Find centre of mass positions of all fibril segments. 
         centroidLocations = Point2{Float64}[]
         maxSize = 500
@@ -82,7 +81,7 @@ for r in runs
             pixels = findall(x->x==k,seg.image_indexmap)
             com = Tuple(sum(pixels))./length(pixels)        
             # Exclude the one remaining segment above size of maxSize, representing the system background
-            if length(pixels)<maxSize
+            if 10<length(pixels)<maxSize
                 push!(centroidLocations,Point2{Float64}(com[2],-com[1]))
             end
         end
@@ -91,7 +90,7 @@ for r in runs
         # Put centroid locations into a format for tessellation and triangulation 
         xs = [x[1] for x in centroidLocations]
         ys = [x[2] for x in centroidLocations]
-        scalingFactor = maximum(abs.([xs ys]))/(1-3eps(Float64))
+        scalingFactor = maximum(size(uMat))/(1-3eps(Float64))
         shiftedCentroidLocations = centroidLocations./scalingFactor
         shiftedCentroidLocations .+= Point2(0,1)
 
@@ -119,11 +118,11 @@ for r in runs
                 end
             end
         end
-        dfLocal = DataFrame(defectCountsDict)
-        dfLocal[!,:file] = [r]
-        dfLocal[!,:ϕ0]   = [results[i,:ϕ0]]
-        dfLocal[!,:r]   = [results[i,:r]]
-        defectCountsDataFrame = vcat(defectCountsDataFrame,dfLocal,cols = :union)
+        # dfLocal = DataFrame(defectCountsDict)
+        # dfLocal[!,:file] = [r]
+        # dfLocal[!,:ϕ0]   = [results[i,:ϕ0]]
+        # dfLocal[!,:r]   = [results[i,:r]]
+        # defectCountsDataFrame = vcat(defectCountsDataFrame,dfLocal,cols = :union)
 
         runDefectProportion = 1-defectCountsDict["6"]/(length(nNeighbours)-length(hullInds))
 
@@ -134,24 +133,29 @@ for r in runs
         # Map parameters to axis in axes dictionary 
         axesDict[(results[i,:r],results[i,:ϕ0])] = ax2
 
-        image!(ax2,rotr90(uImg))
+        
         for (j,c) in enumerate(tess.Cells)
             if j ∉ hullInds
                 vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
                 poly!(ax2, vertices, color=neighbourColours(nNeighbours[j]),strokecolor=(:black,1.0),strokewidth=1.0)
             else
-                # poly!(ax2, c.*scalingFactor, color=:white,strokecolor=(:black,1.0),strokewidth=1.0)
+                vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
+                poly!(ax2, vertices, color=:white,strokecolor=(:black,1.0),strokewidth=1.0)
             end
         end
-        
+        image!(ax2,rotr90(maskImage))
         # poly!(ax2,hull.vertices,color=(:grey,1.0))
-        # scatter!(ax2,centroidLocations.+ Point2(0,size(uImg)[1]),color=(:orange,1.0),markersize=4)
-        hidedecorations!(ax2)
+        # scatter!(ax2,centroidLocations.+ Point2(0,size(uImg)[1]),color=(:orange,1.0),markersize=16)
+        # hidedecorations!(ax2)
         hidespines!(ax2)
+        xlims!(ax2,(0,size(maskImage)[2]))
+        ylims!(ax2,(0,size(maskImage)[1]))
 
-        Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0]), $(round(runDefectProportion,digits=2))")#, valign = :bottom, padding = (0, 10, 10, 0), color=:black)
-            
+        # Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0]), $(round(runDefectProportion,digits=2))")#, valign = :bottom, padding = (0, 10, 10, 0), color=:black)
+        # ax2.xlabel = "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0]), $(round(runDefectProportion,digits=2))"
+
         axesDict[(results[i,:r],results[i,:ϕ0])] = ax2
+        labelsDict[(results[i,:r],results[i,:ϕ0])] = "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0]), $(round(runDefectProportion,digits=2))"
 
     end 
 
@@ -160,9 +164,8 @@ for r in runs
     sortedϕ0s = unique!(sort(last.(keys(axesDict))))
     for (i,r) in enumerate(sortedrs)
         for (j,ϕ0) in enumerate(sortedϕ0s)
-            fig[length(sortedrs)+1-i,j][1,1] = axesDict[(r,ϕ0)]
-            # Colorbar(fig[length(sortedrs)-i,length(sortedϕ0s)-j][1,2], limits=(-1,1),colormap=:bwr)#, size = 25)
-            # Label(fig[length(sortedrs)+1-i,j,BottomLeft()],L"r=%$r, \phi_0=%$ϕ0",textsize=64)
+            fig[length(sortedrs)+1-i,j] = axesDict[(r,ϕ0)]
+            Label(fig[length(sortedrs)+1-i,j,Bottom()],labelsDict[(r,ϕ0)],textsize=64)
         end
     end
 
