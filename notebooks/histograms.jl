@@ -23,7 +23,7 @@ for r in runs
     lengthPerPixelDict[r] = (subsetLengths[!,:length]./subsetLengths[!,:Pixels])[1]
 end
 
-imLengths = Dict()
+pairLengthsDict = Dict()
 nNeighboursDict = Dict()
 
 for (i,r) in enumerate(runs)
@@ -77,14 +77,14 @@ for (i,r) in enumerate(runs)
     
     lengths = norm.(centroidLocations[first.(pairs)]-centroidLocations[last.(pairs)])
     lengths .*= lengthPerPixelDict[r]*1000.0
-    imLengths[r] = lengths
+    pairLengthsDict[r] = lengths
 end 
 
 fig = CairoMakie.Figure(resolution=(2000,1000),fontsize=32)
 ax1 = CairoMakie.Axis(fig[1,1])
 for r in runs
     points = Point2[]
-    hNorm = normalize(fit(Histogram, imLengths[r], 0:10:160), mode=:pdf)
+    hNorm = normalize(fit(Histogram, pairLengthsDict[r], 0:10:160), mode=:pdf)
     edgeVec = collect(hNorm.edges[1])    
     for i=1:length(hNorm.weights)
         push!(points,Point2(mean(edgeVec[i:i+1]),hNorm.weights[i]))

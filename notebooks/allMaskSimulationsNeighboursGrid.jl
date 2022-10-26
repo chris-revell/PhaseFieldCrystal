@@ -109,7 +109,8 @@ for (i,r) in enumerate(runs)
             vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
             poly!(ax2, vertices, color=neighbourColours(nNeighbours[i]),strokecolor=(:black,1.0),strokewidth=1.0)
         else
-            # poly!(ax2, c.*scalingFactor, color=:white,strokecolor=(:black,1.0),strokewidth=1.0)
+            vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
+            poly!(ax2, vertices, color=:white, strokecolor=(:black,1.0), strokewidth=1.0)
         end
     end
     image!(ax2,rotr90(maskImage))
