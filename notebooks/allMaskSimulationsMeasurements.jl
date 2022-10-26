@@ -68,10 +68,10 @@ for r in runs
     ax4.xlabel = "Neighbour count"
     ax4.ylabel = "Density"
 
-    ylims!(ax1,(0,1))
-    ylims!(ax2,(0,1))
-    ylims!(ax3,(0,1))
-    ylims!(ax4,(0,1))
+    # ylims!(ax1,(0,1))
+    # ylims!(ax2,(0,1))
+    # ylims!(ax3,(0,1))
+    # ylims!(ax4,(0,1))
 
     # ax3 = CairoMakie.Axis(fig[2,2])
     # ax4 = CairoMakie.Axis(fig[2,3])
