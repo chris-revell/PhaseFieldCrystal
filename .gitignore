@@ -1,5 +1,6 @@
 output/*
 *.code-workspace
+*.dylib
 
 ################################################################################
 #                          DrWatson Project Structure                          #
