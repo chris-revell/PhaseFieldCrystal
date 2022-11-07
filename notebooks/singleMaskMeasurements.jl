@@ -45,7 +45,7 @@ for r in runs
     mask = r[1:end-4]
 
     # Collate results as a dataframe 
-    results = collect_results(datadir("fromCSF","allMasksPhasespaces",mask); subfolders = false)
+    results = collect_results(datadir("fromCSF","allMasksPhasespaces2",mask); subfolders = false)
 
     # Loop to process data from each run 
     for i=1:nrow(results)

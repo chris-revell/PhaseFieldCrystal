@@ -18,7 +18,7 @@ using DelimitedFiles
 # mask = "17tailT_4800X_HUI_0001_0"
 runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
 
-for r in runs[7:end]
+for r in runs[1:7]
     mask = r[1:end-4]
 
     # Collate results as a dataframe 

@@ -50,7 +50,7 @@ for r in runs
     lengthPerPixelMask = subsetCroppedLX[1,:lX]/nX
 
     # Collate results as a dataframe 
-    results = collect_results(datadir("fromCSF","allMasksPhasespaces",mask); subfolders = false)
+    results = collect_results(datadir("fromCSF","allMasksPhasespaces2",mask); subfolders = false)
 
     fig = Figure(resolution=(2000,1000),fontsize=32)
     ax1 = CairoMakie.Axis(fig[1,2])
@@ -249,7 +249,7 @@ for r in runs
 
     resize_to_layout!(fig)
 
-    save(datadir("fromCSF","allMasksPhasespaces",mask,"$(mask)Histograms.png"),fig)
+    save(datadir("fromCSF","allMasksPhasespaces2",mask,"$(mask)Histograms.png"),fig)
 end
 
 

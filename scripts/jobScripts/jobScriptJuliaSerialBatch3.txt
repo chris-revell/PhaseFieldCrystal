@@ -17,14 +17,19 @@ using DelimitedFiles
 
 okMasks = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
 croppedLX = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","croppedLX.csv")))
-subFrame  = filter(:file => f->f in okMasks, croppedLX)
-
-# scalingLX = (fibril spacing in q units)/(fibril spacing in nm)
-scalingLX = 7.2/55.0
+EMspacingData = DataFrame(CSV.File(datadir("exp_pro","emCentroidMeasurements","EMspacingData.csv")))
 
 c = Dict()
 
-c[:imagelXpairs]  = Pair.(subFrame[!,:file],subFrame[!,:lX])
+c[:imagelXpairs] = Tuple[]
+for m in okMasks
+    filteredCroppedLX = filter(:file => f->f==m, croppedLX)[1,:lX]
+    filteredEMspacingData = filter(:file => f->f==m, EMspacingData)[1,:mean]
+    # scalingLX = (fibril spacing in q units)/(fibril spacing in nm)
+    scalingLX = 7.2/filteredEMspacingData
+    push!(c[:imagelXpairs],(m,filteredCroppedLX*1000*scalingLX))
+end
+#c[:imagelXpairs]  = Pair.(croppedLXsubFrame[!,:file],croppedLXsubFrame[!,:lX].*1000.0*scalingLX)
 c[:r]             = [0.55, 0.60, 0.65, 0.70, 0.75, 0.80]
 c[:m]             = [0.1]
 c[:ϕ0]            = [0.40, 0.41, 0.42, 0.43, 0.44, 0.45]
@@ -38,8 +43,7 @@ c[:outputFlag]    = [1]
 c[:visualiseFlag] = [0]
 c[:freeEnergyFlag]= [0]
 c[:nBlasThreads]  = [1]
-c[:subFolderName] = "allMasks"
-
+c[:subFolderName] = "allMasksPhasespace"
 
 # Warmup
 phaseFieldCrystal("data/exp_pro/testMask.png",200.0,0.7,-0.41,0.1,2.0,1.0,0.5,10.0,1,0,0,0,0,4)
