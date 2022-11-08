@@ -38,9 +38,10 @@ function emToCentroidsInteractive(fileName)
     on(saveButton.clicks) do clicks; centroidLocations=centroidLocationsObs[]; save(datadir("exp_pro","emCentroidsInteractive","$(splitpath(fileName)[end][1:end-4]).jld2"),@strdict centroidLocations); end
 end
 
-runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+# runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+runs = [datadir("exp_pro","cropped",f) for f in readdir(datadir("exp_pro","cropped")) if occursin("endo",f)]
 lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
 
-# for r in runs[1:2]
-#     emToCentroidsInteractive(datadir("exp_pro","cropped",r))
-# end
+for r in runs
+    emToCentroidsInteractive(r)
+end
