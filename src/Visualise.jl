@@ -18,7 +18,7 @@ using DifferentialEquations
 using JLD2
 using DrWatson
 
-function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileName)
+function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileName, freeEnergyFlag)
     
     fig1 = Figure(figure_padding=0,resolution=(1000,1000))
     ax1 = CairoMakie.Axis(fig1[1,1],aspect=DataAspect())
@@ -30,7 +30,7 @@ function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileNam
     ax1.yreversed = true
     resize_to_layout!(fig1)
     tSteps = range(1,length(t),step=1)
-    record(fig1,datadir(subFolder,"$(fileName[1:end-5])_u.mp4"),tSteps; framerate=100) do i
+    record(fig1,datadir("fromCSF",subFolder,"$(fileName[1:end-5])_u.mp4"),tSteps; framerate=10) do i
         ax1.title = "t=$(@sprintf("%.2f", t[i]))"
         uInternal[] = transpose(reshape(u[i],(nY,nX)))
         uInternal[] = uInternal[]
@@ -52,7 +52,8 @@ function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileNam
     hidedecorations!(ax3)
     hidespines!(ax3)
     resize_to_layout!(fig3)
-    safesave(datadir("sims",subFolder,"$(fileName)_finalState.png"),fig3)
+    display(datadir("fromCSF",subFolder,"$(fileName[1:end-5])_finalState.png"))
+    save(datadir("fromCSF",subFolder,"$(fileName[1:end-5])_finalState.png"),fig3)
 
     return nothing
 
