@@ -41,11 +41,11 @@ runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
 
 # defectCountsDataFrame = DataFrame()
 
-for r in runs
+for r in runs[2:end]
     mask = r[1:end-4]
 
     # Collate results as a dataframe 
-    results = collect_results(datadir("fromCSF","allMasksPhasespaces",mask); subfolders = false)
+    results = collect_results(datadir("fromCSF","allMasksPhasespaceSeparateLengths",mask); subfolders = false)
 
     fig = Figure(resolution=(6000,6000),fontsize=64)
 
@@ -124,6 +124,8 @@ for r in runs
         # dfLocal[!,:r]   = [results[i,:r]]
         # defectCountsDataFrame = vcat(defectCountsDataFrame,dfLocal,cols = :union)
 
+        display(defectCountsDict)
+
         runDefectProportion = 1-defectCountsDict["6"]/(length(nNeighbours)-length(hullInds))
 
 
@@ -177,7 +179,7 @@ for r in runs
 
     display(fig)
 
-    save(datadir("fromCSF","allMasksPhasespaces",mask,"$(mask)NeighbourGridWithDefectProportion.png"),fig)
+    save(datadir("fromCSF","allMasksPhasespaceSeparateLengths",mask,"$(mask)NeighbourGridWithDefectProportion.png"),fig)
 end
 
 

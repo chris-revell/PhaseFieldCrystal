@@ -1,11 +1,3 @@
-#!/bin/bash --login
-#$ -cwd               # Application will run from current working directory
-#$ -N juliaPFC        # Name given to batch job (optional)
-#$ -pe smp.pe 16      # Request 16 cores using SMP parallel environment
-#$ -m bea
-#$ -M christopher.revell@manchester.ac.uk
-
-/mnt/iusers01/maths01/x85521cr/julia-1.7.2/bin/julia -t $NSLOTS --project=. << EOF
 
 using DrWatson 
 @quickactivate
@@ -29,7 +21,6 @@ for m in okMasks
     scalingLX = 7.2/filteredEMspacingData
     push!(c[:imagelXpairs],(m,filteredCroppedLX*1000*scalingLX))
 end
-#c[:imagelXpairs]  = Pair.(croppedLXsubFrame[!,:file],croppedLXsubFrame[!,:lX].*1000.0*scalingLX)
 c[:r]             = [0.55, 0.60, 0.65, 0.70, 0.75, 0.80]
 c[:m]             = [0.1]
 c[:ϕ0]            = [0.40, 0.41, 0.42, 0.43, 0.44, 0.45]
@@ -43,13 +34,13 @@ c[:outputFlag]    = [1]
 c[:visualiseFlag] = [0]
 c[:freeEnergyFlag]= [0]
 c[:nBlasThreads]  = [1]
-c[:subFolderName] = "allMasksPhasespace"
+c[:subFolderName] = "test"
+
+dl = dict_list(c)
+
+ps = dl[1]
 
 # Warmup
 phaseFieldCrystal("data/exp_pro/testMask.png",200.0,0.7,-0.41,0.1,2.0,1.0,0.5,10.0,1,0,0,0,0,1)
 # Run 
-@threads for ps in dict_list(c)[5*216+1:6*216]
-    phaseFieldCrystal(datadir("exp_pro","masksCompressed",(ps[:imagelXpairs][1])[1:end-4],ps[:imagelXpairs][1]),ps[:imagelXpairs][2],ps[:r],ps[:ϕ0],ps[:m],ps[:a],ps[:λ],ps[:δt],ps[:tMax],ps[:outCount],ps[:loggerFlag],ps[:outputFlag],ps[:visualiseFlag],ps[:freeEnergyFlag],ps[:nBlasThreads];subFolder=ps[:subFolderName])
-end
-
-EOF
+phaseFieldCrystal(datadir("exp_pro","masksCompressed",(ps[:imagelXpairs][1])[1:end-4],ps[:imagelXpairs][1]),ps[:imagelXpairs][2],ps[:r],ps[:ϕ0],ps[:m],ps[:a],ps[:λ],ps[:δt],ps[:tMax],ps[:outCount],ps[:loggerFlag],ps[:outputFlag],ps[:visualiseFlag],ps[:freeEnergyFlag],ps[:nBlasThreads];subFolder=ps[:subFolderName])

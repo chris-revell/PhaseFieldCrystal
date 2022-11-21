@@ -22,7 +22,7 @@ for r in runs[1:7]
     mask = r[1:end-4]
 
     # Collate results as a dataframe 
-    results = collect_results(datadir("fromCSF","allMasksPhasespaces",mask); subfolders = false)
+    results = collect_results(datadir("fromCSF","allMasksPhasespaceSeparateLengths",mask); subfolders = false)
 
     fig = Figure(resolution=(6000,6000),fontsize=64)
 
@@ -77,7 +77,7 @@ for r in runs[1:7]
 
     # display(fig)
 
-    save(datadir("fromCSF","allMasksPhasespaces",mask,"$(mask)ParameterGrid.png"),fig)
+    save(datadir("fromCSF","allMasksPhasespaceSeparateLengths",mask,"$(mask)ParameterGrid.png"),fig)
 end
 
 
