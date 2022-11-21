@@ -20,14 +20,21 @@ using LinearAlgebra
 
     # Gaussian random field for initial u0 field
     # Lengthscale of gaussian noise (λ) set to equal lengthscale of PFC (q:=1.0)
-    mean = fill(ϕ0, (nY,nX))
+    mean = fill(0.0, (nY,nX))
     cov = CovarianceFunction(2,Gaussian(λ,σ=m))
     ptsX = range(0, stop=lX, length=nX)
     ptsY = range(0, stop=h*nY, length=nY)
     grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsY, ptsX)
     # Set initial order parameter field from sample of Gaussian random field
     u0Tmp = sample(grf)
+    u0Tmp .+= ϕ0
     u0Tmp .*= imageMask
+
+    u0mean = sum(u0Tmp)/length(u0Tmp[u0Tmp.!=0.0])
+    display(u0mean)
+    # u0Tmp .= u0Tmp*ϕ0/u0mean
+    # u0mean = sum(u0Tmp)/length(u0Tmp[u0Tmp.!=0.0])
+    # display(u0mean)
 
     u0 = reshape(u0Tmp,nX*nY)
 
