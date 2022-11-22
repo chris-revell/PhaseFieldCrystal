@@ -16,22 +16,26 @@ using LinearAlgebra
 
 @views function initialConditions(imageMask,lX,nX,nY,ϕ0,λ,m)
 
-    h = lX/nX    # Spatial separation of grid points
+    h = lX/nX    # Spatial separation of grid points in units of q
 
-    # Gaussian random field for initial u0 field
-    # Lengthscale of gaussian noise (λ) set to equal lengthscale of PFC (q:=1.0)
+    # Gaussian random field for initial condition 
     mean = fill(0.0, (nY,nX))
-    cov = CovarianceFunction(2,Gaussian(λ,σ=m))
+    cov = CovarianceFunction(2,Gaussian(λ,σ=1.0)) 
     ptsX = range(0, stop=lX, length=nX)
     ptsY = range(0, stop=h*nY, length=nY)
-    grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsY, ptsX)
+    grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsY, ptsX) # Gaussian random field with mean 0.0, unit variance, correlation length λ
     # Set initial order parameter field from sample of Gaussian random field
-    u0Tmp = sample(grf)
-    u0Tmp .+= ϕ0
-    u0Tmp .*= imageMask
+    u0Tmp = sample(grf)   # Form initial field by sampling Gaussian random field 
+    u0Tmp .*= imageMask   # Set u0 to 0.0 for inter-cellular region
+    u0Tmp .*= m           # Multiply field by amplitude m
+    u0mean = sum(u0Tmp)/length(u0Tmp[u0Tmp.!=0.0]) # Calculate actual mean of this field
+    display(u0mean)
+    u0Tmp .+= (ϕ0-u0mean).*imageMask # Offset field to ensure mean of ϕ0
+    # u0Tmp .*= imageMask   # Set u0 to 0.0 for inter-cellular region
 
     u0mean = sum(u0Tmp)/length(u0Tmp[u0Tmp.!=0.0])
     display(u0mean)
+    display(ϕ0)
     # u0Tmp .= u0Tmp*ϕ0/u0mean
     # u0mean = sum(u0Tmp)/length(u0Tmp[u0Tmp.!=0.0])
     # display(u0mean)

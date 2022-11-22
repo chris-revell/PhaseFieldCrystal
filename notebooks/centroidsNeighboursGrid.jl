@@ -29,7 +29,7 @@ end
 
 mkpath(datadir("exp_pro","emCentroidNeighbours"))
 
-runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+runs = [r for r in Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1]) if !occursin("mmpko",r)]
 
 croppedLX = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","croppedLX.csv")))
 
