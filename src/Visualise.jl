@@ -30,7 +30,7 @@ function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileNam
     ax1.yreversed = true
     resize_to_layout!(fig1)
     tSteps = range(1,length(t),step=1)
-    record(fig1,datadir("fromCSF",subFolder,"$(fileName[1:end-5])_u.mp4"),tSteps; framerate=10) do i
+    record(fig1,"$subFolder/$(fileName[1:end-5])_u.mp4",tSteps; framerate=10) do i
         ax1.title = "t=$(@sprintf("%.2f", t[i]))"
         uInternal[] = transpose(reshape(u[i],(nY,nX)))
         uInternal[] = uInternal[]
@@ -42,7 +42,7 @@ function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileNam
         lines!(ax2,t,freeEnergies)
         ax2.xlabel = "Time"
         ax2.ylabel = "Free Energy"
-        safesave(datadir("sims","subFolder","$(fileName[1:end-5])_freeEnergyVsTime.png"),fig2)
+        safesave("$subFolder/$(fileName[1:end-5])_freeEnergyVsTime.png",fig2)
     end
 
     fig3 = Figure(figure_padding=0,resolution=(1000,1000))
@@ -52,8 +52,8 @@ function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileNam
     hidedecorations!(ax3)
     hidespines!(ax3)
     resize_to_layout!(fig3)
-    display(datadir("fromCSF",subFolder,"$(fileName[1:end-5])_finalState.png"))
-    save(datadir("fromCSF",subFolder,"$(fileName[1:end-5])_finalState.png"),fig3)
+    # display("$subFolder/$(fileName[1:end-5])_finalState.png")
+    save("$subFolder/$(fileName[1:end-5])_finalState.png",fig3)
 
     return nothing
 
@@ -64,11 +64,11 @@ end
 function importData(path)
 
     data = load(path)
-    @unpack u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax = data
+    @unpack u, t, ϕ0, r, m, λ, nX, nY, lX, h, a, δt, tMax, maskFileName = data
 
     pathparts = splitpath(path)
 
-    return u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, joinpath(pathparts[end-2:end-1]), pathparts[end][1:end-5], 0
+    return u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, joinpath(pathparts[1:end-1]), pathparts[end][1:end-5], 0
 
 end
 

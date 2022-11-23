@@ -24,25 +24,16 @@ using LinearAlgebra
     ptsX = range(0, stop=lX, length=nX)
     ptsY = range(0, stop=h*nY, length=nY)
     grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsY, ptsX) # Gaussian random field with mean 0.0, unit variance, correlation length λ
+   
     # Set initial order parameter field from sample of Gaussian random field
-    u0Tmp = sample(grf)   # Form initial field by sampling Gaussian random field 
-    u0Tmp .*= imageMask   # Set u0 to 0.0 for inter-cellular region
-    u0Tmp .*= m           # Multiply field by amplitude m
-    u0mean = sum(u0Tmp)/length(u0Tmp[u0Tmp.!=0.0]) # Calculate actual mean of this field
-    display(u0mean)
-    u0Tmp .+= (ϕ0-u0mean).*imageMask # Offset field to ensure mean of ϕ0
-    # u0Tmp .*= imageMask   # Set u0 to 0.0 for inter-cellular region
+    u0Tmp = sample(grf)         # Form initial field by sampling Gaussian random field 
+    u0Tmp .*= imageMask         # Set u0 to 0.0 for inter-cellular region
+    u0Tmp .*= m                 # Multiply field by amplitude m
+    u0TmpMean = sum(u0Tmp)/length(u0Tmp[imageMask.!=0]) # Calculate actual mean of this field
+    u0Tmp .+= (ϕ0-u0TmpMean).*imageMask # Offset field to ensure mean of ϕ0
+    u0 = reshape(u0Tmp,nX*nY)   # Flatten matrix to vector 
 
-    u0mean = sum(u0Tmp)/length(u0Tmp[u0Tmp.!=0.0])
-    display(u0mean)
-    display(ϕ0)
-    # u0Tmp .= u0Tmp*ϕ0/u0mean
-    # u0mean = sum(u0Tmp)/length(u0Tmp[u0Tmp.!=0.0])
-    # display(u0mean)
-
-    u0 = reshape(u0Tmp,nX*nY)
-
-    # Allocate additional arrays for later calculations
+    # Pre-allocate additional arrays for use in later calculations
     mat1  = zeros(nX*nY)
     mat2  = zeros(nX*nY)
 
