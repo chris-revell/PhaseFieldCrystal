@@ -30,7 +30,12 @@ function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileNam
     ax1.yreversed = true
     resize_to_layout!(fig1)
     tSteps = range(1,length(t),step=1)
-    record(fig1,"$subFolder/$(fileName[1:end-5])_u.mp4",tSteps; framerate=10) do i
+    display(subFolder)
+    display(typeof(fileName))
+    display(fileName)    
+    display(tSteps)
+    record(fig1,"$subFolder/$(fileName)_u.mp4",tSteps; framerate=10) do i
+        display(i)
         ax1.title = "t=$(@sprintf("%.2f", t[i]))"
         uInternal[] = transpose(reshape(u[i],(nY,nX)))
         uInternal[] = uInternal[]
@@ -42,7 +47,7 @@ function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileNam
         lines!(ax2,t,freeEnergies)
         ax2.xlabel = "Time"
         ax2.ylabel = "Free Energy"
-        safesave("$subFolder/$(fileName[1:end-5])_freeEnergyVsTime.png",fig2)
+        safesave("$subFolder/$(fileName)_freeEnergyVsTime.png",fig2)
     end
 
     fig3 = Figure(figure_padding=0,resolution=(1000,1000))
@@ -53,7 +58,7 @@ function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileNam
     hidespines!(ax3)
     resize_to_layout!(fig3)
     # display("$subFolder/$(fileName[1:end-5])_finalState.png")
-    save("$subFolder/$(fileName[1:end-5])_finalState.png",fig3)
+    save("$subFolder/$(fileName)_finalState.png",fig3)
 
     return nothing
 

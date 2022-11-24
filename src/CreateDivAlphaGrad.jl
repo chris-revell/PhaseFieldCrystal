@@ -53,7 +53,7 @@ function createDivAlphaGrad(nX, nY, h, α)
 
         end
     end
-    incidence .= incidence./h
+    incidence .= incidence./h   
 
     incidenceTranspose = sparse(transpose(incidence))
 

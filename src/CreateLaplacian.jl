@@ -36,7 +36,7 @@ function createLaplacian(nX, nY, h)
     end
 
     degree = spdiagm(0=>sum(adj, dims=2)[:,1]) # degree matrix is a diagonal matrix formed by the sum of each row in the adjacency matrix (should be 4 for all rows in a periodic system)
-    ∇² = (degree-adj)./h^2                     # 
+    ∇² = (adj-degree)./h^2                     # Laplacian matrix = (Adjacency matrix - Degree matrix)/grid spacing^2
 
     return ∇²
 
