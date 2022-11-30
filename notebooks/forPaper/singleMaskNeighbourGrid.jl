@@ -41,7 +41,7 @@ runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
 
 # defectCountsDataFrame = DataFrame()
 
-for r in runs[2:end]
+for r in runs[1:end]
     mask = r[1:end-4]
 
     # Collate results as a dataframe 
@@ -126,7 +126,7 @@ for r in runs[2:end]
 
         display(defectCountsDict)
 
-        runDefectProportion = 1-defectCountsDict["6"]/(length(nNeighbours)-length(hullInds))
+        # runDefectProportion = 1-defectCountsDict["6"]/(length(nNeighbours)-length(hullInds))
 
 
         ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect())
@@ -136,17 +136,18 @@ for r in runs[2:end]
         axesDict[(results[i,:r],results[i,:ϕ0])] = ax2
 
         
-        for (j,c) in enumerate(tess.Cells)
-            if j ∉ hullInds
-                vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
-                poly!(ax2, vertices, color=neighbourColours(nNeighbours[j]),strokecolor=(:black,1.0),strokewidth=1.0)
-            else
-                vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
-                poly!(ax2, vertices, color=:white,strokecolor=(:black,1.0),strokewidth=1.0)
-            end
-        end
-        image!(ax2,rotr90(maskImage))
-        # poly!(ax2,hull.vertices,color=(:grey,1.0))
+        # for (j,c) in enumerate(tess.Cells)
+        #     if j ∉ hullInds
+        #         vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
+        #         poly!(ax2, vertices, color=neighbourColours(nNeighbours[j]),strokecolor=(:black,1.0),strokewidth=1.0)
+        #     else
+        #         vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
+        #         poly!(ax2, vertices, color=:white,strokecolor=(:black,1.0),strokewidth=1.0)
+        #     end
+        # end
+        # image!(ax2,rotr90(maskImage))
+        hullPoints = [(v.-Point2(0,1)).*scalingFactor.+Point2(0,size(uImg)[1]) for v in hull.vertices]
+        poly!(ax2,hullPoints,color=(:grey,1.0))
         # scatter!(ax2,centroidLocations.+ Point2(0,size(uImg)[1]),color=(:orange,1.0),markersize=16)
         # hidedecorations!(ax2)
         hidespines!(ax2)
@@ -157,7 +158,7 @@ for r in runs[2:end]
         # ax2.xlabel = "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0]), $(round(runDefectProportion,digits=2))"
 
         axesDict[(results[i,:r],results[i,:ϕ0])] = ax2
-        labelsDict[(results[i,:r],results[i,:ϕ0])] = "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0]), $(round(runDefectProportion,digits=2))"
+        labelsDict[(results[i,:r],results[i,:ϕ0])] = "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0])"#, $(round(runDefectProportion,digits=2))"
 
     end 
 

@@ -29,11 +29,11 @@ end
 
 mkpath(datadir("exp_pro","emCentroidNeighbours"))
 
-runs = [r for r in Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1]) if !occursin("mmpko",r)]
+runs = [r for r in Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1]) if !(occursin("mp13ko",r) || occursin("18tailT_4800X_HUI_0007_0",r) || occursin("18tailT_4800X_HUI_0008_0",r) )]
 
 croppedLX = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","croppedLX.csv")))
 
-fig = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=64)
+fig = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=128)
 
 axes = Dict()
 sizes = Dict()
@@ -72,7 +72,7 @@ for (k,r) in enumerate(runs)
     # Indices of fibrils within the hull 
     hullInds = sort([findall(x->Point2(x...)==v,shiftedCentroidLocations)[1] for v in hull.vertices])
 
-    defectCountsDict = Dict()
+    defectCountsDict = Dict("4"=>0,"3"=>0,"9"=>0, "8"=>0)
     for i in eachindex(nNeighbours)
         if i ∉ hullInds
             if "$(nNeighbours[i])" ∈ keys(defectCountsDict)
@@ -82,16 +82,17 @@ for (k,r) in enumerate(runs)
             end
         end
     end
+    runDefectProportion = 1-defectCountsDict["6"]/(length(nNeighbours)-length(hullInds))
     dfLocal = DataFrame(defectCountsDict)
     dfLocal[!,:file] = [r]
+    dfLocal[!,:k] = [k]
+    dfLocal[!,:defectProportion] = [runDefectProportion]
     defectCountsDataFrame = vcat(defectCountsDataFrame,dfLocal,cols = :union)
 
-    runDefectProportion = 1-defectCountsDict["6"]/(length(nNeighbours)-length(hullInds))
-    
     # Voronoi tessellation of centroid positions within (0,0) (1,1) box
     tess = voronoicells(shiftedCentroidLocations, Rectangle(Point2(0, 0), Point2(1, 1)))
 
-    ax2 = CairoMakie.Axis(fig[(k-1)%6+1,(k-1)÷6+1],aspect=DataAspect(), backgroundcolor=:white)
+    ax2 = CairoMakie.Axis(fig[(k-1)÷6+1,(k-1)%6+1],aspect=DataAspect(), backgroundcolor=:white)
     image!(ax2,rotr90(grayImage))    
     for (i,c) in enumerate(tess.Cells)
         if i ∉ hullInds
@@ -102,18 +103,37 @@ for (k,r) in enumerate(runs)
         #     poly!(ax2, vertices, color=(:white,0.0),strokecolor=(:black,1.0),strokewidth=1.0)
         end
     end
-    hideydecorations!(ax2)
-    ax2.xticks = [0,size(grayImage)[2]]
-    ax2.xtickformat = x -> string.(round.((Float64.(x).*lengthPerPixel),digits=2))
-    # ax2.yticks = []
-    # ax2.ytickformat = y -> string.(round.((Float64.(y).*lengthPerPixel),digits=2))
+    
+    hidedecorations!(ax2)
+    # hideydecorations!(ax2)
+    # ax2.xticks = [0,size(grayImage)[2]]
+    # ax2.xtickformat = x -> string.(round.((Float64.(x).*lengthPerPixel),digits=2))
+    
     hidespines!(ax2)
     
-    Label(fig[(k-1)%6+1,(k-1)÷6+1, Bottom()], "$k, d=$(round(runDefectProportion,digits=2))", padding = (0, 10, 10, 0), color=:black)
+    Label(fig[(k-1)÷6+1,(k-1)%6+1, Bottom()], "$k", padding = (0, 10, 10, 0), color=:black)
+    # Label(fig[(k-1)%6+1,(k-1)÷6+1, Bottom()], "$k, d=$(round(runDefectProportion,digits=2))", padding = (0, 10, 10, 0), color=:black)
 
     axes[r] = ax2
     sizes[r] = size(grayImage)
+
+    if k==18
+        localFig = Figure(resolution=(500,500))
+        axLocal = Axis(localFig[1,1],aspect=DataAspect())
+        image!(axLocal,rotr90(grayImage))    
+        for (i,c) in enumerate(tess.Cells)
+            if i ∉ hullInds
+                vertices = [v.*scalingFactor for v in c]
+                poly!(axLocal, vertices, color=neighbourColours(nNeighbours[i]),strokecolor=(:black,1.0),strokewidth=1.0)
+            end
+        end
+        hidedecorations!(axLocal)
+        hidespines!(axLocal)
+        save(datadir("exp_pro","emCentroidNeighbours","panel18.png"),localFig)
+    end
+
 end 
+
 
 # lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
 # lengthPerPixel = lengthMeasurements[!,:length]./lengthMeasurements[!,:Pixels]
@@ -146,9 +166,10 @@ end
 resize_to_layout!(fig)
 display(fig)
 
-# CSV.write(datadir("exp_pro", "emCentroidMeasurements", "defectCounts.csv"), defectCountsDataFrame)
-
-save(datadir("exp_pro","emCentroidNeighbours","emNeighboursGridWithDefectProportion.png"),fig)
-
+CSV.write(datadir("exp_pro", "emCentroidMeasurements", "defectCounts2.csv"), defectCountsDataFrame)
+save(datadir("exp_pro","emCentroidNeighbours","emNeighboursGridWithDefectProportion2.png"),fig)
 
 
+sortedKeys = sort(collect(keys(defectProportionsDict)))
+using DelimitedFiles
+zip(sortedKeys,defectProportionsDict[sortedKeys])

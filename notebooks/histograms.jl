@@ -80,8 +80,8 @@ for (i,r) in enumerate(runs)
     pairLengthsDict[r] = lengths
 end 
 
-fig = CairoMakie.Figure(resolution=(2000,1000),fontsize=32)
-ax1 = CairoMakie.Axis(fig[1,1])
+fig1 = CairoMakie.Figure(resolution=(1000,1000),fontsize=32)
+ax1 = CairoMakie.Axis(fig1[1,1])
 for r in runs
     points = Point2[]
     hNorm = normalize(fit(Histogram, pairLengthsDict[r], 0:10:160), mode=:pdf)
@@ -93,8 +93,11 @@ for r in runs
 end
 ax1.xlabel = "Edge length/nm"
 ax1.ylabel = "Density"
+save(datadir("exp_pro","emCentroidMeasurements","emLengthHistogram.png"),fig1)
 
-ax2 = CairoMakie.Axis(fig[1,2])
+
+fig2 = CairoMakie.Figure(resolution=(1000,1000),fontsize=32)
+ax2 = CairoMakie.Axis(fig2[1,1])
 for r in runs
     # lines!(ax2,nNeighboursDict[r])
     points = Point2[]
@@ -107,6 +110,4 @@ for r in runs
 end
 ax2.xlabel = "Neighbour count"
 ax2.ylabel = "Density"
-
-display(fig)
-save(datadir("exp_pro","emCentroidMeasurements","emLengthNeighbourCountHistograms.png"),fig)
+save(datadir("exp_pro","emCentroidMeasurements","emNeighbourHistogram.png"),fig2)
