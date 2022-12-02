@@ -9,39 +9,35 @@ using GR: delaunay
 using Statistics
 using StatsBase
 using DelimitedFiles
+using Dates
 
-runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+runs = [r for r in Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1]) if !(occursin("mp13ko",r) || occursin("18tailT_4800X_HUI_0007_0",r) || occursin("18tailT_4800X_HUI_0008_0",r) )]
 
 # spacingData = DataFrame(CSV.File(datadir("exp_pro","emCentroidMeasurements","spacingData.csv")))
 # defectCounts = DataFrame(CSV.File(datadir("exp_pro","emCentroidMeasurements","defectCounts.csv")))
-
-lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
-lengthPerPixel = lengthMeasurements[!,:length]./lengthMeasurements[!,:Pixels]
-lengthPerPixelDict = Dict()
-for r in runs 
-    subsetLengths = subset(lengthMeasurements, :File => m -> occursin.(r[1:end-6],m))
-    lengthPerPixelDict[r] = (subsetLengths[!,:length]./subsetLengths[!,:Pixels])[1]
-end
 
 pairLengthsDict = Dict()
 nNeighboursDict = Dict()
 
 for (i,r) in enumerate(runs)
+
+    subsetLengths = subset(lengthMeasurements, :File => m -> occursin.(r[1:end-6],m))
+    lengthPerPixel = (subsetLengths[!,:length]./subsetLengths[!,:Pixels])[1]
+
     centroidData = load(datadir("exp_pro","emCentroidsInteractive","$(r[1:end-4]).jld2"))
     @unpack centroidLocations = centroidData
     # Put centroid locations into a format for tessellation and triangulation 
     xs = [x[1] for x in centroidLocations]
     ys = [x[2] for x in centroidLocations]
-    scalingFactor = maximum(abs.([xs ys]))/(1-3eps(Float64))
-    shiftedCentroidLocations = centroidLocations./scalingFactor
+
     # Delaunay triangulation of centroid locations using function from GR
     n, tri = delaunay(xs,ys)
     # Count neighbours of each centroid in the triangulation 
-    nNeighbours = [length(findall(x->x==i,tri)) for i=1:length(shiftedCentroidLocations)]
+    nNeighbours = [length(findall(x->x==i,tri)) for i=1:length(centroidLocations)]
     # Concave hull to identify boundary fibrils 
-    hull = concave_hull(shiftedCentroidLocations,1)
+    hull = concave_hull(centroidLocations,1)
     # Indices of fibrils within the hull 
-    hullInds = sort([findall(x->Point2(x...)==v,shiftedCentroidLocations)[1] for v in hull.vertices])
+    hullInds = sort([findall(x->Point2(x...)==v,centroidLocations)[1] for v in hull.vertices])
     
     # Store number of neighbours without boundary elements
     nNeighboursDict[r] = nNeighbours[filter(x->x ∉ hullInds, eachindex(nNeighbours))]
@@ -76,7 +72,7 @@ for (i,r) in enumerate(runs)
     end 
     
     lengths = norm.(centroidLocations[first.(pairs)]-centroidLocations[last.(pairs)])
-    lengths .*= lengthPerPixelDict[r]*1000.0
+    lengths .*= lengthPerPixel*1000.0
     pairLengthsDict[r] = lengths
 end 
 
@@ -93,7 +89,7 @@ for r in runs
 end
 ax1.xlabel = "Edge length/nm"
 ax1.ylabel = "Density"
-save(datadir("exp_pro","emCentroidMeasurements","emLengthHistogram.png"),fig1)
+save(datadir("exp_pro","emCentroidMeasurements","emLengthHistogram$(Dates.format(Dates.now(), "yyyy-mm-dd-HH-MM-SS")).png"),fig1)
 
 
 fig2 = CairoMakie.Figure(resolution=(1000,1000),fontsize=32)
@@ -110,4 +106,4 @@ for r in runs
 end
 ax2.xlabel = "Neighbour count"
 ax2.ylabel = "Density"
-save(datadir("exp_pro","emCentroidMeasurements","emNeighbourHistogram.png"),fig2)
+save(datadir("exp_pro","emCentroidMeasurements","emNeighbourHistogram$(Dates.format(Dates.now(), "yyyy-mm-dd-HH-MM-SS")).png"),fig2)

@@ -18,7 +18,7 @@ for m in okMasks
     filteredCroppedLX = filter(:file => f->f==m, croppedLX)[1,:lX]
     filteredEMspacingData = filter(:file => f->f==m, EMspacingData)[1,:mean]
     # scalingLX = (fibril spacing in q units)/(fibril spacing in nm)
-    scalingLX = 7.2/filteredEMspacingData
+    scalingLX = 2π/filteredEMspacingData
     push!(c[:imagelXpairs],(m,filteredCroppedLX*1000*scalingLX))
 end
 c[:r]             = [0.55, 0.60, 0.65, 0.70, 0.75, 0.80]
