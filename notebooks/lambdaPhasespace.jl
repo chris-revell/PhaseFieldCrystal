@@ -15,7 +15,7 @@ for (i,r) in enumerate(eachrow(subset(res, :r => r -> r .== 0.55)))
     hidespines!(ax)
     # Map parameters to axis in axes dictionary 
     axesDict[(r[:r],r[:ϕ0])] = ax
-    Label(fig[1,i,Bottom()],"λ=$(r[:λ])",textsize=64)
+    Label(fig[1,i,Bottom()],"λ=$(r[:λ])",fontsize=64)
 end
 
 resize_to_layout!(fig)

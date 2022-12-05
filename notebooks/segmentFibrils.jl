@@ -185,12 +185,12 @@ function segmentFibrils(fileName,distance,nDilate,nErode,thresh1,thresh2,thresh3
     axLengths.xlabel = "Length"
     axLengths.ylabel = "Frequency"
 
-    Label(fig[1,1,Bottom()],L"a",textsize = 48)
-    Label(fig[1,2,Bottom()],L"b",textsize = 48)
-    Label(fig[2,1,Bottom()],L"c",textsize = 48)
-    Label(fig[2,2,Bottom()],L"d",textsize = 48)
-    Label(fig[3,1,Bottom()],L"e",textsize = 48)
-    Label(fig[3,2,Bottom()],L"f",textsize = 48)
+    Label(fig[1,1,Bottom()],L"a",fontsize = 48)
+    Label(fig[1,2,Bottom()],L"b",fontsize = 48)
+    Label(fig[2,1,Bottom()],L"c",fontsize = 48)
+    Label(fig[2,2,Bottom()],L"d",fontsize = 48)
+    Label(fig[3,1,Bottom()],L"e",fontsize = 48)
+    Label(fig[3,2,Bottom()],L"f",fontsize = 48)
 
     nVerts = length(shiftedCentroidLocations)
     nEdges = length(pairs)
@@ -199,7 +199,7 @@ function segmentFibrils(fileName,distance,nDilate,nErode,thresh1,thresh2,thresh3
     axText = CairoMakie.Axis(fig[4,:])
     text!(axText,
         "Number of fibrils = $nVerts\nNumber of edges = $nEdges\nNumber of faces = $nFaces\nMean edge length = $(mean(lengthsFiltered))",
-        textsize=32,
+        fontsize=32,
         position = Point2(0.0,0.0),
         align = (:left, :center),
         justification = :left)

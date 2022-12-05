@@ -116,7 +116,7 @@ for (i,r) in enumerate(sortedrs)
     for (j,ϕ0) in enumerate(sortedϕ0s)
         fig[length(sortedrs)+1-i,length(sortedϕ0s)+1-j][1,1] = axesDict[(r,ϕ0)]
         # Colorbar(fig[length(sortedrs)-i,length(sortedϕ0s)-j][1,2], limits=(-1,1),colormap=:bwr)#, size = 25)
-        Label(fig[length(sortedrs)+1-i,length(sortedϕ0s)+1-j,Bottom()],L"r=%$r, \phi_0=%$ϕ0",textsize=64)
+        Label(fig[length(sortedrs)+1-i,length(sortedϕ0s)+1-j,Bottom()],L"r=%$r, \phi_0=%$ϕ0",fontsize=64)
     end
 end
 

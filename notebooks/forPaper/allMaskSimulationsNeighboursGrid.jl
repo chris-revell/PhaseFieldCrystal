@@ -13,6 +13,7 @@ using CSV
 using DataFrames
 using ImageBinarization
 using ImageSegmentation
+using DelimitedFiles
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
@@ -36,7 +37,9 @@ function binariseSimulation!(uij)
     end
 end 
 
-results = collect_results(datadir("fromCSF","allMasks"); subfolders = true)
+function filterFunction(r,ϕ0)
+    r==0.8 && ϕ0==0.4
+end
 
 runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
 
@@ -47,7 +50,9 @@ sizes = Dict()
 
 for (i,r) in enumerate(runs)
     
-    subsetResults = subset(results, :path => m -> occursin.(r[1:end-4],m))
+    results = collect_results(datadir("fromCSF","allMasksPhasespaceSeparateLengths",r[1:end-4]); subfolders = true)
+
+    subsetResults = filter([:r, :ϕ0] => filterFunction, results) #subset(results, :path => m -> occursin.(r[1:end-4],m))
 
     maskIn = load(datadir("exp_pro","masksCompressed",r[1:end-4],"$(r[1:end-4]).png"))
     maskImage = fill(RGBA(1,1,1,1),size(maskIn))
@@ -125,25 +130,25 @@ for (i,r) in enumerate(runs)
     sizes[r] = size(maskImage)
 end 
 
-xMax = maximum(first.(values(sizes)))
-yMax = maximum(last.(values(sizes)))
+# xMax = maximum(first.(values(sizes)))
+# yMax = maximum(last.(values(sizes)))
 
-for r in runs 
-    xlims!(axes[r],(0,xMax))
-    ylims!(axes[r],(0,yMax))
-end
+# for r in runs 
+#     xlims!(axes[r],(0,xMax))
+#     ylims!(axes[r],(0,yMax))
+# end
 
-colgap!(fig.layout, 1, -700)
-colgap!(fig.layout, 2, -600)
-colgap!(fig.layout, 3, -600)
-colgap!(fig.layout, 4, -500)
-colgap!(fig.layout, 5, -100)
+# colgap!(fig.layout, 1, -700)
+# colgap!(fig.layout, 2, -600)
+# colgap!(fig.layout, 3, -600)
+# colgap!(fig.layout, 4, -500)
+# colgap!(fig.layout, 5, -100)
 
-rowgap!(fig.layout, 1, -100)
-rowgap!(fig.layout, 2, -100)
-rowgap!(fig.layout, 3, -200)
+# rowgap!(fig.layout, 1, -100)
+# rowgap!(fig.layout, 2, -100)
+# rowgap!(fig.layout, 3, -200)
 
 resize_to_layout!(fig)
 display(fig)
 
-save(datadir("fromCSF","allMasks","allMasksSimulationNeighbourGrid.png"),fig)
+save(datadir("fromCSF","allMasksPhasespaceSeparateLengths","allMasksSimulationNeighbourGrid.png"),fig)

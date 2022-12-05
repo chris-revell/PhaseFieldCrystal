@@ -105,13 +105,13 @@ for r in runs
         
         # Convert simulation result to a 2D matrix
         uMat = reshape(results[i,:u][end],(results[i,:nY],results[i,:nX]))
-        # Binarise grayscale image
+        # Binarise grayscale image 
         uImg = binariseSimulation!.(uMat)
         # Convert matrix to a grayscale image
         uGray = Gray.(uImg)
         # Segment binarised image
         seg = fast_scanning(uGray, 0.01)    
-        display(map(i->get_random_color(i), seg.image_indexmap))
+        # display(map(i->get_random_color(i), seg.image_indexmap))
         # Find centre of mass positions of all fibril segments. 
         centroidLocationsSim = Point2{Float64}[]
         maxSize = 100
@@ -196,9 +196,9 @@ for r in runs
     for i=1:length(hNorm.weights)
         push!(points,Point2(mean(edgeVec[i:i+1]),hNorm.weights[i]))
     end
-    lines!(ax1,points)        
+    lines!(ax1,points,linestyle="--",color=:black,width=4)        
     # display(median(lengthsEM))
-    vlines!(ax1,mean(lengthsEM))
+    # vlines!(ax1,mean(lengthsEM))
     ax1.xlabel = "Edge length/nm"
     ax1.ylabel = "Density"
     save(datadir("fromCSF","allMasksPhasespaceSeparateLengths",mask,"$(mask)LengthHistogram.png"),fig1)
@@ -216,6 +216,13 @@ for r in runs
         end
         lines!(ax2,points)        
     end
+    points = Point2[]
+    hNorm = normalize(fit(Histogram,nNeighboursEMfiltered,0.5:11.5), mode=:pdf)
+    edgeVec = collect(hNorm.edges[1])    
+    for i=1:length(hNorm.weights)
+        push!(points,Point2(mean(edgeVec[i:i+1]),hNorm.weights[i]))
+    end
+    lines!(ax2,points,linestyle="--",color=:black,width=4)   
     ax2.xlabel = "Neighbour count"
     ax2.ylabel = "Density"
     save(datadir("fromCSF","allMasksPhasespaceSeparateLengths",mask,"$(mask)NeighbourHistogram.png"),fig2)

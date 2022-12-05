@@ -46,7 +46,7 @@ for m in ms
             if (r,ϕ₀) in keys(axes)
                 fig[7-i,7-j][1,1] = axesDict[(r,ϕ₀)]
                 Colorbar(fig[7-i,7-j][1,2], limits=(-1,1),colormap=:bwr)#, size = 25)
-                Label(fig[7-i,7-j,Bottom()],L"r=%$r, \phi_0=%$ϕ₀",textsize=64)
+                Label(fig[7-i,7-j,Bottom()],L"r=%$r, \phi_0=%$ϕ₀",fontsize=64)
             end
         end
     end

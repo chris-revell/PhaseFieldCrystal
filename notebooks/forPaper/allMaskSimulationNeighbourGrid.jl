@@ -169,7 +169,7 @@ for r in runs[1:end]
     for (i,r) in enumerate(sortedrs)
         for (j,ϕ0) in enumerate(sortedϕ0s)
             fig[length(sortedrs)+1-i,j] = axesDict[(r,ϕ0)]
-            Label(fig[length(sortedrs)+1-i,j,Bottom()],labelsDict[(r,ϕ0)],textsize=64)
+            Label(fig[length(sortedrs)+1-i,j,Bottom()],labelsDict[(r,ϕ0)],fontsize=64)
         end
     end
 
