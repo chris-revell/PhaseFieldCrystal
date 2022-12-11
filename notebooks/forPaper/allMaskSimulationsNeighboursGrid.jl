@@ -30,7 +30,7 @@ function neighbourColours(x)
 end
 
 function binariseSimulation!(uij)
-    if uij > 0.8
+    if uij < -0.5
         return 1.0
     else
         return 0.0
@@ -41,7 +41,8 @@ function filterFunction(r,ϕ0)
     r==0.8 && ϕ0==0.4
 end
 
-runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+# runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+runs = [r for r in Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1]) if !(occursin("mp13ko",r) || occursin("18tailT_4800X_HUI_0007_0",r) || occursin("18tailT_4800X_HUI_0008_0",r) )]
 
 fig = Figure(resolution=(6000,6000),fontsize=64)
 
@@ -109,6 +110,7 @@ for (i,r) in enumerate(runs)
 
     ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect())
 
+    heatmap!(ax,rotr90(uMat),colorrange=(-1.0, 1.0),colormap=:bwr)
     for (i,c) in enumerate(tess.Cells)
         if i ∉ hullInds
             vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]

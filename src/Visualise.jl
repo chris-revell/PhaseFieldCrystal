@@ -39,6 +39,7 @@ function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileNam
         ax1.title = "t=$(@sprintf("%.2f", t[i]))"
         uInternal[] = transpose(reshape(u[i],(nY,nX)))
         uInternal[] = uInternal[]
+        save("$subFolder/$(fileName)$i.png",fig1)
     end
 
     if freeEnergyFlag==1
@@ -69,7 +70,7 @@ end
 function importData(path)
 
     data = load(path)
-    @unpack u, t, ϕ0, r, m, λ, nX, nY, lX, h, a, δt, tMax, maskFileName = data
+    @unpack u, t, ϕ0, r, m, λ, nX, nY, lX, a, δt, tMax = data
 
     pathparts = splitpath(path)
 

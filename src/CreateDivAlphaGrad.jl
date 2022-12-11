@@ -5,7 +5,9 @@
 #  Created by Christopher Revell on 29/03/2021.
 #
 #
-#
+# Due to the spatially varying diffusivity, we must consider the outermost differential operators ($\nabla\cdot\alpha\nabla$) separately. In this instance, we construct a directed incidence matrix $\mathcal{A}$. Incidence matrix $\mathcal{A}$ is a $2NM\times NM$ matrix mapping edges between grid points (vertices) in rows to grid points in columns. Note that there are twice as many edges as vertices, hence why $\mathcal{I}$ has twice as many rows as columns.
+# Incidence matrix $\mathcal{A}$ has a value of 1 for the components mapping grid point $(i,j)$ to leading edge $(i,j)$, which itself links grid points $(i,j)$ and $(i+1,j)$; a value of -1 for the component mapping grid point $(i,j)$ to trailing edge $(i-1,j)$, which links grid point $(i,j)$ and $(i-1,j)$, with a similar protocol for y-directed edges. With $\alpha$ a diagonal $2NM\times 2NM$ matrix containing diffusiivity values, the external Laplacian operator $\nabla\cdot\alpha\nabla = -\mathcal{I}^T\alpha\mathcal{I}$.
+
 
 module CreateDivAlphaGrad
 

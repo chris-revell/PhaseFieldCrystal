@@ -13,6 +13,7 @@ using CSV
 using DataFrames
 using DelimitedFiles
 using LaTeXStrings
+using Statistics
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
@@ -37,7 +38,9 @@ function binariseSimulation!(uij)
 end 
 
 # mask = "17tailT_4800X_HUI_0001_0"
-runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+# runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+runs = [r for r in Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1]) if !(occursin("mp13ko",r) || occursin("18tailT_4800X_HUI_0007_0",r) || occursin("18tailT_4800X_HUI_0008_0",r) )]
+
 
 defectCountsDataFrame = DataFrame()
 
@@ -66,7 +69,7 @@ for r in runs[1:end]
 
     # Loop to process data from each run 
     for i=1:nrow(results)
-        display(i)
+        # display(i)
         
         # Convert simulation result to a 2D matrix
         uMat = reshape(results[i,:u][end],(results[i,:nY],results[i,:nX]))
@@ -106,8 +109,13 @@ for r in runs[1:end]
         hullInds = sort([findall(x->Point2(x...)==v,shiftedCentroidLocations)[1] for v in hull.vertices])
 
         # Voronoi tessellation of centroid positions within (0,0) (1,1) box
-        tess = voronoicells(shiftedCentroidLocations, Rectangle(Point2(0, 0), Point2(1, 1)))
+        tess = voronoicells(shiftedCentroidLocations, Rectangle(Point2(0, 0), Point2(1, 1)))        
 
+        tessAreas = voronoiarea(tess)        
+        tessAreasFiltered = [tessAreas[a] for a in 1:length(tessAreas) if a∉hullInds]
+        # display(tessAreasFiltered)        
+        meanArea = mean(tessAreasFiltered)
+        # display(meanArea)
 
         defectCountsDict = Dict()
         for j in eachindex(nNeighbours)
@@ -125,7 +133,7 @@ for r in runs[1:end]
         dfLocal[!,:r]   = [results[i,:r]]
         defectCountsDataFrame = vcat(defectCountsDataFrame,dfLocal,cols = :union)
 
-        display(defectCountsDict)
+        # display(defectCountsDict)
 
         runDefectProportion = 1-defectCountsDict["6"]/(length(nNeighbours)-length(hullInds))
 
@@ -136,14 +144,14 @@ for r in runs[1:end]
         # Map parameters to axis in axes dictionary 
         axesDict[(results[i,:r],results[i,:ϕ0])] = ax2
 
-        
+        heatmap!(ax2,rotr90(uMat),colorrange=(-1.0, 1.0),colormap=:greys)
         for (j,c) in enumerate(tess.Cells)
-            if j ∉ hullInds
+            if j ∉ hullInds && tessAreas[j]<1.3*meanArea
                 vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
                 poly!(ax2, vertices, color=neighbourColours(nNeighbours[j]),strokecolor=(:black,1.0),strokewidth=1.0)
             else
-                vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
-                poly!(ax2, vertices, color=:white,strokecolor=(:black,1.0),strokewidth=1.0)
+                # vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
+                # poly!(ax2, vertices, color=:white,strokecolor=(:black,1.0),strokewidth=1.0)
             end
         end
         image!(ax2,rotr90(maskImage))
@@ -169,8 +177,14 @@ for r in runs[1:end]
     for (i,r) in enumerate(sortedrs)
         for (j,ϕ0) in enumerate(sortedϕ0s)
             fig[length(sortedrs)+1-i,j] = axesDict[(r,ϕ0)]
-            Label(fig[length(sortedrs)+1-i,j,Bottom()],labelsDict[(r,ϕ0)],fontsize=64)
+            # Label(fig[length(sortedrs)+1-i,j,Bottom()],labelsDict[(r,ϕ0)])
         end
+    end
+    for (i,r) in enumerate(sortedrs)
+        Label(fig[length(sortedrs)+1-i,1,Left()],"r=$(r)")
+    end
+    for (j,ϕ0) in enumerate(sortedϕ0s)
+        Label(fig[end,j,Bottom()],"ϕ0=$(ϕ0)")
     end
 
     # Resize columns
@@ -181,7 +195,7 @@ for r in runs[1:end]
 
     display(fig)
 
-    save(datadir("fromCSF","allMasksPhasespaceSeparateLengths",mask,"$(mask)NeighbourGridWithDefectProportion.png"),fig)
+    save(datadir("fromCSF","allMasksPhasespaceSeparateLengths",mask,"$(mask)NeighbourGridExcludingHoles.png"),fig)
 end
 
 

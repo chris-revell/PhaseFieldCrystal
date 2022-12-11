@@ -21,24 +21,24 @@ for m in okMasks
     scalingLX = 2π/filteredEMspacingData
     push!(c[:imagelXpairs],(m,filteredCroppedLX*1000*scalingLX))
 end
-c[:r]             = [0.55, 0.60, 0.65, 0.70, 0.75, 0.80]
+c[:r]             = [0.80]
 c[:m]             = [0.1]
-c[:ϕ0]            = [0.40, 0.41, 0.42, 0.43, 0.44, 0.45]
+c[:ϕ0]            = [0.40]
 c[:λ]             = [10.0]
 c[:a]             = [2.0]
 c[:δt]            = [0.1]
-c[:tMax]          = [200.0]
+c[:tMax]          = [1000.0]
 c[:loggerFlag]    = [0]
-c[:outCount]      = [100]
+c[:outCount]      = [1000]
 c[:outputFlag]    = [1]
 c[:visualiseFlag] = [0]
 c[:freeEnergyFlag]= [0]
 c[:nBlasThreads]  = [1]
-c[:subFolderName] = "test"
+c[:subFolderName] = "timeResolution"
 
 dl = dict_list(c)
 
-ps = dl[1]
+ps = dl[2]
 
 # Warmup
 phaseFieldCrystal("data/exp_pro/testMask.png",200.0,0.7,-0.41,0.1,2.0,1.0,0.5,10.0,1,0,0,0,0,1)

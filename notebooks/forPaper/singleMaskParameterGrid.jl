@@ -16,7 +16,9 @@ using DelimitedFiles
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 # mask = "17tailT_4800X_HUI_0001_0"
-runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+# runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+runs = [r for r in Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1]) if !(occursin("mp13ko",r) || occursin("18tailT_4800X_HUI_0007_0",r) || occursin("18tailT_4800X_HUI_0008_0",r) )]
+
 
 for r in runs
     mask = r[1:end-4]
@@ -53,6 +55,7 @@ for r in runs
         heatmap!(ax,rotr90(uMat),colorrange=(-1.0, 1.0),colormap=:bwr)
         hidedecorations!(ax)
         hidespines!(ax)
+        image!(ax,rotr90(maskImage))
         # Map parameters to axis in axes dictionary 
         axesDict[(results[i,:r],results[i,:ϕ0])] = ax
         
