@@ -66,10 +66,15 @@ for r in runs
     sortedϕ0s = unique!(sort(last.(keys(axesDict))))
     for (i,r) in enumerate(sortedrs)
         for (j,ϕ0) in enumerate(sortedϕ0s)
-            fig[length(sortedrs)+1-i,j][1,1] = axesDict[(r,ϕ0)]
-            # Colorbar(fig[length(sortedrs)-i,length(sortedϕ0s)-j][1,2], limits=(-1,1),colormap=:bwr)#, size = 25)
-            Label(fig[length(sortedrs)+1-i,j,Bottom()],L"r=%$r, \phi_0=%$ϕ0",fontsize=64)
+            fig[length(sortedrs)+1-i,j] = axesDict[(r,ϕ0)]
+            # Label(fig[length(sortedrs)+1-i,j,Bottom()],labelsDict[(r,ϕ0)])
         end
+    end
+    for (i,r) in enumerate(sortedrs)
+        Label(fig[length(sortedrs)+1-i,1,Left()],"r=$(r)")
+    end
+    for (j,ϕ0) in enumerate(sortedϕ0s)
+        Label(fig[end,j,Bottom()],"ϕ₀=$(ϕ0)")
     end
 
     # Resize columns

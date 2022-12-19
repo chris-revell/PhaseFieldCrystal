@@ -6,9 +6,9 @@ using FromFile
 using GeometryBasics
 using NumericalIntegration
 
-fig = Figure(fontsize=32,resolution=(800,500))
-ax = Axis(fig[1,1])
-ylims!(ax,(0,1))
+# fig = Figure(fontsize=32,resolution=(800,500))
+# ax = Axis(fig[1,1])
+# ylims!(ax,(0,1))
 r = "17tailT_4800X_HUI_0012_0"
 
 function filterFunction(r,ϕ0)
@@ -40,9 +40,10 @@ for (i,t) in enumerate(subsetResults[1,:t])
     uMat = reshape(subsetResults[1,:u][i],(nY,nX))
     ϕSum = integrate((ptsY,ptsX),uMat)
     aSum = integrate((ptsY,ptsX),Float64.(maskIn))
-    push!(points,Point2(t,ϕSum/aSum))
+    # push!(points,Point2(t,ϕSum/aSum))
+    display(ϕSum/aSum)
 end
-lines!(ax,points)
+# lines!(ax,points)
 
 
 function filterFunction(r,ϕ0)
@@ -73,9 +74,10 @@ for (i,t) in enumerate(subsetResults[1,:t])
     uMat = reshape(subsetResults[1,:u][i],(nY,nX))
     ϕSum = integrate((ptsY,ptsX),uMat)
     aSum = integrate((ptsY,ptsX),Float64.(maskIn))
-    push!(points,Point2(t,ϕSum/aSum))
+    # push!(points,Point2(t,ϕSum/aSum))
+    display(ϕSum/aSum)
 end
-lines!(ax,points)
+# lines!(ax,points)
 
 function filterFunction(r,ϕ0)
     r==0.8 && ϕ0==0.45
@@ -105,18 +107,19 @@ for (i,t) in enumerate(subsetResults[1,:t])
     uMat = reshape(subsetResults[1,:u][i],(nY,nX))
     ϕSum = integrate((ptsY,ptsX),uMat)
     aSum = integrate((ptsY,ptsX),Float64.(maskIn))
-    push!(points,Point2(t,ϕSum/aSum))
+    # push!(points,Point2(t,ϕSum/aSum))
+    display(ϕSum/aSum)
 end
-lines!(ax,points)
+# lines!(ax,points)
 
 
 
 
 
-ylims!(ax,(0,0.6))
-xlims!(ax,(0,1000))
+# ylims!(ax,(0,0.6))
+# xlims!(ax,(0,1000))
 
-ax.xlabel = "Time"
-ax.ylabel = L"ϕ̄"
-display(fig)
-save(datadir("fromCSF","phiConservation.png"),fig)
+# ax.xlabel = "Time"
+# ax.ylabel = L"ϕ̄"
+# display(fig)
+# save(datadir("fromCSF","phiConservation.png"),fig)

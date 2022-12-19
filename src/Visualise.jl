@@ -18,7 +18,7 @@ using DifferentialEquations
 using JLD2
 using DrWatson
 
-function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileName, freeEnergyFlag)
+function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileName, freeEnergyFlag,freeEnergies)
     
     fig1 = Figure(figure_padding=0,resolution=(1000,1000))
     ax1 = CairoMakie.Axis(fig1[1,1],aspect=DataAspect())

@@ -32,7 +32,7 @@ c[:loggerFlag]    = [0]
 c[:outCount]      = [1000]
 c[:outputFlag]    = [1]
 c[:visualiseFlag] = [0]
-c[:freeEnergyFlag]= [0]
+c[:freeEnergyFlag]= [1]
 c[:nBlasThreads]  = [1]
 c[:subFolderName] = "timeResolution"
 

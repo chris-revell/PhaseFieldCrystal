@@ -14,6 +14,7 @@ using DataFrames
 using DelimitedFiles
 using LaTeXStrings
 using Statistics
+using Printf
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
@@ -118,13 +119,16 @@ for r in runs[1:end]
         # display(meanArea)
 
         defectCountsDict = Dict()
+        excludeCount = 0
         for j in eachindex(nNeighbours)
-            if j ∉ hullInds
+            if j ∉ hullInds && tessAreas[j]<1.3*meanArea
                 if "$(nNeighbours[j])" ∈ keys(defectCountsDict)
                     defectCountsDict["$(nNeighbours[j])"] += 1
                 else
                     defectCountsDict["$(nNeighbours[j])"] = 1
                 end
+            else
+                excludeCount += 1
             end
         end
         dfLocal = DataFrame(defectCountsDict)
@@ -135,7 +139,7 @@ for r in runs[1:end]
 
         # display(defectCountsDict)
 
-        runDefectProportion = 1-defectCountsDict["6"]/(length(nNeighbours)-length(hullInds))
+        runDefectProportion = 1-defectCountsDict["6"]/(length(nNeighbours)-excludeCount) #length(hullInds))
 
 
         ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect())
@@ -155,17 +159,15 @@ for r in runs[1:end]
             end
         end
         image!(ax2,rotr90(maskImage))
+        text!(Point.([0.0],[0.0]),text=["$(@sprintf("%.3f", runDefectProportion))"],align=[(:left,:bottom)],color=:white,offset=(5,5))
         # hullPoints = [(v.-Point2(0,1)).*scalingFactor.+Point2(0,size(uImg)[1]) for v in hull.vertices]
         # poly!(ax2,hullPoints,color=(:grey,1.0))
         # scatter!(ax2,centroidLocations.+ Point2(0,size(uImg)[1]),color=(:orange,1.0),markersize=16)
-        # hidedecorations!(ax2)
+        hidedecorations!(ax2)
         hidespines!(ax2)
         xlims!(ax2,(0,size(maskImage)[2]))
-        ylims!(ax2,(0,size(maskImage)[1]))
-
-        # Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0]), $(round(runDefectProportion,digits=2))")#, valign = :bottom, padding = (0, 10, 10, 0), color=:black)
-        # ax2.xlabel = "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0]), $(round(runDefectProportion,digits=2))"
-
+        ylims!(ax2,(0,size(maskImage)[1]))        
+        
         axesDict[(results[i,:r],results[i,:ϕ0])] = ax2
         labelsDict[(results[i,:r],results[i,:ϕ0])] = "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0]), $(round(runDefectProportion,digits=2))"
 
@@ -184,7 +186,7 @@ for r in runs[1:end]
         Label(fig[length(sortedrs)+1-i,1,Left()],"r=$(r)")
     end
     for (j,ϕ0) in enumerate(sortedϕ0s)
-        Label(fig[end,j,Bottom()],"ϕ0=$(ϕ0)")
+        Label(fig[end,j,Bottom()],"ϕ₀=$(ϕ0)")
     end
 
     # Resize columns
@@ -193,9 +195,9 @@ for r in runs[1:end]
     end
     resize_to_layout!(fig)
 
-    display(fig)
+    # display(fig)
 
-    save(datadir("fromCSF","allMasksPhasespaceSeparateLengths",mask,"$(mask)NeighbourGridExcludingHoles.png"),fig)
+    save(datadir("fromCSF","allMasksPhasespaceSeparateLengths",mask,"$(mask)NeighbourGridExcludingHolesWithDefectProportion.png"),fig)
 end
 
 

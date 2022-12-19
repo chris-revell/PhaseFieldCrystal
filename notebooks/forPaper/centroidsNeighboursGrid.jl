@@ -12,6 +12,7 @@ using GR: delaunay
 using CSV
 using DataFrames
 using DelimitedFiles
+using Printf
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
@@ -33,7 +34,7 @@ runs = [r for r in Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1]) if 
 
 croppedLX = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","croppedLX.csv")))
 
-fig = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=128)
+fig = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=64)
 
 axes = Dict()
 sizes = Dict()
@@ -41,7 +42,9 @@ sizes = Dict()
 # Container to store defect counts 
 defectCountsDataFrame = DataFrame()
 
-for (k,r) in enumerate(runs)
+runsToUse = [1,2,3,4,6,7,12,13,17,18,23,24]
+
+for (k,r) in enumerate(runs)#[runsToUse])
 
     maskData = load(datadir("exp_pro","masks",r[1:end-4],"$(r[1:end-4]).jld2"))
     @unpack newIndexMap, lX, h = maskData
@@ -103,6 +106,7 @@ for (k,r) in enumerate(runs)
         #     poly!(ax2, vertices, color=(:white,0.0),strokecolor=(:black,1.0),strokewidth=1.0)
         end
     end
+    text!(Point.([size(grayImage)[2]],[0.0]),text=["$(@sprintf("%.3f", runDefectProportion))"],align=[(:right,:bottom)],color=:black,offset=(0,0))
     
     hidedecorations!(ax2)
     # hideydecorations!(ax2)
@@ -111,26 +115,26 @@ for (k,r) in enumerate(runs)
     
     hidespines!(ax2)
     
-    Label(fig[(k-1)÷6+1,(k-1)%6+1, Bottom()], "$k", padding = (0, 10, 10, 0), color=:black)
+    # Label(fig[(k-1)÷6+1,(k-1)%6+1, Bottom()], "$k", padding = (0, 10, 10, 0), color=:black)
     # Label(fig[(k-1)%6+1,(k-1)÷6+1, Bottom()], "$k, d=$(round(runDefectProportion,digits=2))", padding = (0, 10, 10, 0), color=:black)
 
     axes[r] = ax2
     sizes[r] = size(grayImage)
 
-    if k==18
-        localFig = Figure(resolution=(500,500))
-        axLocal = Axis(localFig[1,1],aspect=DataAspect())
-        image!(axLocal,rotr90(grayImage))    
-        for (i,c) in enumerate(tess.Cells)
-            if i ∉ hullInds
-                vertices = [v.*scalingFactor for v in c]
-                poly!(axLocal, vertices, color=neighbourColours(nNeighbours[i]),strokecolor=(:black,1.0),strokewidth=1.0)
-            end
-        end
-        hidedecorations!(axLocal)
-        hidespines!(axLocal)
-        save(datadir("exp_pro","emCentroidNeighbours","panel18.png"),localFig)
-    end
+    # if k==18
+    #     localFig = Figure(resolution=(500,500))
+    #     axLocal = Axis(localFig[1,1],aspect=DataAspect())
+    #     image!(axLocal,rotr90(grayImage))    
+    #     for (i,c) in enumerate(tess.Cells)
+    #         if i ∉ hullInds
+    #             vertices = [v.*scalingFactor for v in c]
+    #             poly!(axLocal, vertices, color=neighbourColours(nNeighbours[i]),strokecolor=(:black,1.0),strokewidth=1.0)
+    #         end
+    #     end
+    #     hidedecorations!(axLocal)
+    #     hidespines!(axLocal)
+    #     save(datadir("exp_pro","emCentroidNeighbours","panel18.png"),localFig)
+    # end
 
 end 
 
@@ -166,10 +170,10 @@ end
 resize_to_layout!(fig)
 display(fig)
 
-CSV.write(datadir("exp_pro", "emCentroidMeasurements", "defectCounts2.csv"), defectCountsDataFrame)
-save(datadir("exp_pro","emCentroidNeighbours","emNeighboursGridWithDefectProportion2.png"),fig)
+# CSV.write(datadir("exp_pro", "emCentroidMeasurements", "defectCounts2.csv"), defectCountsDataFrame)
+save(datadir("exp_pro","emCentroidNeighbours","emNeighboursGridWithDefectProportionAll.png"),fig)
 
 
-sortedKeys = sort(collect(keys(defectProportionsDict)))
-using DelimitedFiles
-zip(sortedKeys,defectProportionsDict[sortedKeys])
+# sortedKeys = sort(collect(keys(defectProportionsDict)))
+# using DelimitedFiles
+# zip(sortedKeys,defectProportionsDict[sortedKeys])
