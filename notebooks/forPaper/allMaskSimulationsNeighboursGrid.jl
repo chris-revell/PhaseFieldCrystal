@@ -14,18 +14,20 @@ using DataFrames
 using ImageBinarization
 using ImageSegmentation
 using DelimitedFiles
+using Statistics
+using Printf
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 function neighbourColours(x)
     if x==6
-        return :white
+        return (:white,0.0)
     elseif x==5 
-        return :red 
+        return (:red,1.0)
     elseif x==7
-        return :blue
+        return (:blue,1.0)
     else 
-        return :black 
+        return (:grey,1.0)
     end
 end
 
@@ -45,9 +47,6 @@ end
 runs = [r for r in Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1]) if !(occursin("mp13ko",r) || occursin("18tailT_4800X_HUI_0007_0",r) || occursin("18tailT_4800X_HUI_0008_0",r) )]
 
 fig = Figure(resolution=(6000,6000),fontsize=64)
-
-axes = Dict()
-sizes = Dict()
 
 for (i,r) in enumerate(runs)
     
@@ -108,47 +107,50 @@ for (i,r) in enumerate(runs)
     # Voronoi tessellation of centroid positions within (0,0) (1,1) box
     tess = voronoicells(shiftedCentroidLocations, Rectangle(Point2(0, 0), Point2(1, 1)))
 
-    ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect())
+    tessAreas = voronoiarea(tess)        
+    tessAreasFiltered = [tessAreas[a] for a in 1:length(tessAreas) if a∉hullInds]
+    # display(tessAreasFiltered)        
+    meanArea = mean(tessAreasFiltered)
+    # display(meanArea)
 
-    heatmap!(ax,rotr90(uMat),colorrange=(-1.0, 1.0),colormap=:bwr)
-    for (i,c) in enumerate(tess.Cells)
-        if i ∉ hullInds
-            vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
-            poly!(ax2, vertices, color=neighbourColours(nNeighbours[i]),strokecolor=(:black,1.0),strokewidth=1.0)
+    defectCountsDict = Dict()
+    excludeCount = 0
+    for j in eachindex(nNeighbours)
+        if j ∉ hullInds && tessAreas[j]<1.3*meanArea
+            if "$(nNeighbours[j])" ∈ keys(defectCountsDict)
+                defectCountsDict["$(nNeighbours[j])"] += 1
+            else
+                defectCountsDict["$(nNeighbours[j])"] = 1
+            end
         else
-            vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
-            poly!(ax2, vertices, color=:white, strokecolor=(:black,1.0), strokewidth=1.0)
+            excludeCount += 1
         end
     end
-    image!(ax2,rotr90(maskImage))
-    poly!(ax2,hull.vertices,color=(:grey,1.0))
-    scatter!(ax2,centroidLocations.+ Point2(0,size(uImg)[1]),color=(:orange,1.0),markersize=4)
-    hidedecorations!(ax2)
-    hidespines!(ax2)
+    runDefectProportion = 1-defectCountsDict["6"]/(length(nNeighbours)-excludeCount)
+
+    ax = CairoMakie.Axis(fig[(i-1)÷6+1,(i-1)%6+1],aspect=DataAspect())
+
+    heatmap!(ax,rotr90(uMat),colorrange=(-1.0, 1.0),colormap=:grays)
+    for (j,c) in enumerate(tess.Cells)
+        if j ∉ hullInds && tessAreas[j]<1.3*meanArea
+            vertices = [(v.-Point2(0,1)).*scalingFactor .+ Point2(0,size(uImg)[1]) for v in c]
+            poly!(ax, vertices, color=neighbourColours(nNeighbours[j]),strokecolor=(:black,1.0),strokewidth=1.0)
+        end
+    end
+    image!(ax,rotr90(maskImage))
+    if i==26||i==27
+        text!(Point.([0.0],[0.0]),text=["$(@sprintf("%.3f", runDefectProportion))"],align=[(:left,:bottom)],color=:white,offset=(5,5),fontsize=64)
+    else
+        text!(Point.([0.0],[size(maskImage)[1]]),text=["$(@sprintf("%.3f", runDefectProportion))"],align=[(:left,:top)],color=:white,offset=(5,5),fontsize=64)
+    end
+    hidedecorations!(ax)
+    hidespines!(ax)
+    xlims!(ax,(0,size(maskImage)[2]))
+    ylims!(ax,(0,size(maskImage)[1])) 
     
-    Label(fig[(i-1)%6+1,(i-1)÷6+1, BottomLeft()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0), color=:black)
+    Label(fig[(i-1)÷6+1,(i-1)%6+1, Bottom()], "$i", padding = (0, 10, 10, 0), color=:black, fontsize=128)
     
-    axes[r] = ax2
-    sizes[r] = size(maskImage)
 end 
-
-# xMax = maximum(first.(values(sizes)))
-# yMax = maximum(last.(values(sizes)))
-
-# for r in runs 
-#     xlims!(axes[r],(0,xMax))
-#     ylims!(axes[r],(0,yMax))
-# end
-
-# colgap!(fig.layout, 1, -700)
-# colgap!(fig.layout, 2, -600)
-# colgap!(fig.layout, 3, -600)
-# colgap!(fig.layout, 4, -500)
-# colgap!(fig.layout, 5, -100)
-
-# rowgap!(fig.layout, 1, -100)
-# rowgap!(fig.layout, 2, -100)
-# rowgap!(fig.layout, 3, -200)
 
 resize_to_layout!(fig)
 display(fig)

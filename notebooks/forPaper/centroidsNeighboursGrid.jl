@@ -34,7 +34,7 @@ runs = [r for r in Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1]) if 
 
 croppedLX = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","croppedLX.csv")))
 
-fig = Figure(resolution=(6000,6000),backgroundcolor=:white,fontsize=64)
+fig = Figure(resolution=(6000,6000),fontsize=64)
 
 axes = Dict()
 sizes = Dict()
@@ -106,72 +106,25 @@ for (k,r) in enumerate(runs)#[runsToUse])
         #     poly!(ax2, vertices, color=(:white,0.0),strokecolor=(:black,1.0),strokewidth=1.0)
         end
     end
-    text!(Point.([size(grayImage)[2]],[0.0]),text=["$(@sprintf("%.3f", runDefectProportion))"],align=[(:right,:bottom)],color=:black,offset=(0,0))
     
+    if k==26||k==27
+        text!(Point.([0.0],[0.0]),text=["$(@sprintf("%.3f", runDefectProportion))"],align=[(:left,:bottom)],color=:white,offset=(5,5),fontsize=64)
+    else
+        text!(Point.([0.0],[size(grayImage)[1]]),text=["$(@sprintf("%.3f", runDefectProportion))"],align=[(:left,:top)],color=:white,offset=(5,5),fontsize=64)
+    end
+
     hidedecorations!(ax2)
-    # hideydecorations!(ax2)
-    # ax2.xticks = [0,size(grayImage)[2]]
-    # ax2.xtickformat = x -> string.(round.((Float64.(x).*lengthPerPixel),digits=2))
-    
     hidespines!(ax2)
     
-    # Label(fig[(k-1)÷6+1,(k-1)%6+1, Bottom()], "$k", padding = (0, 10, 10, 0), color=:black)
-    # Label(fig[(k-1)%6+1,(k-1)÷6+1, Bottom()], "$k, d=$(round(runDefectProportion,digits=2))", padding = (0, 10, 10, 0), color=:black)
-
-    axes[r] = ax2
-    sizes[r] = size(grayImage)
-
-    # if k==18
-    #     localFig = Figure(resolution=(500,500))
-    #     axLocal = Axis(localFig[1,1],aspect=DataAspect())
-    #     image!(axLocal,rotr90(grayImage))    
-    #     for (i,c) in enumerate(tess.Cells)
-    #         if i ∉ hullInds
-    #             vertices = [v.*scalingFactor for v in c]
-    #             poly!(axLocal, vertices, color=neighbourColours(nNeighbours[i]),strokecolor=(:black,1.0),strokewidth=1.0)
-    #         end
-    #     end
-    #     hidedecorations!(axLocal)
-    #     hidespines!(axLocal)
-    #     save(datadir("exp_pro","emCentroidNeighbours","panel18.png"),localFig)
-    # end
+    Label(fig[(k-1)÷6+1,(k-1)%6+1, Bottom()], "$k", padding = (0, 10, 10, 0), color=:black, fontsize=128)
 
 end 
-
-
-# lengthMeasurements = DataFrame(CSV.File(datadir("exp_pro","lengthMeasurements","lengthMeasurements.csv")))
-# lengthPerPixel = lengthMeasurements[!,:length]./lengthMeasurements[!,:Pixels]
-# lengthPerPixelDict = Dict()
-# lengthDict = Dict()
-# for r in runs 
-#     subsetLengths = subset(lengthMeasurements, :File => m -> occursin.(r[1:end-6],m))
-#     lengthPerPixelDict[r] = (subsetLengths[!,:length]./subsetLengths[!,:Pixels])[1]
-#     lengthDict[r] = lengthPerPixelDict[r].*sizes[r]
-# end
-
-# xMax = maximum(first.(values(lengthDict)))
-# yMax = maximum(last.(values(lengthDict)))
-
-# for r in runs 
-#     xlims!(axes[r],(0,xMax)./lengthPerPixelDict[r])
-#     ylims!(axes[r],(0,yMax)./lengthPerPixelDict[r])
-# end
-
-# colgap!(fig.layout, 1, -700)
-# colgap!(fig.layout, 2, -600)
-# colgap!(fig.layout, 3, -600)
-# colgap!(fig.layout, 4, -500)
-# colgap!(fig.layout, 5, -100)
-
-# rowgap!(fig.layout, 1, -100)
-# rowgap!(fig.layout, 2, -100)
-# rowgap!(fig.layout, 3, -200)
 
 resize_to_layout!(fig)
 display(fig)
 
 # CSV.write(datadir("exp_pro", "emCentroidMeasurements", "defectCounts2.csv"), defectCountsDataFrame)
-save(datadir("exp_pro","emCentroidNeighbours","emNeighboursGridWithDefectProportionAll.png"),fig)
+save(datadir("exp_pro","emCentroidNeighbours","emNeighboursGridWithDefectProportion.png"),fig)
 
 
 # sortedKeys = sort(collect(keys(defectProportionsDict)))
