@@ -7,9 +7,9 @@ using GeometryBasics
 using NumericalIntegration
 using Printf
 
-fig = Figure(fontsize=32,resolution=(800,500))
-ax = Axis(fig[1,1])
-ylims!(ax,(0,1))
+# fig = Figure(fontsize=32,resolution=(800,500))
+# ax = Axis(fig[1,1])
+# ylims!(ax,(0,1))
 r = "17tailT_4800X_HUI_0002_0"
 
 function filterFunction(r,ϕ0)
@@ -31,24 +31,35 @@ end
 results = collect_results(datadir("sims","timeResolution",r))
 # results = filter([:r, :ϕ0] => filterFunction, results)
 
-fig1 = Figure(figure_padding=0,resolution=(1000,1000),fontsize=64)
-ax1 = CairoMakie.Axis(fig1[1,1],aspect=DataAspect())
-nX = results[1,:nX]
-nY = results[1,:nY]
-uInternal = Observable(zeros(nX,nY))
-heatmap!(ax1,uInternal,colorrange=(-1.0, 1.0),colormap=:bwr)
-hidedecorations!(ax1)
-hidespines!(ax1)
-ax1.title = "t=0.0"
-ax1.yreversed = true
-resize_to_layout!(fig1)
-image!(ax1,transpose(maskImage))
+# fig1 = Figure(figure_padding=0,resolution=(1000,1000),fontsize=64)
+# ax1 = CairoMakie.Axis(fig1[1,1],aspect=DataAspect())
+# nX = results[1,:nX]
+# nY = results[1,:nY]
+# uInternal = Observable(zeros(nX,nY))
+# heatmap!(ax1,uInternal,colorrange=(-1.0, 1.0),colormap=:bwr)
+# hidedecorations!(ax1)
+# hidespines!(ax1)
+# ax1.title = "t=0.0"
+# ax1.yreversed = true
+# resize_to_layout!(fig1)
+# image!(ax1,transpose(maskImage))
 
-for (i,t) in enumerate(results[1,:t])
-    uMat = reshape(results[1,:u][i],(nY,nX))
-    ax1.title = "t=$(@sprintf("%.2f", t))"
-    uInternal[] = transpose(uMat)
-    uInternal[] = uInternal[]
-    save(datadir("sims","timeResolution",r,"$i.png"),fig1)
-end
+# for (i,t) in enumerate(results[1,:t])
+#     uMat = reshape(results[1,:u][i],(nY,nX))
+#     ax1.title = "t=$(@sprintf("%.2f", t))"
+#     uInternal[] = transpose(uMat)
+#     uInternal[] = uInternal[]
+#     save(datadir("sims","timeResolution",r,"$i.png"),fig1)
+# end
 
+
+
+fig2 = Figure(resolution=(500,500),fontsize=32,figure_padding=30)
+ax2  = CairoMakie.Axis(fig2[1,1],xscale=Makie.log10)
+lines!(ax2, results[1,:t][2:end], results[1, :freeEnergies][2:end]./1E7)
+ax2.xlabel = "Time"
+ax2.ylabel = "Free Energy /10⁷"
+colsize!(fig2.layout, 1, Aspect(1, 1.0))
+resize_to_layout!(fig2)
+display(fig2)
+save(datadir("sims", "timeResolution", r, "freeEnergyLog.png"), fig2)
