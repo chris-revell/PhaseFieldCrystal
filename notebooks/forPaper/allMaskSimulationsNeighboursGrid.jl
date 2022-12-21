@@ -135,7 +135,7 @@ for (i, r) in enumerate(runs)
 
     heatmap!(ax, rotr90(uMat), colorrange=(-1.0, 1.0), colormap=:grays)
     for (j, c) in enumerate(tess.Cells)
-        if j ∉ hullInds && tessAreas[j] < voronoiSizeThresh * meanArea
+        if j ∉ hullInds && tessAreas[j] < voronoiSizeThresh*meanArea
             vertices = [(v .- Point2(0, 1)) .* scalingFactor .+ Point2(0, size(uImg)[1]) for v in c]
             poly!(ax, vertices, color=neighbourColours(nNeighbours[j]), strokecolor=(:black, 1.0), strokewidth=1.0)
         end

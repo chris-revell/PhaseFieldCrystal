@@ -1,4 +1,5 @@
-using DrWatson; @quickactivate
+using DrWatson;
+@quickactivate;
 using Images
 using CairoMakie
 using Colors
@@ -13,28 +14,30 @@ using CSV
 using DataFrames
 using DelimitedFiles
 using Printf
+using Statistics
+using StatsBase
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
 function neighbourColours(x)
-    if x==6
-        return (:white,0.0)
-    elseif x==5 
-        return (:red,0.75)
-    elseif x==7
-        return (:blue,0.75)
-    else 
-        return (:grey,0.75)
+    if x == 6
+        return (:white, 0.0)
+    elseif x == 5
+        return (:red, 0.75)
+    elseif x == 7
+        return (:blue, 0.75)
+    else
+        return (:grey, 0.75)
     end
 end
 
-mkpath(datadir("exp_pro","emCentroidNeighbours"))
+mkpath(datadir("exp_pro", "emCentroidNeighbours"))
 
-runs = [r for r in Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1]) if !(occursin("mp13ko",r) || occursin("18tailT_4800X_HUI_0007_0",r) || occursin("18tailT_4800X_HUI_0008_0",r) )]
+runs = [r for r in Vector(readdlm(datadir("exp_pro", "filesToUse.txt"))[:, 1]) if !(occursin("mp13ko", r) || occursin("18tailT_4800X_HUI_0007_0", r) || occursin("18tailT_4800X_HUI_0008_0", r))]
 
 voronoiSizeThresh = 1.3
 
-fig = Figure(resolution=(6000,6000),fontsize=64)
+fig = Figure(resolution=(6000, 6000), fontsize=64)
 
 # runsToUse = [1,2,3,4,6,7,12,13,17,18,23,24]
 
@@ -101,8 +104,8 @@ for (k, r) in enumerate(runs)#[runsToUse])
     image!(ax, rotr90(grayImage))
 
     for (j, c) in enumerate(tess.Cells)
-        if j ∉ hullInds && tessAreas[j] < voronoiSizeThresh*meanArea
-            vertices = [v.*scalingFactor .+ Point2(0, size(uImg)[1]) for v in c]
+        if j ∉ hullInds && tessAreas[j] < voronoiSizeThresh * meanArea
+            vertices = [v .* scalingFactor for v in c]
             poly!(ax, vertices, color=neighbourColours(nNeighbours[j]), strokecolor=(:black, 1.0), strokewidth=1.0)
         end
     end
@@ -118,9 +121,23 @@ for (k, r) in enumerate(runs)#[runsToUse])
 
     Label(fig[(k-1)÷6+1, (k-1)%6+1, Bottom()], "$k", padding=(0, 10, 10, 0), color=:black, fontsize=128)
 
-end 
+end
 
 resize_to_layout!(fig)
 display(fig)
 
-save(datadir("exp_pro","emCentroidNeighbours","emNeighboursGridWithDefectProportion.png"),fig)
+save(datadir("exp_pro", "emCentroidNeighbours", "emNeighboursGridWithDefectProportionUpdated.png"), fig)
+
+points = Point2[]
+hNorm = normalize(fit(Histogram, defectProportions, 0:0.1:1), mode=:pdf)
+edgeVec = collect(hNorm.edges[1])
+for i = 1:length(hNorm.weights)
+    push!(points, Point2(mean(edgeVec[i:i+1]), hNorm.weights[i]))
+end
+fig = CairoMakie.Figure(resolution=(500,500))
+ax = Axis(fig[1,1])
+barplot!(ax,points)
+ax.xlabel = "Defect proportion"
+ax.ylabel = "Frequency"
+display(fig)
+save(datadir("exp_pro", "emCentroidNeighbours", "emDefecProportionsHistogram.png"), fig)
