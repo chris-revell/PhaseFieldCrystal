@@ -116,7 +116,7 @@ for (i, r) in enumerate(runs)
     meanArea = mean(tessAreasFiltered)
     # display(meanArea)
 
-    defectCountsDict = Dict()
+    defectCountsDict = Dict(collect(3:9).=>zeros(Int64,7))
     excludeCount = 0
     for j in eachindex(nNeighbours)
         if j ∉ hullInds && tessAreas[j] < voronoiSizeThresh * meanArea
@@ -129,7 +129,7 @@ for (i, r) in enumerate(runs)
             excludeCount += 1
         end
     end
-    runDefectProportion = 1 - defectCountsDict["6"] / (length(nNeighbours) - excludeCount)
+    runDefectProportion = 1 - defectCountsDict["6"]/(length(nNeighbours)-excludeCount)
 
     ax = CairoMakie.Axis(fig[(i-1)÷6+1, (i-1)%6+1], aspect=DataAspect())
 
