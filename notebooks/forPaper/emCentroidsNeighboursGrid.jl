@@ -16,6 +16,7 @@ using DelimitedFiles
 using Printf
 using Statistics
 using StatsBase
+using DelimitedFiles
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
@@ -35,11 +36,11 @@ mkpath(datadir("exp_pro", "emCentroidNeighbours"))
 
 runs = [r for r in Vector(readdlm(datadir("exp_pro", "filesToUse.txt"))[:, 1]) if !(occursin("mp13ko", r) || occursin("18tailT_4800X_HUI_0007_0", r) || occursin("18tailT_4800X_HUI_0008_0", r))]
 
-voronoiSizeThresh = 1.3
+voronoiSizeThresh = 1.5
 
 fig = Figure(resolution=(6000, 6000), fontsize=64)
 
-# runsToUse = [1,2,3,4,6,7,12,13,17,18,23,24]
+runsToUse = [1,2,3,4,6,7,12,13,17,18,23,24]
 
 defectProportions = Float64[]
 
@@ -87,10 +88,10 @@ for (k, r) in enumerate(runs)#[runsToUse])
     excludeCount = 0
     for j in eachindex(nNeighbours)
         if j ∉ hullInds && tessAreas[j] < voronoiSizeThresh * meanArea
-            if "$(nNeighbours[j])" ∈ keys(defectCountsDict)
-                defectCountsDict["$(nNeighbours[j])"] += 1
+            if string(nNeighbours[j]) ∈ keys(defectCountsDict)
+                defectCountsDict[string(nNeighbours[j])] += 1
             else
-                defectCountsDict["$(nNeighbours[j])"] = 1
+                defectCountsDict[string(nNeighbours[j])] = 1
             end
         else
             excludeCount += 1
@@ -124,20 +125,23 @@ for (k, r) in enumerate(runs)#[runsToUse])
 end
 
 resize_to_layout!(fig)
-display(fig)
+# display(fig)
 
 save(datadir("exp_pro", "emCentroidNeighbours", "emNeighboursGridWithDefectProportionUpdated.png"), fig)
 
-points = Point2[]
-hNorm = normalize(fit(Histogram, defectProportions, 0:0.1:1), mode=:pdf)
-edgeVec = collect(hNorm.edges[1])
-for i = 1:length(hNorm.weights)
-    push!(points, Point2(mean(edgeVec[i:i+1]), hNorm.weights[i]))
-end
+# points = Point2[]
+# hNorm = normalize(fit(Histogram, defectProportions, 0:0.1:1))
+# edgeVec = collect(hNorm.edges[1])
+# for i = 1:length(hNorm.weights)
+#     push!(points, Point2(mean(edgeVec[i:i+1]), hNorm.weights[i]))
+# end
 fig = CairoMakie.Figure(resolution=(500,500))
-ax = Axis(fig[1,1])
-barplot!(ax,points)
+ax = CairoMakie.Axis(fig[1,1])
+# barplot!(ax,points,width=0.125, strokewidth = 0.0)
+hist!(ax,defectProportions; bins=collect(0:0.1:1), normalization=:none)
 ax.xlabel = "Defect proportion"
 ax.ylabel = "Frequency"
 display(fig)
-save(datadir("exp_pro", "emCentroidNeighbours", "emDefecProportionsHistogram.png"), fig)
+save(datadir("exp_pro", "emCentroidNeighbours", "emDefectProportionsHistogram.png"), fig)
+
+writedlm(datadir("exp_pro", "emCentroidNeighbours","defectProportions.txt"),defectProportions)

@@ -114,10 +114,10 @@ for (i, t) in enumerate(timepointsShort)
         excludeCount = 0
         for j in eachindex(nNeighbours)
             if j ∉ hullInds && tessAreas[j] < voronoiSizeThresh * meanArea
-                if "$(nNeighbours[j])" ∈ keys(defectCountsDict)
-                    defectCountsDict["$(nNeighbours[j])"] += 1
+                if string(nNeighbours[j]) ∈ keys(defectCountsDict)
+                    defectCountsDict[string(nNeighbours[j])] += 1
                 else
-                    defectCountsDict["$(nNeighbours[j])"] = 1
+                    defectCountsDict[string(nNeighbours[j])] = 1
                 end
             else
                 excludeCount += 1
@@ -197,10 +197,10 @@ for (i, t) in enumerate(timepointsLong)
         excludeCount = 0
         for j in eachindex(nNeighbours)
             if j ∉ hullInds && tessAreas[j] < 1.3 * meanArea
-                if "$(nNeighbours[j])" ∈ keys(defectCountsDict)
-                    defectCountsDict["$(nNeighbours[j])"] += 1
+                if string(nNeighbours[j]) ∈ keys(defectCountsDict)
+                    defectCountsDict[string(nNeighbours[j])] += 1
                 else
-                    defectCountsDict["$(nNeighbours[j])"] = 1
+                    defectCountsDict[string(nNeighbours[j])] = 1
                 end
             else
                 excludeCount += 1

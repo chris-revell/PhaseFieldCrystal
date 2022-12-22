@@ -16,6 +16,7 @@ using DelimitedFiles
 using LaTeXStrings
 using Statistics
 using Printf
+using DelimitedFiles
 
 @from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
 
@@ -40,15 +41,18 @@ function binariseSimulation!(uij)
 end
 
 # mask = "17tailT_4800X_HUI_0001_0"
-# runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+# runs = [r for r in Vector(readdlm(datadir("exp_pro", "filesToUse.txt"))[:, 1]) if !(occursin("mp13ko", r) || occursin("18tailT_4800X_HUI_0007_0", r) || occursin("18tailT_4800X_HUI_0008_0", r))]
+
 runs = [r for r in Vector(readdlm(datadir("exp_pro", "filesToUse.txt"))[:, 1]) if !(occursin("mp13ko", r) || occursin("18tailT_4800X_HUI_0007_0", r) || occursin("18tailT_4800X_HUI_0008_0", r))]
 
 voronoiSizeThresh = 1.3
 
-defectCountsDataFrame = DataFrame()
+emDefectProportions = readdlm(datadir("exp_pro", "emCentroidNeighbours","defectProportions.txt"))
 
-for r in runs[1:end]
+for (index,r) in enumerate(runs[1:end])
     mask = r[1:end-4]
+
+    defectProportions = Float64[]
 
     # Collate results as a dataframe 
     results = collect_results(datadir("fromCSF", "allMasksPhasespaceSeparateLengths", mask); subfolders=false)
@@ -83,7 +87,7 @@ for r in runs[1:end]
         seg = fast_scanning(uImg, 0.01)
         # Find centre of mass positions of all fibril segments. 
         centroidLocations = Point2{Float64}[]
-        maxSize = 100
+        maxSize = 500
         for k in seg.segment_labels
             pixels = findall(x -> x == k, seg.image_indexmap)
             com = Tuple(sum(pixels)) ./ length(pixels)
@@ -120,29 +124,22 @@ for r in runs[1:end]
         meanArea = mean(tessAreasFiltered)
         # display(meanArea)
 
-        defectCountsDict = Dict()
+        defectCountsDict = Dict(string.(collect(3:9)) .=> zeros(Int64, 7))
         excludeCount = 0
         for j in eachindex(nNeighbours)
             if j ∉ hullInds && tessAreas[j] < voronoiSizeThresh * meanArea
-                if "$(nNeighbours[j])" ∈ keys(defectCountsDict)
-                    defectCountsDict["$(nNeighbours[j])"] += 1
+                if string(nNeighbours[j]) ∈ keys(defectCountsDict)
+                    defectCountsDict[string(nNeighbours[j])] += 1
                 else
-                    defectCountsDict["$(nNeighbours[j])"] = 1
+                    defectCountsDict[string(nNeighbours[j])] = 1
                 end
             else
                 excludeCount += 1
             end
         end
-        dfLocal = DataFrame(defectCountsDict)
-        dfLocal[!, :file] = [r]
-        dfLocal[!, :ϕ0] = [results[i, :ϕ0]]
-        dfLocal[!, :r] = [results[i, :r]]
-        defectCountsDataFrame = vcat(defectCountsDataFrame, dfLocal, cols=:union)
-
-        # display(defectCountsDict)
 
         runDefectProportion = 1 - defectCountsDict["6"] / (length(nNeighbours) - excludeCount) #length(hullInds))
-
+        push!(defectProportions, runDefectProportion)
 
         ax2 = CairoMakie.Axis(fig[(i-1)%6+1, (i-1)÷6+1], aspect=DataAspect())
         hidedecorations!(ax2)
@@ -200,6 +197,15 @@ for r in runs[1:end]
     # display(fig)
 
     save(datadir("fromCSF", "allMasksPhasespaceSeparateLengths", mask, "$(mask)NeighbourGridExcludingHolesWithDefectProportion.png"), fig)
+
+    fig = CairoMakie.Figure(resolution=(500, 500))
+    ax = CairoMakie.Axis(fig[1, 1])
+    hist!(ax,defectProportions; bins=collect(0:0.1:1), normalization=:none)
+    ax.xlabel = "Defect proportion"
+    ax.ylabel = "Frequency"
+    vlines!(emDefectProportions[index], color="black", linestyle = "--")
+    save(datadir("fromCSF", "allMasksPhasespaceSeparateLengths", mask, "$(mask)DefectProportionsHistogram.png"), fig)
+
 end
 
 

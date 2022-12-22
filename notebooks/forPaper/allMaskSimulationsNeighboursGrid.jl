@@ -44,7 +44,8 @@ function filterFunction(r, ϕ0)
     r == 0.8 && ϕ0 == 0.4
 end
 
-# runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
+# runs = [r for r in Vector(readdlm(datadir("exp_pro", "filesToUse.txt"))[:, 1]) if !(occursin("mp13ko", r) || occursin("18tailT_4800X_HUI_0007_0", r) || occursin("18tailT_4800X_HUI_0008_0", r))]
+
 runs = [r for r in Vector(readdlm(datadir("exp_pro", "filesToUse.txt"))[:, 1]) if !(occursin("mp13ko", r) || occursin("18tailT_4800X_HUI_0007_0", r) || occursin("18tailT_4800X_HUI_0008_0", r))]
 
 voronoiSizeThresh = 1.3
@@ -116,14 +117,14 @@ for (i, r) in enumerate(runs)
     meanArea = mean(tessAreasFiltered)
     # display(meanArea)
 
-    defectCountsDict = Dict(collect(3:9).=>zeros(Int64,7))
+    defectCountsDict = Dict(string.(collect(3:9)).=>zeros(Int64,7))
     excludeCount = 0
     for j in eachindex(nNeighbours)
-        if j ∉ hullInds && tessAreas[j] < voronoiSizeThresh * meanArea
-            if "$(nNeighbours[j])" ∈ keys(defectCountsDict)
-                defectCountsDict["$(nNeighbours[j])"] += 1
+        if j ∉ hullInds && tessAreas[j] < voronoiSizeThresh*meanArea
+            if string(nNeighbours[j]) ∈ keys(defectCountsDict)
+                defectCountsDict[string(nNeighbours[j])] += 1
             else
-                defectCountsDict["$(nNeighbours[j])"] = 1
+                defectCountsDict[string(nNeighbours[j])] = 1
             end
         else
             excludeCount += 1

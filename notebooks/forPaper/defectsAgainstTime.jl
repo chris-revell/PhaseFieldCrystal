@@ -65,10 +65,10 @@ for i = 1:5:1001#:5:101
         excludeCount = 0
         for j in eachindex(nNeighbours)
             if j ∉ hullInds && tessAreas[j] < voronoiSizeThresh*meanArea
-                if "$(nNeighbours[j])" ∈ keys(defectCountsDict)
-                    defectCountsDict["$(nNeighbours[j])"] += 1
+                if string(nNeighbours[j]) ∈ keys(defectCountsDict)
+                    defectCountsDict[string(nNeighbours[j])] += 1
                 else
-                    defectCountsDict["$(nNeighbours[j])"] = 1
+                    defectCountsDict[string(nNeighbours[j])] = 1
                 end
             else
                 excludeCount += 1

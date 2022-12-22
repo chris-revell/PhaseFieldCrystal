@@ -22,7 +22,7 @@ croppedLX = DataFrame(CSV.File(datadir("exp_pro", "lengthMeasurements", "cropped
 pairLengthsDict = Dict()
 nNeighboursDict = Dict()
 
-voronoiSizeThresh = 1.3
+voronoiSizeThresh = 2.0
 
 function bothPeripheralTest(label1,label2,hullInds,tessAreas,areaThresh)
     if label1 ∈ hullInds || tessAreas[label1] > areaThresh
@@ -72,7 +72,8 @@ for (i, r) in enumerate(runs)
     meanArea = mean(tessAreasFiltered)
 
     # Store number of neighbours without boundary elements
-    nNeighboursDict[r] = nNeighbours[filter(x -> x ∉ hullInds, eachindex(nNeighbours))]
+    nNeighboursDict[r] = nNeighbours[filter(x -> (x∉hullInds && tessAreas[x]<voronoiSizeThresh*meanArea), eachindex(nNeighbours))]
+
     pairs = Tuple[]
     for t in eachrow(tri)
         for i = 1:3
