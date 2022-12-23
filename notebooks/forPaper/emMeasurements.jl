@@ -10,6 +10,7 @@ using Statistics
 using StatsBase
 using DelimitedFiles
 using Dates
+using VoronoiCells
 
 runs = [r for r in Vector(readdlm(datadir("exp_pro", "filesToUse.txt"))[:, 1]) if !(occursin("mp13ko", r) || occursin("18tailT_4800X_HUI_0007_0", r) || occursin("18tailT_4800X_HUI_0008_0", r))]
 
@@ -107,7 +108,7 @@ for (i, r) in enumerate(runs)
     pairLengthsDict[r] = lengths
 end
 
-fig1 = CairoMakie.Figure(resolution=(1000, 1000), fontsize=32)
+fig1 = CairoMakie.Figure(resolution=(500, 500), fontsize=32)
 ax1 = CairoMakie.Axis(fig1[1, 1])
 for r in runs
     points = Point2[]
@@ -120,10 +121,10 @@ for r in runs
 end
 ax1.xlabel = "Edge length/nm"
 ax1.ylabel = "Density"
-save(datadir("exp_pro", "emCentroidMeasurements", "emLengthHistogram$(Dates.format(Dates.now(), "yyyy-mm-dd-HH-MM-SS")).png"), fig1)
+save(datadir("exp_pro", "emCentroidMeasurements", "emLengthHistogram.png"), fig1)
 
 
-fig2 = CairoMakie.Figure(resolution=(1000, 1000), fontsize=32)
+fig2 = CairoMakie.Figure(resolution=(500, 500), fontsize=32)
 ax2 = CairoMakie.Axis(fig2[1, 1])
 for r in runs
     # lines!(ax2,nNeighboursDict[r])
@@ -137,4 +138,4 @@ for r in runs
 end
 ax2.xlabel = "Neighbour count"
 ax2.ylabel = "Density"
-save(datadir("exp_pro", "emCentroidMeasurements", "emNeighbourHistogram$(Dates.format(Dates.now(), "yyyy-mm-dd-HH-MM-SS")).png"), fig2)
+save(datadir("exp_pro", "emCentroidMeasurements", "emNeighbourHistogram.png"), fig2)

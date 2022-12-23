@@ -135,7 +135,7 @@ save(datadir("exp_pro", "emCentroidNeighbours", "emNeighboursGridWithDefectPropo
 # for i = 1:length(hNorm.weights)
 #     push!(points, Point2(mean(edgeVec[i:i+1]), hNorm.weights[i]))
 # end
-fig = CairoMakie.Figure(resolution=(500,500))
+fig = CairoMakie.Figure(resolution=(500,500), fontsize=32)
 ax = CairoMakie.Axis(fig[1,1])
 # barplot!(ax,points,width=0.125, strokewidth = 0.0)
 hist!(ax,defectProportions; bins=collect(0:0.1:1), normalization=:none)

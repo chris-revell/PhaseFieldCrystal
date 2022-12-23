@@ -217,7 +217,7 @@ for r in runs
     end
 
 
-    fig1 = CairoMakie.Figure(resolution=(1000, 1000), fontsize=32)
+    fig1 = CairoMakie.Figure(resolution=(500, 500), fontsize=32)
     ax1 = CairoMakie.Axis(fig1[1, 1])
     for r in keys(pairLengthsDict)
         points = Point2[]
@@ -243,7 +243,7 @@ for r in runs
     save(datadir("fromCSF", "allMasksPhasespaceSeparateLengths", mask, "$(mask)Length.png"), fig1)
 
 
-    fig2 = CairoMakie.Figure(resolution=(1000, 1000), fontsize=32)
+    fig2 = CairoMakie.Figure(resolution=(500, 500), fontsize=32)
     ax2 = CairoMakie.Axis(fig2[1, 1])
     for r in keys(nNeighboursDict)
         # lines!(ax2,nNeighboursDict[r])

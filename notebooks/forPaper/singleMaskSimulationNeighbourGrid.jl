@@ -198,7 +198,7 @@ for (index,r) in enumerate(runs[1:end])
 
     save(datadir("fromCSF", "allMasksPhasespaceSeparateLengths", mask, "$(mask)NeighbourGridExcludingHolesWithDefectProportion.png"), fig)
 
-    fig = CairoMakie.Figure(resolution=(500, 500))
+    fig = CairoMakie.Figure(resolution=(500, 500), fontsize=32)
     ax = CairoMakie.Axis(fig[1, 1])
     hist!(ax,defectProportions; bins=collect(0:0.1:1), normalization=:none)
     ax.xlabel = "Defect proportion"
