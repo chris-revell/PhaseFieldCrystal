@@ -19,11 +19,11 @@ function neighbourColours(x)
     if x == 6
         return (:white, 0.0)
     elseif x == 5
-        return (:red, 1.0)
+        return (:red, 0.75)
     elseif x == 7
-        return (:blue, 1.0)
+        return (:blue, 0.75)
     else
-        return (:grey, 1.0)
+        return (:grey, 0.75)
     end
 end
 
@@ -41,6 +41,8 @@ end
 r = "17tailT_4800X_HUI_0002_0"
 voronoiSizeThresh = 1.3
 
+runID = 6
+
 maskIn = load(datadir("exp_pro", "masksCompressed", r, "$r.png"))
 maskImage = fill(RGBA(1, 1, 1, 1), size(maskIn))
 for i = 1:size(maskIn)[1]
@@ -55,17 +57,17 @@ end
 
 results = collect_results(datadir("sims", "timeResolution", r))
 
-nX = results[1, :nX]
-nY = results[1, :nY]
+nX = results[runID, :nX]
+nY = results[runID, :nY]
 
-timepointsShort = [1, 6, 11, 16, 21, 26]
-timepointsLong = [101, 201, 301, 401, 501, 601]
+timepointsShort = collect(1:15:91)#[1, 6, 11, 16, 21, 26]
+timepointsLong = collect(101:180:1001)#[101, 281, 461, 551, 701, 801]
 
 fig1 = Figure(figure_padding=0, resolution=(6000, 2000), fontsize=64)
 
 for (i, t) in enumerate(timepointsShort)
 
-    uMat = reshape(results[1, :u][t], (nY, nX))
+    uMat = reshape(results[runID, :u][t], (nY, nX))
 
     # fig1 = Figure(figure_padding=0,resolution=(1000,2000),fontsize=64)
     ax1 = CairoMakie.Axis(fig1[1, i], aspect=DataAspect())
@@ -75,14 +77,14 @@ for (i, t) in enumerate(timepointsShort)
     hidespines!(ax1)
     ax1.yreversed = true
     image!(ax1, transpose(maskImage))
-    ax1.title = "t=$(@sprintf("%.2f", results[1,:t][t]))"
+    ax1.title = "t=$(@sprintf("%.2f", results[runID,:t][t]))"
 
     # fig3 = Figure(figure_padding=0,resolution=(1000,1000),fontsize=64)
     ax2 = CairoMakie.Axis(fig1[2, i], aspect=DataAspect())
     heatmap!(ax2, rotr90(uMat), colorrange=(-1.0, 1.0), colormap=:greys)
     hidedecorations!(ax2)
     hidespines!(ax2)
-    # ax2.title = "t=$(@sprintf("%.2f", results[1,:t][i]))"
+    # ax2.title = "t=$(@sprintf("%.2f", results[runID,:t][i]))"
     image!(ax2, rotr90(maskImage))
     # Binarise grayscale image
     uImg = binariseSimulation!.(uMat)
@@ -142,13 +144,13 @@ for (i, t) in enumerate(timepointsShort)
     # save(datadir("sims","timeResolution",r,"timeResolutionBoth$(i).png"),fig1)
 end
 resize_to_layout!(fig1)
-save(datadir("sims", "timeResolution", r, "timeResolutionShort.png"), fig1)
+save(datadir("sims", "timeResolution", r, "timeResolutionShort$runID.png"), fig1)
 
 fig1 = Figure(figure_padding=0, resolution=(6000, 2000), fontsize=64)
 
 for (i, t) in enumerate(timepointsLong)
 
-    uMat = reshape(results[1, :u][t], (nY, nX))
+    uMat = reshape(results[runID, :u][t], (nY, nX))
 
     # fig1 = Figure(figure_padding=0,resolution=(1000,2000),fontsize=64)
     ax1 = CairoMakie.Axis(fig1[1, i], aspect=DataAspect())
@@ -158,14 +160,14 @@ for (i, t) in enumerate(timepointsLong)
     hidespines!(ax1)
     ax1.yreversed = true
     image!(ax1, transpose(maskImage))
-    ax1.title = "t=$(@sprintf("%.2f", results[1,:t][t]))"
+    ax1.title = "t=$(@sprintf("%.2f", results[runID,:t][t]))"
 
     # fig3 = Figure(figure_padding=0,resolution=(1000,1000),fontsize=64)
     ax2 = CairoMakie.Axis(fig1[2, i], aspect=DataAspect())
     heatmap!(ax2, rotr90(uMat), colorrange=(-1.0, 1.0), colormap=:greys)
     hidedecorations!(ax2)
     hidespines!(ax2)
-    # ax2.title = "t=$(@sprintf("%.2f", results[1,:t][i]))"
+    # ax2.title = "t=$(@sprintf("%.2f", results[runID,:t][i]))"
     image!(ax2, rotr90(maskImage))
     # Binarise grayscale image
     uImg = binariseSimulation!.(uMat)
@@ -219,4 +221,4 @@ for (i, t) in enumerate(timepointsLong)
     ylims!(ax2, (0, size(maskImage)[1]))
 end
 resize_to_layout!(fig1)
-save(datadir("sims", "timeResolution", r, "timeResolutionLong.png"), fig1)
+save(datadir("sims", "timeResolution", r, "timeResolutionLong$runID.png"), fig1)

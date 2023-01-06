@@ -24,17 +24,19 @@ function binariseSimulation!(uij)
 end
 
 r = "17tailT_4800X_HUI_0002_0"
+runID = 6
+
 voronoiSizeThresh = 1.3
 
 results = collect_results(datadir("sims", "timeResolution", r))
-nY = results[1, :nY]
-nX = results[1, :nX]
+nY = results[runID, :nY]
+nX = results[runID, :nX]
 
 points = Point2[]
 
 for i = 1:5:1001#:5:101
 
-    uMat = reshape(results[1, :u][i], (nY, nX))
+    uMat = reshape(results[runID, :u][i], (nY, nX))
     # Binarise grayscale image
     uImg = binariseSimulation!.(uMat)
     seg = fast_scanning(uImg, 0.01)
@@ -75,16 +77,17 @@ for i = 1:5:1001#:5:101
             end
         end
         runDefectProportion = 1 - defectCountsDict["6"] / (length(nNeighbours) - excludeCount)
-        push!(points, Point2(results[1, :t][i], runDefectProportion))
+        push!(points, Point2(results[runID, :t][i], runDefectProportion))
     end
 end
 
 fig1 = Figure(figure_padding=30, resolution=(500, 500), fontsize=32)
-ax1 = CairoMakie.Axis(fig1[1, 1])
+ax1 = CairoMakie.Axis(fig1[1, 1],xscale=Makie.log10)
 lines!(ax1, points)
 ax1.xlabel = "Time"
 ax1.ylabel = "Defect proportion"
+xlims!(ax1,(1,1000))
 colsize!(fig1.layout, 1, Aspect(1, 1.0))
 resize_to_layout!(fig1)
 display(fig1)
-save(datadir("sims", "timeResolution", r, "defectsAgainstTime.png"), fig1)
+save(datadir("sims", "timeResolution", r, "defectsAgainstTimeLog$(runID).png"), fig1)
