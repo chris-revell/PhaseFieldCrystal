@@ -52,6 +52,10 @@ voronoiSizeThresh = 1.3
 
 fig = Figure(resolution=(6000, 6000), fontsize=64)
 
+runsToUse = [1, 2, 12, 13, 17, 18]
+
+simDefectPropotions = Float64[]
+
 for (i, r) in enumerate(runs)
 
     results = collect_results(datadir("fromCSF", "allMasksPhasespaceSeparateLengths", r[1:end-4]); subfolders=true)
@@ -131,6 +135,8 @@ for (i, r) in enumerate(runs)
         end
     end
     runDefectProportion = 1 - defectCountsDict["6"]/(length(nNeighbours)-excludeCount)
+
+    push!(simDefectPropotions,runDefectProportion)
 
     ax = CairoMakie.Axis(fig[(i-1)÷6+1, (i-1)%6+1], aspect=DataAspect())
 

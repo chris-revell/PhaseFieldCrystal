@@ -41,7 +41,7 @@ end
 r = "17tailT_4800X_HUI_0002_0"
 voronoiSizeThresh = 1.3
 
-runID = 6
+runID = 5
 
 maskIn = load(datadir("exp_pro", "masksCompressed", r, "$r.png"))
 maskImage = fill(RGBA(1, 1, 1, 1), size(maskIn))
@@ -60,7 +60,7 @@ results = collect_results(datadir("sims", "timeResolution", r))
 nX = results[runID, :nX]
 nY = results[runID, :nY]
 
-timepointsShort = collect(1:15:91)#[1, 6, 11, 16, 21, 26]
+timepointsShort = collect(1:15:80)#[1, 6, 11, 16, 21, 26]
 timepointsLong = collect(101:180:1001)#[101, 281, 461, 551, 701, 801]
 
 fig1 = Figure(figure_padding=0, resolution=(6000, 2000), fontsize=64)

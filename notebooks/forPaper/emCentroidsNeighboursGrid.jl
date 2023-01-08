@@ -36,11 +36,13 @@ mkpath(datadir("exp_pro", "emCentroidNeighbours"))
 
 runs = [r for r in Vector(readdlm(datadir("exp_pro", "filesToUse.txt"))[:, 1]) if !(occursin("mp13ko", r) || occursin("18tailT_4800X_HUI_0007_0", r) || occursin("18tailT_4800X_HUI_0008_0", r))]
 
+croppedLX = DataFrame(CSV.File(datadir("exp_pro", "lengthMeasurements", "croppedLX.csv")))
+
 voronoiSizeThresh = 1.5
 
-fig = Figure(resolution=(6000, 6000), fontsize=64)
+fig = Figure(resolution=(6000, 1000), fontsize=64)
 
-runsToUse = [1,2,3,4,6,7,12,13,17,18,23,24]
+runsToUse = [1, 2, 12, 13, 17, 18]
 
 defectProportions = Float64[]
 
@@ -125,9 +127,9 @@ for (k, r) in enumerate(runs)#[runsToUse])
 end
 
 resize_to_layout!(fig)
-# display(fig)
+display(fig)
 
-save(datadir("exp_pro", "emCentroidNeighbours", "emNeighboursGridWithDefectProportionUpdated.png"), fig)
+save(datadir("exp_pro", "emCentroidNeighbours", "emNeighboursGridWithDefectProportionUpdatedSubset.png"), fig)
 
 # points = Point2[]
 # hNorm = normalize(fit(Histogram, defectProportions, 0:0.1:1))
@@ -137,11 +139,11 @@ save(datadir("exp_pro", "emCentroidNeighbours", "emNeighboursGridWithDefectPropo
 # end
 fig = CairoMakie.Figure(resolution=(500,500), fontsize=32)
 ax = CairoMakie.Axis(fig[1,1])
-# barplot!(ax,points,width=0.125, strokewidth = 0.0)
-hist!(ax,defectProportions; bins=collect(0:0.1:1), normalization=:none)
+hist!(ax, simDefectPropotions; bins=collect(0:0.1:1), normalization=:none, color=(:blue,0.75))
+hist!(ax,defectProportions; bins=collect(0:0.1:1), normalization=:none, color = (:green,0.75))
 ax.xlabel = "Defect proportion"
 ax.ylabel = "Frequency"
 display(fig)
-save(datadir("exp_pro", "emCentroidNeighbours", "emDefectProportionsHistogram.png"), fig)
+save(datadir("exp_pro", "emCentroidNeighbours", "emAndSimDefectProportionsHistogram.png"), fig)
 
 writedlm(datadir("exp_pro", "emCentroidNeighbours","defectProportions.txt"),defectProportions)
