@@ -143,6 +143,7 @@ for (i, t) in enumerate(timepointsShort)
     # resize_to_layout!(fig1)
     # save(datadir("sims","timeResolution",r,"timeResolutionBoth$(i).png"),fig1)
 end
+Colorbar(fig1[1, 7], limits=(-1, 1), colormap=:bwr, width=60, height=Relative(4/5))
 resize_to_layout!(fig1)
 save(datadir("sims", "timeResolution", r, "timeResolutionShort$runID.png"), fig1)
 
@@ -220,5 +221,6 @@ for (i, t) in enumerate(timepointsLong)
     xlims!(ax2, (0, size(maskImage)[2]))
     ylims!(ax2, (0, size(maskImage)[1]))
 end
+Colorbar(fig1[1, 7], limits=(-1, 1), colormap=:bwr, width=60, height=Relative(4 / 5))
 resize_to_layout!(fig1)
 save(datadir("sims", "timeResolution", r, "timeResolutionLong$runID.png"), fig1)
