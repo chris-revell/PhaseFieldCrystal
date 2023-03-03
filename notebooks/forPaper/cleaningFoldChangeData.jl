@@ -106,7 +106,7 @@ for l in differentLabels
     proteins = Vector(subsetFoldChange[!,2])
     heatmapData = Matrix(subsetFoldChange[!,3:7])
     ax = Axis(fig[1,1], xticks=(1:5, string.(t)), yticks=(1:length(proteins), reverse(proteins)))#, aspect=DataAspect())
-    heatmap!(ax,rotr90(heatmapData), colormap=:bwr, colorrange=(-maximum(heatmapData)+1, maximum(heatmapData)+1))    
+    heatmap!(ax,rotr90(heatmapData), colormap=:bwr, colorrange=(-maximum(abs.(heatmapData))+1, maximum(abs.(heatmapData))+1))    
     ax.xlabel = "Time /days"
     ax.ylabel = "Protein"
     ax.title = l  
@@ -120,7 +120,7 @@ allFoldChange = dropmissing(foldChangeDataFrame)
 allProteins = Vector(allFoldChange[!,2])
 allHeatmapData = Matrix(allFoldChange[!,3:7])
 ax = Axis(fig[1:5,1], xticks=(1:5, string.(t)), yticks=(1:length(allProteins), reverse(allProteins)))#, aspect=DataAspect())
-heatmap!(ax,rotr90(allHeatmapData), colormap=:bwr, colorrange=(-maximum(allHeatmapData)+1, maximum(allHeatmapData)+1))    
+heatmap!(ax,rotr90(allHeatmapData), colormap=:bwr, colorrange=(-maximum(abs.(allHeatmapData))+1, maximum(abs.(allHeatmapData))+1))    
 ax.xlabel = "Time /days"
 ax.ylabel = "Protein"
 ax.title = "All proteins"
