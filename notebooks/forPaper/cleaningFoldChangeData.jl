@@ -1,3 +1,5 @@
+# This script assumes relevant spreadsheets are found in data/exp_pro/MSSpreadsheets
+
 using XLSX
 using DataFrames
 using StatsBase
@@ -33,33 +35,30 @@ semDataFrame = DataFrame(
     E14_5 = zeros(Float64,length(subsetGeneNames))
 )
 
-fullGeneNames = Vector(TailTendon_TimePoints_MSqRob2_JC[1]["B2:B2887"][:,1])
+fullGeneNames = Vector(TailTendon_TimePoints_MSqRob2_JC[1]["B1:B2887"][:,1])
 
-indices = findall(x->(!ismissing(x)&&x∈subsetGeneNames), fullGeneNames)
+indices = Int64[]
+for gene in subsetGeneNames
+    index = findall(x->(!ismissing(x)&&x==gene), fullGeneNames)
+    append!(indices,index)
+end
 counts = countmap(fullGeneNames[indices])
-# for key in keys(counts)
-#     if counts[key]>1
-#         display(key)
-#     end
-# end
+
 indicesToRemove = Int64[]
 for i in 1:length(indices)
     if counts[fullGeneNames[indices[i]]]>1 && ismissing(TailTendon_TimePoints_MSqRob2_JC[1][indices[i]+1,3])
         push!(indicesToRemove,i)
-        # display(fullGeneNames[indices[i]])
-        # display(TailTendon_TimePoints_MSqRob2_JC[1][indices[i]+1,3])
     end
 end
 deleteat!(indices,indicesToRemove)
 
 for (sheet,day) in enumerate(names(foldChangeDataFrame)[4:end])
-    data = TailTendon_TimePoints_MSqRob2_JC[sheet]["C2:D2887"]
+    data = TailTendon_TimePoints_MSqRob2_JC[sheet]["C1:D2887"]
     foldChangeDataFrame[!,day] .= data[indices,1]
     semDataFrame[!,day] .= data[indices,2]
 end
 
 XLSX.openxlsx(datadir("exp_pro","MSSpreadsheets","foldChange.xlsx"),mode="w") do xf
-    # rename!(xf[1], "foldChanges")
     XLSX.addsheet!(xf,"foldChanges")
     sheet = xf["foldChanges"]
     for i in 1:length(names(foldChangeDataFrame))
@@ -104,6 +103,7 @@ for l in differentLabels
     fig = Figure(resolution=(500,500))    
     subsetFoldChange = dropmissing(filter(:label=>n->n==l,foldChangeDataFrame))
     proteins = Vector(subsetFoldChange[!,2])
+    proteins[proteins.=="P3h1;Lepre1"] .= "P3h1"
     heatmapData = Matrix(subsetFoldChange[!,3:7])
     ax = Axis(fig[1,1], xticks=(1:5, string.(t)), yticks=(1:length(proteins), reverse(proteins)))#, aspect=DataAspect())
     heatmap!(ax,rotr90(heatmapData), colormap=:bwr, colorrange=(-maximum(abs.(heatmapData))+1, maximum(abs.(heatmapData))+1))    
@@ -115,15 +115,25 @@ for l in differentLabels
     save(datadir("exp_pro","MSSpreadsheets","$l fold change heatmap.png"),fig)
 end
 
-fig = Figure(resolution=(500,2000))
+fig = Figure(resolution=(1500,1000))
 allFoldChange = dropmissing(foldChangeDataFrame)
 allProteins = Vector(allFoldChange[!,2])
+allProteins[allProteins.=="P3h1;Lepre1"] .= "P3h1"
 allHeatmapData = Matrix(allFoldChange[!,3:7])
-ax = Axis(fig[1:5,1], xticks=(1:5, string.(t)), yticks=(1:length(allProteins), reverse(allProteins)))#, aspect=DataAspect())
-heatmap!(ax,rotr90(allHeatmapData), colormap=:bwr, colorrange=(-maximum(abs.(allHeatmapData))+1, maximum(abs.(allHeatmapData))+1))    
-ax.xlabel = "Time /days"
-ax.ylabel = "Protein"
-ax.title = "All proteins"
-Colorbar(fig[2:4,2], limits=(-maximum(allHeatmapData)+1, maximum(allHeatmapData)+1), colormap=:bwr, label="Fold change")  
+
+ax1 = Axis(fig[1,1], xticks=(1:5, string.(t)), yticks=(1:25 , reverse(allProteins[1:25 ])))#, aspect=DataAspect())
+ax2 = Axis(fig[1,2], xticks=(1:5, string.(t)), yticks=(1:25, reverse(allProteins[26:50])))#, aspect=DataAspect())
+ax3 = Axis(fig[1,3], xticks=(1:5, string.(t)), yticks=(1:25, reverse(allProteins[51:75])))#, aspect=DataAspect())
+heatmap!(ax1,rotr90(allHeatmapData[1:25,:]), colormap=:bwr, colorrange=(-maximum(abs.(allHeatmapData))+1, maximum(abs.(allHeatmapData))+1))    
+heatmap!(ax2,rotr90(allHeatmapData[26:50,:]), colormap=:bwr, colorrange=(-maximum(abs.(allHeatmapData))+1, maximum(abs.(allHeatmapData))+1))
+heatmap!(ax3,rotr90(allHeatmapData[51:75,:]), colormap=:bwr, colorrange=(-maximum(abs.(allHeatmapData))+1, maximum(abs.(allHeatmapData))+1))    
+# ax1.xlabel = "Time /days"
+ax2.xlabel = "Time /days"
+# ax3.xlabel = "Time /days"
+ax1.ylabel = "Protein"
+# ax2.ylabel = "Protein"
+# ax3.ylabel = "Protein"
+# ax.title = "All proteins"
+Colorbar(fig[1,4], limits=(-maximum(allHeatmapData)+1, maximum(allHeatmapData)+1), colormap=:bwr, label="Fold change")  
 resize_to_layout!(fig)
-save(datadir("exp_pro","MSSpreadsheets","All proteins fold change heatmap.png"),fig)
+save(datadir("exp_pro","MSSpreadsheets","All proteins fold change heatmap2.png"),fig)
