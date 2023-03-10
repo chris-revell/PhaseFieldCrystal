@@ -119,11 +119,27 @@ fig = Figure(resolution=(1500,1000))
 allFoldChange = dropmissing(foldChangeDataFrame)
 allProteins = Vector(allFoldChange[!,2])
 allProteins[allProteins.=="P3h1;Lepre1"] .= "P3h1"
+
+allProteinsRearranged = copy(allProteins)
+allProteinsRearranged[1:25] .= reverse(allProteins[1:25])
+allProteinsRearranged[26:50] .= reverse(allProteins[26:50])
+allProteinsRearranged[51:75] .= reverse(allProteins[51:75])
+
 allHeatmapData = Matrix(allFoldChange[!,3:7])
 
-ax1 = Axis(fig[1,1], xticks=(1:5, string.(t)), yticks=(1:25 , reverse(allProteins[1:25 ])))#, aspect=DataAspect())
-ax2 = Axis(fig[1,2], xticks=(1:5, string.(t)), yticks=(1:25, reverse(allProteins[26:50])))#, aspect=DataAspect())
-ax3 = Axis(fig[1,3], xticks=(1:5, string.(t)), yticks=(1:25, reverse(allProteins[51:75])))#, aspect=DataAspect())
+
+allLabels = Vector(allFoldChange[!,1])
+numericalLabels = [findall(x->x==f,unique(allLabels))[1] for f in allLabels]
+colors = [:black, :red, :orange, :green, :blue, :indigo, :violet]
+colorLabels = colors[numericalLabels]
+colorLabelsRearranged = copy(colorLabels)
+colorLabelsRearranged[1:25] .= reverse(colorLabels[1:25])
+colorLabelsRearranged[26:50] .= reverse(colorLabels[26:50])
+colorLabelsRearranged[51:75] .= reverse(colorLabels[51:75])
+
+ax1 = Axis(fig[1,1], xticks=(1:5, string.(t)), yticks = (1:25, [rich(allProteinsRearranged[val]; color) for (val, color) in zip(1:25, colorLabelsRearranged[1:25])]))
+ax2 = Axis(fig[1,2], xticks=(1:5, string.(t)), yticks = (1:25, [rich(allProteinsRearranged[val]; color) for (val, color) in zip(26:50, colorLabelsRearranged[26:50])]))
+ax3 = Axis(fig[1,3], xticks=(1:5, string.(t)), yticks = (1:25, [rich(allProteinsRearranged[val]; color) for (val, color) in zip(51:75, colorLabelsRearranged[51:75])]))
 heatmap!(ax1,rotr90(allHeatmapData[1:25,:]), colormap=:bwr, colorrange=(-maximum(abs.(allHeatmapData))+1, maximum(abs.(allHeatmapData))+1))    
 heatmap!(ax2,rotr90(allHeatmapData[26:50,:]), colormap=:bwr, colorrange=(-maximum(abs.(allHeatmapData))+1, maximum(abs.(allHeatmapData))+1))
 heatmap!(ax3,rotr90(allHeatmapData[51:75,:]), colormap=:bwr, colorrange=(-maximum(abs.(allHeatmapData))+1, maximum(abs.(allHeatmapData))+1))    
@@ -134,6 +150,8 @@ ax1.ylabel = "Protein"
 # ax2.ylabel = "Protein"
 # ax3.ylabel = "Protein"
 # ax.title = "All proteins"
-Colorbar(fig[1,4], limits=(-maximum(allHeatmapData)+1, maximum(allHeatmapData)+1), colormap=:bwr, label="Fold change")  
+Colorbar(fig[1,4], limits=(-maximum(allHeatmapData)+1, maximum(allHeatmapData)+1), colormap=:bwr, label="Fold change") 
 resize_to_layout!(fig)
+display(fig)
 save(datadir("exp_pro","MSSpreadsheets","All proteins fold change heatmap2.png"),fig)
+save(datadir("exp_pro","MSSpreadsheets","All proteins fold change heatmap2.svg"),fig)
