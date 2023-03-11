@@ -119,15 +119,11 @@ fig = Figure(resolution=(1500,1000))
 allFoldChange = dropmissing(foldChangeDataFrame)
 allProteins = Vector(allFoldChange[!,2])
 allProteins[allProteins.=="P3h1;Lepre1"] .= "P3h1"
-
 allProteinsRearranged = copy(allProteins)
 allProteinsRearranged[1:25] .= reverse(allProteins[1:25])
 allProteinsRearranged[26:50] .= reverse(allProteins[26:50])
 allProteinsRearranged[51:75] .= reverse(allProteins[51:75])
-
 allHeatmapData = Matrix(allFoldChange[!,3:7])
-
-
 allLabels = Vector(allFoldChange[!,1])
 numericalLabels = [findall(x->x==f,unique(allLabels))[1] for f in allLabels]
 colors = [:black, :red, :orange, :green, :blue, :indigo, :violet]
@@ -142,15 +138,24 @@ ax2 = Axis(fig[1,2], xticks=(1:5, string.(t)), yticks = (1:25, [rich(allProteins
 ax3 = Axis(fig[1,3], xticks=(1:5, string.(t)), yticks = (1:25, [rich(allProteinsRearranged[val]; color) for (val, color) in zip(51:75, colorLabelsRearranged[51:75])]))
 heatmap!(ax1,rotr90(allHeatmapData[1:25,:]), colormap=:bwr, colorrange=(-maximum(abs.(allHeatmapData))+1, maximum(abs.(allHeatmapData))+1))    
 heatmap!(ax2,rotr90(allHeatmapData[26:50,:]), colormap=:bwr, colorrange=(-maximum(abs.(allHeatmapData))+1, maximum(abs.(allHeatmapData))+1))
-heatmap!(ax3,rotr90(allHeatmapData[51:75,:]), colormap=:bwr, colorrange=(-maximum(abs.(allHeatmapData))+1, maximum(abs.(allHeatmapData))+1))    
-# ax1.xlabel = "Time /days"
+heatmap!(ax3,rotr90(allHeatmapData[51:75,:]), colormap=:bwr, colorrange=(-maximum(abs.(allHeatmapData))+1, maximum(abs.(allHeatmapData))+1))
+grid = GridLayout(fig[2,:])
+# Box(grid[1,:], color = :black)
+# Box(gd[i, 3], color = :gray90)
+Label(grid[1, 1], justification = :center, "Protein colour labels:", fontsize=16, lineheight = 2.0)
+Label(grid[1, 1+1], justification = :center, "$(unique(allLabels)[1])", color=colors[1], fontsize=16, lineheight = 2.0)
+Label(grid[1, 2+1], justification = :center, "$(unique(allLabels)[2])", color=colors[2], fontsize=16, lineheight = 2.0)
+Label(grid[1, 3+1], justification = :center, "$(unique(allLabels)[3])", color=colors[3], fontsize=16, lineheight = 2.0)
+Label(grid[1, 4+1], justification = :center, "$(unique(allLabels)[4])", color=colors[4], fontsize=16, lineheight = 2.0)
+Label(grid[1, 5+1], justification = :center, "$(unique(allLabels)[5])", color=colors[5], fontsize=16, lineheight = 2.0)
+Label(grid[1, 6+1], justification = :center, "$(unique(allLabels)[6])", color=colors[6], fontsize=16, lineheight = 2.0)
+Label(grid[1, 7+1], justification = :center, "$(unique(allLabels)[7])", color=colors[7], fontsize=16, lineheight = 2.0)
+Box(grid[1,1:8], color=(:white,0.0))
 ax2.xlabel = "Time /days"
-# ax3.xlabel = "Time /days"
 ax1.ylabel = "Protein"
-# ax2.ylabel = "Protein"
-# ax3.ylabel = "Protein"
-# ax.title = "All proteins"
 Colorbar(fig[1,4], limits=(-maximum(allHeatmapData)+1, maximum(allHeatmapData)+1), colormap=:bwr, label="Fold change") 
+
+rowsize!(fig.layout,2,0.2)
 resize_to_layout!(fig)
 display(fig)
 save(datadir("exp_pro","MSSpreadsheets","All proteins fold change heatmap2.png"),fig)
