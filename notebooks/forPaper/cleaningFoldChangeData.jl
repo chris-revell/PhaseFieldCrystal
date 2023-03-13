@@ -110,7 +110,7 @@ for l in differentLabels
     ax.xlabel = "Time /days"
     ax.ylabel = "Protein"
     ax.title = l  
-    Colorbar(fig[1,2], limits=(-maximum(heatmapData)+1, maximum(heatmapData)+1), colormap=:bwr)  
+    Colorbar(fig[1,2], limits=(-maximum(heatmapData)+1, maximum(heatmapData)+1), colormap=:bwr, label="Fold change")  
     # resize_to_layout!(fig)
     save(datadir("exp_pro","MSSpreadsheets","$l fold change heatmap.png"),fig)
 end
