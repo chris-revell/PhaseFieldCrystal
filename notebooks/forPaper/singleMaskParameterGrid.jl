@@ -52,7 +52,7 @@ for r in runs
         # # Concave hull to identify boundary fibrils 
         # hull = concave_hull(shiftedCentroidLocations,3)
         
-        ax = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect())
+        ax = CairoMakie.Axis(fig[mod(i-1,6)+1,(i-1)÷6+1],aspect=DataAspect())
         heatmap!(ax,rotr90(uMat),colorrange=(-1.0, 1.0),colormap=:bwr)
         hidedecorations!(ax)
         hidespines!(ax)

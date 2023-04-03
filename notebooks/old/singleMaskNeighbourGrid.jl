@@ -130,7 +130,7 @@ for r in runs[1:end]
         runDefectProportion = 1-defectCountsDict["6"]/(length(nNeighbours)-length(hullInds))
 
 
-        ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect())
+        ax2 = CairoMakie.Axis(fig[mod(i-1,6)+1,(i-1)÷6+1],aspect=DataAspect())
         hidedecorations!(ax2)
         hidespines!(ax2)
         # Map parameters to axis in axes dictionary 
@@ -155,7 +155,7 @@ for r in runs[1:end]
         xlims!(ax2,(0,size(maskImage)[2]))
         ylims!(ax2,(0,size(maskImage)[1]))
 
-        # Label(fig[(i-1)%6+1,(i-1)÷6+1, Bottom()], "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0]), $(round(runDefectProportion,digits=2))")#, valign = :bottom, padding = (0, 10, 10, 0), color=:black)
+        # Label(fig[mod(i-1,6)+1,(i-1)÷6+1, Bottom()], "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0]), $(round(runDefectProportion,digits=2))")#, valign = :bottom, padding = (0, 10, 10, 0), color=:black)
         # ax2.xlabel = "r=$(results[i,:r]), ϕ0=$(results[i,:ϕ0]), $(round(runDefectProportion,digits=2))"
 
         axesDict[(results[i,:r],results[i,:ϕ0])] = ax2

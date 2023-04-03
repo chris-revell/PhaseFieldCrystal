@@ -89,7 +89,7 @@ for (i,r) in enumerate(runs)
 
     lengths .*= lengthPerPixelDict[r]*1000.0
 
-    ax2 = CairoMakie.Axis(fig1[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect(),backgroundcolor=:white)
+    ax2 = CairoMakie.Axis(fig1[mod(i-1,6)+1,(i-1)÷6+1],aspect=DataAspect(),backgroundcolor=:white)
     image!(ax2,rotr90(imageIn))
     #scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=ceil(Int64,10000/imSize[1]))
     scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=10)
@@ -98,7 +98,7 @@ for (i,r) in enumerate(runs)
     end
     hidedecorations!(ax2)
     hidespines!(ax2)
-    Label(fig1[(i-1)%6+1,(i-1)÷6+1, Bottom()], L"\mu=%$(round(mean(lengths),digits=1))nm,~\sigma=%$(round(std(lengths),digits=1))", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0))
+    Label(fig1[mod(i-1,6)+1,(i-1)÷6+1, Bottom()], L"\mu=%$(round(mean(lengths),digits=1))nm,~\sigma=%$(round(std(lengths),digits=1))", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0))
     
     axes[r] = ax2
     sizes[r] = size(imageIn)

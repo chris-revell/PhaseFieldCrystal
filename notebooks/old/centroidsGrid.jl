@@ -33,12 +33,12 @@ for (i,r) in enumerate(runs)
     imSize = size(imageIn)
     grayImage = Gray.(imageIn)
 
-    ax2 = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect(),backgroundcolor=:white)
+    ax2 = CairoMakie.Axis(fig[mod(i-1,6)+1,(i-1)÷6+1],aspect=DataAspect(),backgroundcolor=:white)
     image!(ax2,rotr90(imageIn))
     scatter!(ax2,centroidLocations,color=(:orange,1.0),markersize=10)
     hidedecorations!(ax2)
     hidespines!(ax2)
-    Label(fig[(i-1)%6+1,(i-1)÷6+1, BottomLeft()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0))
+    Label(fig[mod(i-1,6)+1,(i-1)÷6+1, BottomLeft()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0))
     axes[r] = ax2
     sizes[r] = imSize
 end 

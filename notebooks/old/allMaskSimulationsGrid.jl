@@ -40,13 +40,13 @@ for (i,r) in enumerate(runs)
         end
     end    
 
-    ax = CairoMakie.Axis(fig[(i-1)%6+1,(i-1)÷6+1],aspect=DataAspect())
+    ax = CairoMakie.Axis(fig[mod(i-1,6)+1,(i-1)÷6+1],aspect=DataAspect())
     uMat = reshape(subsetResults[1,:u][end],(subsetResults[1,:nY],subsetResults[1,:nX]))
     heatmap!(ax,rotr90(uMat),colorrange=(-1.0, 1.0),colormap=:bwr)
     image!(ax,rotr90(maskImage))
     hidedecorations!(ax)
     hidespines!(ax)
-    Label(fig[(i-1)%6+1,(i-1)÷6+1, BottomLeft()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0))
+    Label(fig[mod(i-1,6)+1,(i-1)÷6+1, BottomLeft()], "$i", valign = :bottom, font = "TeX Gyre Heros Bold", padding = (0, 10, 10, 0))
     axes[r] = ax
     sizes[r] = size(maskImage)
 end 

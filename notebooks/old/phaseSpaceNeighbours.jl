@@ -86,7 +86,7 @@ for i=1:nrow(subset(results, :m => m -> m.== 0.1))
     colours = [coloursDict[x] for x in nNeighbours]
 
     # New axis within figure
-    ax = CairoMakie.Axis(fig[i%6+1,i÷6+1],aspect=DataAspect())
+    ax = CairoMakie.Axis(fig[mod(i,6)+1,i÷6+1],aspect=DataAspect())
     hidedecorations!(ax)
     hidespines!(ax)
     # Map parameters to axis in axes dictionary 

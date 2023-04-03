@@ -102,7 +102,7 @@ for (k, r) in enumerate(runs)#[runsToUse])
     runDefectProportion = 1 - defectCountsDict["6"] / (length(nNeighbours) - excludeCount)
     push!(defectProportions, runDefectProportion)
 
-    ax = CairoMakie.Axis(fig[(k-1)÷6+1, (k-1)%6+1], aspect=DataAspect(), backgroundcolor=:white)
+    ax = CairoMakie.Axis(fig[(k-1)÷6+1, mod(k-1,6)+1], aspect=DataAspect(), backgroundcolor=:white)
 
     image!(ax, rotr90(grayImage))
 
@@ -122,7 +122,7 @@ for (k, r) in enumerate(runs)#[runsToUse])
     hidedecorations!(ax)
     hidespines!(ax)
 
-    Label(fig[(k-1)÷6+1, (k-1)%6+1, Bottom()], "$k", padding=(0, 10, 10, 0), color=:black, fontsize=128)
+    Label(fig[(k-1)÷6+1, mod(k-1,6)+1, Bottom()], "$k", padding=(0, 10, 10, 0), color=:black, fontsize=128)
 
 end
 

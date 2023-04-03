@@ -32,7 +32,7 @@ for m in ms
         @unpack u, params = data
         @unpack ϕ0, r, m, nX, nY, lX, a, δt, tMax = params
     
-        ax = CairoMakie.Axis(fig[i%6+1,i÷6+1],aspect=DataAspect())
+        ax = CairoMakie.Axis(fig[mod(i,6)+1,i÷6+1],aspect=DataAspect())
         ax.yreversed = true
         heatmap!(ax,transpose(reshape(u[end],(nY,nX))),colorrange=(-1.0, 1.0),colormap=:bwr)
         hidedecorations!(ax)

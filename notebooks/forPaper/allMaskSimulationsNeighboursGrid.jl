@@ -138,7 +138,7 @@ for (i, r) in enumerate(runs)
 
     push!(simDefectPropotions,runDefectProportion)
 
-    ax = CairoMakie.Axis(fig[(i-1)÷6+1, (i-1)%6+1], aspect=DataAspect())
+    ax = CairoMakie.Axis(fig[(i-1)÷6+1, mod(i-1,6)+1], aspect=DataAspect())
 
     heatmap!(ax, rotr90(uMat), colorrange=(-1.0, 1.0), colormap=:grays)
     for (j, c) in enumerate(tess.Cells)
@@ -158,7 +158,7 @@ for (i, r) in enumerate(runs)
     xlims!(ax, (0, size(maskImage)[2]))
     ylims!(ax, (0, size(maskImage)[1]))
 
-    Label(fig[(i-1)÷6+1, (i-1)%6+1, Bottom()], "$i", padding=(0, 10, 10, 0), color=:black, fontsize=128)
+    Label(fig[(i-1)÷6+1, mod(i-1,6)+1, Bottom()], "$i", padding=(0, 10, 10, 0), color=:black, fontsize=128)
 
 end
 

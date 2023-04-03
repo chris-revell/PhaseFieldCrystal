@@ -9,7 +9,7 @@
 
 module ArrayLoop
 
-arrayLoop(a,nGrid) = (nGrid+a-1)%(nGrid)+1
+arrayLoop(a,nGrid) = mod(nGrid+a-1,nGrid)+1
 
 export arrayLoop
 

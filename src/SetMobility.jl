@@ -22,14 +22,14 @@ function setMobility(nX,nY,imageMask)
     αⱼTmp = ones(nY,nX)
     for x=1:nX
         for y=1:nY
-            if imageMask[y,x] == 0.0 || imageMask[(nY+y+1-1)%(nY)+1,x] == 0.0
+            if imageMask[y,x] == 0.0 || imageMask[mod(nY+y+1-1,nY)+1,x] == 0.0
                 αᵢTmp[y,x] = 0.0
             end
         end
     end
     for x=1:nX
         for y=1:nY
-            if imageMask[y,x] == 0.0 || imageMask[y,(nX+x+1-1)%(nX)+1] == 0.0
+            if imageMask[y,x] == 0.0 || imageMask[y,mod(nX+x+1-1,nX)+1] == 0.0
                 αⱼTmp[y,x] = 0.0
             end
         end
