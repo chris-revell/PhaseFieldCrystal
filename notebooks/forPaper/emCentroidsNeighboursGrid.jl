@@ -40,11 +40,13 @@ croppedLX = DataFrame(CSV.File(datadir("exp_pro", "lengthMeasurements", "cropped
 
 voronoiSizeThresh = 1.5
 
-fig = Figure(resolution=(6000, 1000), fontsize=64)
+fig = Figure(resolution=(6000, 6000), fontsize=64)
 
 runsToUse = [1, 2, 12, 13, 17, 18]
 
 defectProportions = Float64[]
+
+defectCountsDataFrame = DataFrame()
 
 for (k, r) in enumerate(runs)#[runsToUse])
 
@@ -86,7 +88,7 @@ for (k, r) in enumerate(runs)#[runsToUse])
     meanArea = mean(tessAreasFiltered)
     # display(meanArea)
 
-    defectCountsDict = Dict(string.(collect(3:9)) .=> zeros(Int64, 7))
+    defectCountsDict = Dict(string.(collect(4:8)) .=> zeros(Int64, 5))
     excludeCount = 0
     for j in eachindex(nNeighbours)
         if j ∉ hullInds && tessAreas[j] < voronoiSizeThresh * meanArea
@@ -101,6 +103,12 @@ for (k, r) in enumerate(runs)#[runsToUse])
     end
     runDefectProportion = 1 - defectCountsDict["6"] / (length(nNeighbours) - excludeCount)
     push!(defectProportions, runDefectProportion)
+
+    dfLocal = DataFrame(defectCountsDict)
+    dfLocal[!,:file] = [r]
+    dfLocal[!,:k] = [k]
+    dfLocal[!,:defectProportion] = [runDefectProportion]
+    defectCountsDataFrame = vcat(defectCountsDataFrame,dfLocal,cols = :union)
 
     ax = CairoMakie.Axis(fig[(k-1)÷6+1, mod(k-1,6)+1], aspect=DataAspect(), backgroundcolor=:white)
 
@@ -126,6 +134,8 @@ for (k, r) in enumerate(runs)#[runsToUse])
 
 end
 
+CSV.write(datadir("exp_pro", "emCentroidMeasurements", "defectCounts.csv"), defectCountsDataFrame)
+
 resize_to_layout!(fig)
 display(fig)
 
@@ -139,10 +149,11 @@ save(datadir("exp_pro", "emCentroidNeighbours", "emNeighboursGridWithDefectPropo
 # end
 fig = CairoMakie.Figure(resolution=(500,500), fontsize=32)
 ax = CairoMakie.Axis(fig[1,1])
-hist!(ax, simDefectPropotions; bins=collect(0:0.1:1), normalization=:none, color=(:blue,0.75))
-hist!(ax,defectProportions; bins=collect(0:0.1:1), normalization=:none, color = (:green,0.75))
+hist!(ax, simDefectPropotions; bins=collect(0:0.1:1), normalization=:none, color=(:blue,0.75), label="Simulation")
+hist!(ax,defectProportions; bins=collect(0:0.1:1), normalization=:none, color = (:green,0.75), label="EM")
 ax.xlabel = "Defect proportion"
 ax.ylabel = "Frequency"
+axislegend(ax, position=:rt, labelsize=18)
 display(fig)
 save(datadir("exp_pro", "emCentroidNeighbours", "emAndSimDefectProportionsHistogram.png"), fig)
 

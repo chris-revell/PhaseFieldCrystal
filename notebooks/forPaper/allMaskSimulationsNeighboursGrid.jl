@@ -54,7 +54,9 @@ fig = Figure(resolution=(6000, 6000), fontsize=64)
 
 runsToUse = [1, 2, 12, 13, 17, 18]
 
-simDefectPropotions = Float64[]
+simDefectProportions = Float64[]
+
+defectCountsDataFrame = DataFrame()
 
 for (i, r) in enumerate(runs)
 
@@ -121,7 +123,7 @@ for (i, r) in enumerate(runs)
     meanArea = mean(tessAreasFiltered)
     # display(meanArea)
 
-    defectCountsDict = Dict(string.(collect(3:9)).=>zeros(Int64,7))
+    defectCountsDict = Dict(string.(collect(4:8)).=>zeros(Int64,5))
     excludeCount = 0
     for j in eachindex(nNeighbours)
         if j ∉ hullInds && tessAreas[j] < voronoiSizeThresh*meanArea
@@ -133,10 +135,20 @@ for (i, r) in enumerate(runs)
         else
             excludeCount += 1
         end
-    end
+    end    
+
     runDefectProportion = 1 - defectCountsDict["6"]/(length(nNeighbours)-excludeCount)
 
-    push!(simDefectPropotions,runDefectProportion)
+    dfLocal = DataFrame(defectCountsDict)
+    dfLocal[!,:file] = [r]
+    dfLocal[!,:defectProportion] = [runDefectProportion]
+    dfLocal[!,:k] = [i]
+    defectCountsDataFrame = vcat(defectCountsDataFrame,dfLocal,cols = :union)
+    display(defectCountsDict)
+
+    
+
+    push!(simDefectProportions,runDefectProportion)
 
     ax = CairoMakie.Axis(fig[(i-1)÷6+1, mod(i-1,6)+1], aspect=DataAspect())
 
@@ -161,6 +173,8 @@ for (i, r) in enumerate(runs)
     Label(fig[(i-1)÷6+1, mod(i-1,6)+1, Bottom()], "$i", padding=(0, 10, 10, 0), color=:black, fontsize=128)
 
 end
+
+CSV.write(datadir("fromCSF", "allMasksPhasespaceSeparateLengths", "defectCountsSims.csv"), defectCountsDataFrame)
 
 resize_to_layout!(fig)
 display(fig)
