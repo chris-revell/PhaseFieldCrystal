@@ -40,7 +40,6 @@ dl = dict_list(c)
 
 ps = dl[2]
 
-# Warmup
-phaseFieldCrystal("data/exp_pro/testMask.png",200.0,0.7,-0.41,0.1,2.0,1.0,0.5,10.0,1,0,0,0,0,1)
+
 # Run 
 phaseFieldCrystal(datadir("exp_pro","masksCompressed",(ps[:imagelXpairs][1])[1:end-4],ps[:imagelXpairs][1]),ps[:imagelXpairs][2],ps[:r],ps[:ϕ0],ps[:m],ps[:a],ps[:λ],ps[:δt],ps[:tMax],ps[:outCount],ps[:loggerFlag],ps[:outputFlag],1,ps[:freeEnergyFlag],ps[:nBlasThreads];subFolder=ps[:subFolderName])

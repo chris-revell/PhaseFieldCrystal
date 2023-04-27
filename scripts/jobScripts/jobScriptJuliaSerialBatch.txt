@@ -40,8 +40,7 @@ c[:nBlasThreads]  = [1]
 c[:subFolderName] = "allMasks"
 
 
-# Warmup
-phaseFieldCrystal("data/exp_pro/testMask.png",200.0,0.7,-0.41,0.1,2.0,1.0,0.5,10.0,1,0,0,0,0,1)
+
 # Run 
 @threads for ps in dict_list(c)[1:36]
     phaseFieldCrystal(datadir("exp_pro","masks","ok","compressed",ps[:imagelXpairs].first),ps[:imagelXpairs].second*1000.0/scalingLX,ps[:r],ps[:ϕ0],ps[:m],ps[:a],ps[:λ],ps[:δt],ps[:tMax],ps[:outCount],ps[:loggerFlag],ps[:outputFlag],ps[:visualiseFlag],ps[:freeEnergyFlag],ps[:nBlasThreads];subFolder=ps[:subFolderName])
