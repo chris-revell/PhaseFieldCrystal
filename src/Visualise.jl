@@ -20,7 +20,7 @@ using DrWatson
 
 function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileName, freeEnergyFlag,freeEnergies)
     
-    fig1 = Figure(figure_padding=0,resolution=(1000,1000))
+    fig1 = Figure(figure_padding=0,resolution=(1000,1000),fontsize=64)
     ax1 = CairoMakie.Axis(fig1[1,1],aspect=DataAspect())
     uInternal = Observable(zeros(nX,nY))
     heatmap!(ax1,uInternal,colorrange=(-1.0, 1.0),colormap=:bwr)
@@ -30,10 +30,6 @@ function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileNam
     ax1.yreversed = true
     resize_to_layout!(fig1)
     tSteps = range(1,length(t),step=1)
-    display(subFolder)
-    display(typeof(fileName))
-    display(fileName)    
-    display(tSteps)
     record(fig1,"$subFolder/$(fileName)_u.mp4",tSteps; framerate=10) do i
         display(i)
         ax1.title = "t=$(@sprintf("%.2f", t[i]))"
