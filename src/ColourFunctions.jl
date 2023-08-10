@@ -10,7 +10,6 @@
 module ColourFunctions
 
 using Random
-using Images
 using Colors
 using ImageSegmentation
 

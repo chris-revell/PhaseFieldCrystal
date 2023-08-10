@@ -1,3 +1,4 @@
 {
-    "julia.focusPlotNavigator": true
+    "julia.focusPlotNavigator": false,
+    "workbench.editor.revealIfOpen": true
 }
