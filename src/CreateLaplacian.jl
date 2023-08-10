@@ -14,9 +14,10 @@ module CreateLaplacian
 # Import Julia packages
 using LinearAlgebra
 using SparseArrays
+using DrWatson
 using FromFile: @from
 
-@from "ArrayLoop.jl" using ArrayLoop
+@from "$(srcdir("ArrayLoop.jl"))" using ArrayLoop
 
 function createLaplacian(nX, nY, h)
 

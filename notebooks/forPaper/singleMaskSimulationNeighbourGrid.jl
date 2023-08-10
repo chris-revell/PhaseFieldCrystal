@@ -18,7 +18,7 @@ using Statistics
 using Printf
 using DelimitedFiles
 
-@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
+@from "$(srcdir("ColourFunctions.jl"))" using ColourFunctions
 
 function neighbourColours(x)
     if x == 6

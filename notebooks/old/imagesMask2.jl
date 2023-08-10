@@ -11,7 +11,7 @@ using CairoMakie
 using GR
 using GeometryBasics
 using ImageView
-@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
+@from "$(srcdir("ColourFunctions.jl"))" using ColourFunctions
 
 fileName = "/Users/christopher/Postdoc/Code/PhaseFieldCrystal/data/exp_pro/cropped/mp13ko-3wiew_4800X_hui_0002_2.png"
 

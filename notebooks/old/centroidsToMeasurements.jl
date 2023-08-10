@@ -14,7 +14,7 @@ using DataFrames
 using Statistics
 using StatsBase
 
-@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
+@from "$(srcdir("ColourFunctions.jl"))" using ColourFunctions
 
 mkpath(datadir("exp_pro","emCentroidMeasurements"))
 

@@ -8,7 +8,7 @@ using ImageTransformations
 using ImageView
 using ImageSegmentation
 using Random
-@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
+@from "$(srcdir("ColourFunctions.jl"))" using ColourFunctions
 
 function final(i)
     if i==2

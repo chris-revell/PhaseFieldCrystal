@@ -13,7 +13,7 @@ using ImageSegmentation
 using ConcaveHull
 using Statistics
 
-@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
+@from "$(srcdir("ColourFunctions.jl"))" using ColourFunctions
 
 function binariseSimulation!(uij)
     if uij < -0.5

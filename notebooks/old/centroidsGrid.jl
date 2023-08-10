@@ -12,7 +12,7 @@ using GR: delaunay
 using CSV
 using DataFrames
 
-@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
+@from "$(srcdir("ColourFunctions.jl"))" using ColourFunctions
 
 runs = Vector(readdlm(datadir("exp_pro","filesToUse.txt"))[:,1])
 

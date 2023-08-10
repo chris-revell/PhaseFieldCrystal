@@ -17,7 +17,7 @@ using Statistics
 using StatsBase
 using Dates
 
-@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
+@from "$(srcdir("ColourFunctions.jl"))" using ColourFunctions
 
 function binariseSimulation!(uij)
     if uij < -0.5

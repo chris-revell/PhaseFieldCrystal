@@ -42,14 +42,14 @@ using Base.Filesystem
 using FromFile: @from
 
 # Import local files
-@from "Model.jl" using Model
-@from "CreateLaplacian.jl" using CreateLaplacian
-@from "CreateDivAlphaGrad.jl" using CreateDivAlphaGrad
-@from "InitialConditions.jl" using InitialConditions
-@from "Visualise.jl" using Visualise
-@from "FreeEnergy.jl" using FreeEnergy
-@from "ImportImage.jl" using ImportImage
-@from "SetMobility.jl" using SetMobility
+@from "$(srcdir("Model.jl"))" using Model
+@from "$(srcdir("CreateLaplacian.jl"))" using CreateLaplacian
+@from "$(srcdir("CreateDivAlphaGrad.jl"))" using CreateDivAlphaGrad
+@from "$(srcdir("InitialConditions.jl"))" using InitialConditions
+@from "$(srcdir("Visualise.jl"))" using Visualise
+@from "$(srcdir("FreeEnergy.jl"))" using FreeEnergy
+@from "$(srcdir("ImportImage.jl"))" using ImportImage
+@from "$(srcdir("SetMobility.jl"))" using SetMobility
 
 function phaseFieldCrystal(imagePath,lX,r,ϕ0,m,a,λ,δt,tMax,outCount,loggerFlag,outputFlag,visualiseFlag,freeEnergyFlag,nBlasThreads;subFolder="")
 

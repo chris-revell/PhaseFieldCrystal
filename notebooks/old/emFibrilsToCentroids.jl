@@ -12,7 +12,7 @@ using FileIO
 using CSV
 using DataFrames
 using DelimitedFiles
-@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
+@from "$(srcdir("ColourFunctions.jl"))" using ColourFunctions
 
 
 function emFibrilsToCentroids(fileName,distanceGaussian,dilateCount,erodeCount,fibrilMinSize,fibrilMaxSize,saveFlag)

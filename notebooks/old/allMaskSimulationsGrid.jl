@@ -12,7 +12,7 @@ using GR: delaunay
 using CSV
 using DataFrames
 
-@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
+@from "$(srcdir("ColourFunctions.jl"))" using ColourFunctions
 
 # Collate results as a dataframe 
 results = collect_results(datadir("fromCSF","allMasks"); subfolders = true)

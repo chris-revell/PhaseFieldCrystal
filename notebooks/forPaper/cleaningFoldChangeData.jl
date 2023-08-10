@@ -6,7 +6,7 @@ using StatsBase
 using CairoMakie
 using FromFile
 
-@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
+@from "$(srcdir("ColourFunctions.jl"))" using ColourFunctions
 
 Values_for_heatmap = XLSX.readxlsx(datadir("exp_pro","MSSpreadsheets","Values for heatmap.xlsx"))[1]
 

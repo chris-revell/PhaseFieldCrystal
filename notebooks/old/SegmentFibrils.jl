@@ -13,7 +13,7 @@ using LinearAlgebra
 using Statistics
 using ConcaveHull
 using VoronoiCells
-@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
+@from "$(srcdir("ColourFunctions.jl"))" using ColourFunctions
 
 function segmentFibrils(fileName,distance,nDilate,nErode,thresh1,thresh2,thresh3,displayFlag,saveFlag)
 

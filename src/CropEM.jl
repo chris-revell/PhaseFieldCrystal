@@ -9,7 +9,8 @@ using ImageBinarization
 using ImageSegmentation
 using Random
 using FromFile
-@from "$(projectdir("src","ColourFunctions.jl"))" using ColourFunctions
+using DrWatson
+@from "$(srcdir("ColourFunctions.jl"))" using ColourFunctions
 
 function cropEM(fileName)
 
