@@ -91,3 +91,75 @@ poly!(ax,p,color=:blue)
 
 
 display(fig)
+
+
+save("test.png",fig)
+
+# Create A matrix mapping voronoi cells to voronoi edges
+
+using DelaunayTriangulation
+
+ptsArray = zeros(Float64,(2,length(centroidLocations)))
+for (i,point) in enumerate(centroidLocations)
+    ptsArray[1,i] = point[1]
+    ptsArray[2,i] = point[2]
+end
+tri2 = triangulate(ptsArray)
+vorn = voronoi(tri2)
+
+vertexPoints = Point2.(vorn.polygon_points)
+
+fig2 = Figure(resolution=(750,750)); ax2=Axis(fig2[1,1],aspect=DataAspect())
+xlims!(ax2,0.9*minimum(first.(centroidLocations)),1.05*maximum(first.(centroidLocations)))
+ylims!(ax2,0.9*minimum(last.(centroidLocations)),1.05*maximum(last.(centroidLocations)))
+hidedecorations!(ax2)
+hidespines!(ax2)
+
+
+scatter!(ax2, centroidLocations,color=:red)
+annotations!(ax2, string.(collect(1:length(centroidLocations))), centroidLocations, color=:red)
+scatter!(ax2, vertexPoints, color=:blue)
+annotations!(ax2, string.(collect(1:length(vertexPoints))), vertexPoints, color=:blue)
+
+display(fig2)
+
+
+fig3 = Figure(resolution=(750,750)); ax3=Axis(fig3[1,1],aspect=DataAspect())
+xlims!(ax3,0.9*minimum(first.(centroidLocations)),1.05*maximum(first.(centroidLocations)))
+ylims!(ax3,0.9*minimum(last.(centroidLocations)),1.05*maximum(last.(centroidLocations)))
+hidedecorations!(ax3)
+hidespines!(ax3)
+
+pairsFull = collect(keys(tri2.adjacent.adjacent))
+pairs = unique([(min(p...),max(p...)) for p in pairs])
+for p in get_edges(tri2) #pairs
+    if min(p...) > 0
+        lines!(ax3,centroidLocations[[p...]],color=:black)
+    else
+        lines!(ax3,[centroidLocations[max(p...)],Point2(0,0)],color=:black)
+    end
+    # @show a = [centroidLocations[p[1]]], centroidLocations[p[2]]
+end
+
+display(fig3)
+
+
+using SparseArrays
+A = spzeros(length(pairs),length(vorn.polygon_points))
+for p in pairs 
+    A[p[1],p[2]] = 1
+    A[p[2],p[1]] = -1
+end
+
+B = spzeros(length(centroidLocations),length(pairs))
+for c=1:length(centroidLocations)
+    verticesOfCell = vorn.polygons[c]
+    for e=2:length(verticesOfCell)
+        edge = findall(x->x==(e,e-1)||x==(e-1,e), pairs)[1]
+        if A[edge,verticesOfCell[e]] == 1
+            B[c,edge] = 1
+        else
+            B[c,edge] = -1
+        end
+    end
+end
