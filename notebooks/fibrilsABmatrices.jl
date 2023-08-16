@@ -9,6 +9,7 @@ using CairoMakie
 using Makie.GeometryBasics
 using DelaunayTriangulation
 using ConcaveHull
+using StaticArrays
 
 # Import local files
 @from "$(srcdir("CreateLaplacian.jl"))" using CreateLaplacian
@@ -42,7 +43,7 @@ triangulation_unconstrained = triangulate(ptsArray)
 # tessellation_unconstrained = voronoi(triangulation_unconstrained)
 tessellation_constrained = voronoi(triangulation_unconstrained,true)
 
-R = [get_polygon_point(tessellation_constrained,i) for i=1:num_polygon_vertices(tessellation_constrained)]
+R = [SVector(get_polygon_point(tessellation_constrained,i)) for i=1:num_polygon_vertices(tessellation_constrained)]
 
 
 orderedPairs = unique([(min(p...),max(p...)) for p in keys(tessellation_constrained.adjacent.adjacent)])
@@ -77,8 +78,34 @@ for c=1:nCells
     end
 end
 
-fig, ax, sc = voronoiplot(tessellation_constrained, strokecolor=:red, markersize=9)
+# fig, ax, sc = voronoiplot(tessellation_constrained, strokecolor=:red, markersize=9)
 # fig = Figure(resolution=(750,750)); ax=Axis(fig[1,1],aspect=DataAspect())
 # triplot!(ax, triangulation_unconstrained, strokewidth=1, strokecolor=(:black, 0.4))
 # annotations!(ax,string.(collect(1:length(centroidLocations))),centroidLocations,color=:red)
-display(fig)
+# display(fig)
+
+using DiscreteCalculus
+decompositionLc = eigenmodesLc(R, A, B)
+cellPolygons = makeCellPolygons(R, A, B)
+linkTriangles = makeLinkTriangles(R, A, B)
+fig = Figure(resolution=(2000,2500))
+# axes = Axis[]
+for x=1:5
+    for y=1:4
+        eigenvectorIndex = (y-1)*5+x
+        lims = (-maximum(abs.(decompositionLc[:,eigenvectorIndex])),maximum(abs.(decompositionLc[:,eigenvectorIndex])))
+        ax = Axis(fig[y,x],aspect=DataAspect())
+        hidedecorations!(ax)
+        hidespines!(ax)
+        # for k=1:nVerts            
+        #     poly!(ax,linkTriangles[k],color=(:white,0.0),strokecolor=(:black,1.0),strokewidth=1) #:bwr
+        # end
+        for i=1:nCells
+            poly!(ax,cellPolygons[i],color=[decompositionLc[i,eigenvectorIndex]],colorrange=lims,colormap=:bwr,strokewidth=1,strokecolor=(:black,0.25)) #:bwr
+        end
+        Label(fig[y,x,Bottom()],
+                L"k=%$eigenvectorIndex",
+                fontsize = 16,
+        )
+    end
+end
