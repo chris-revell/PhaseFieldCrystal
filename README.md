@@ -18,3 +18,13 @@ To (locally) reproduce this project, do the following:
 
 This will install all necessary packages for you to be able to run the scripts and
 everything should work out of the box, including correctly finding local paths.
+
+```
+using DrWatson
+using FromFile
+@quickactivate "PhaseFieldCrystal"
+@info "Loading test parameters"
+include("scripts/TestParameters.jl")
+@info "Precompiling PhaseFieldCrystal"
+@from "$(srcdir("PhaseFieldCrystal.jl"))" using PhaseFieldCrystal
+```
