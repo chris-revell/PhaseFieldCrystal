@@ -79,7 +79,8 @@ end
 
 using DiscreteCalculus
 
-decompositionLc = eigenmodesLc(R, A, B)
+Lc = topologicalLc(R, A, B)
+decompositionLc = (eigen(Matrix(Lc))).vectors
 cellPolygons = makeCellPolygons(R, A, B)
 linkTriangles = makeLinkTriangles(R, A, B)
 
@@ -128,10 +129,11 @@ for x = 1:nX
         )
     end
 end
-save("LcEigenmodes.png", fig)
+save("topologicalLcEigenmodes.png", fig)
 
 
-decompositionLf = eigenmodesLf(R, A, B)
+Lf = topologicalLf(R, A, B)
+decompositionLf = (eigen(Matrix(Lf))).vectors
 
 fig = Figure(resolution=(5000, 2000), fontsize=32)
 nX = 10
@@ -178,11 +180,13 @@ for x = 1:nX
         )
     end
 end
-save("LfEigenmodes.png", fig)
+save("topologicalLfEigenmodes.png", fig)
 
 
 
-decompositionLt = eigenmodesLt(R, A, B)
+Lt = topologicalLt(R, A, B)
+decompositionLt = (eigen(Matrix(Lt))).vectors
+
 fig = Figure(resolution=(5000, 2000), fontsize=32)
 nX = 10
 nY = 2
@@ -228,10 +232,13 @@ for x = 1:nX
         )
     end
 end
-save("LtEigenmodes.png", fig)
+save("topologicalLtEigenmodes.png", fig)
 
 
 decompositionLv = eigenmodesLv(R, A, B)
+Lv = topologicalLv(R, A, B)
+decompositionLv = (eigen(Matrix(Lv))).vectors
+
 fig = Figure(resolution=(5000, 2000), fontsize=32)
 nX = 10
 nY = 2
@@ -277,4 +284,4 @@ for x = 1:nX
         )
     end
 end
-save("LvEigenmodes.png", fig)
+save("topologicalLvEigenmodes.png", fig)
