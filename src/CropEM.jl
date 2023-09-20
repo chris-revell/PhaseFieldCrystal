@@ -10,7 +10,7 @@ using ImageSegmentation
 using Random
 using FromFile
 using DrWatson
-@from "$(srcdir("ColourFunctions.jl"))" using ColourFunctions
+@from "ColourFunctions.jl" using ColourFunctions
 
 function cropEM(fileName)
 

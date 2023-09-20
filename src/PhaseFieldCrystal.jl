@@ -42,20 +42,36 @@ using Base.Filesystem
 using FromFile: @from
 
 # Import local files
-@from "$(srcdir("Model.jl"))" using Model
-@from "$(srcdir("CreateLaplacian.jl"))" using CreateLaplacian
-@from "$(srcdir("CreateDivAlphaGrad.jl"))" using CreateDivAlphaGrad
-@from "$(srcdir("InitialConditions.jl"))" using InitialConditions
-@from "$(srcdir("Visualise.jl"))" using Visualise
-@from "$(srcdir("FreeEnergy.jl"))" using FreeEnergy
-@from "$(srcdir("ImportImage.jl"))" using ImportImage
-@from "$(srcdir("SetMobility.jl"))" using SetMobility
+@from "Model.jl" using Model
+@from "CreateLaplacian.jl" using CreateLaplacian
+@from "CreateDivAlphaGrad.jl" using CreateDivAlphaGrad
+@from "InitialConditions.jl" using InitialConditions
+@from "Visualise.jl" using Visualise
+@from "FreeEnergy.jl" using FreeEnergy
+@from "ImportImage.jl" using ImportImage
+@from "SetMobility.jl" using SetMobility
 
-function phaseFieldCrystal(imagePath,lX,r,ϕ0,m,a,λ,δt,tMax,outCount,loggerFlag,outputFlag,visualiseFlag,freeEnergyFlag,nBlasThreads;subFolder="")
+function phaseFieldCrystal(;imagePath=datadir("exp_pro","masksCompressed","17tailT_4800X_HUI_0001_0","17tailT_4800X_HUI_0001_0.png"),
+    lX = 125.61860023932613,
+    r = 0.8,
+    ϕ0 = 0.4,
+    m = 0.1,
+    a = 2.0,
+    λ = 10.0,
+    δt = 0.1,
+    tMax = 1000.0,
+    outCount = 100,
+    loggerFlag = 1,
+    outputFlag = 1,
+    visualiseFlag = 1,
+    freeEnergyFlag = 0,
+    nBlasThreads = 4,
+    subFolder="",
+    )
 
     BLAS.set_num_threads(nBlasThreads)
 
-    imageMask, nX, nY = importImage(imagePath)
+    imageMask,nX,nY = importImage(imagePath)
 
     α = setMobility(nX,nY,imageMask)
 
@@ -64,6 +80,7 @@ function phaseFieldCrystal(imagePath,lX,r,ϕ0,m,a,λ,δt,tMax,outCount,loggerFla
 
     # Create finite difference matrices for given system parameters
     ∇² = createLaplacian(nX,nY,h)
+
     divalphagrad = createDivAlphaGrad(nX,nY,h,α)
 
     # Create matrix for linear component of PFC equation

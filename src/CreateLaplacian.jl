@@ -17,7 +17,7 @@ using SparseArrays
 using DrWatson
 using FromFile: @from
 
-@from "$(srcdir("ArrayLoop.jl"))" using ArrayLoop
+@from "ArrayLoop.jl" using ArrayLoop
 
 function createLaplacian(nX, nY, h)
 

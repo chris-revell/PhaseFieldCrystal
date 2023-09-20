@@ -26,5 +26,5 @@ using FromFile
 @info "Loading test parameters"
 include("scripts/TestParameters.jl")
 @info "Precompiling PhaseFieldCrystal"
-@from "$(srcdir("PhaseFieldCrystal.jl"))" using PhaseFieldCrystal
+using PhaseFieldCrystal
 ```

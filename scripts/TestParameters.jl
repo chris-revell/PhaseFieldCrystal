@@ -1,4 +1,4 @@
-imagePath     = "data/exp_pro/croppedMask.png"
+imagePath     = datadir("exp_pro","masksCompressed","17tailT_4800X_HUI_0001_0","17tailT_4800X_HUI_0001_0.png")
 lX            = 200.0
 r             = 0.5
 m             = 0.1

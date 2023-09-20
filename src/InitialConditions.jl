@@ -23,15 +23,21 @@ using LinearAlgebra
     cov = CovarianceFunction(2,Gaussian(λ,σ=1.0)) 
     ptsX = range(0, stop=lX, length=nX)
     ptsY = range(0, stop=h*nY, length=nY)
-    grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsY, ptsX) # Gaussian random field with mean 0.0, unit variance, correlation length λ
+    grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsY*2, ptsX) # Gaussian random field with mean 0.0, unit variance, correlation length λ
    
     # Set initial order parameter field from sample of Gaussian random field
     u0Tmp = sample(grf)         # Form initial field by sampling Gaussian random field 
-    u0Tmp .*= imageMask         # Set u0 to 0.0 for inter-cellular region
-    u0Tmp .*= m                 # Multiply field by amplitude m
-    u0TmpMean = sum(u0Tmp)/length(u0Tmp[imageMask.!=0]) # Calculate actual mean of this field
-    u0Tmp .+= (ϕ0-u0TmpMean).*imageMask # Offset field to ensure mean of ϕ0
-    u0 = reshape(u0Tmp,nX*nY)   # Flatten matrix to vector 
+    u0Tmp1 = u0Tmp[1:nY,:] .* imageMask         # Set u0 to 0.0 for inter-cellular region
+    u0Tmp2 = u0Tmp[1+nY:end,:] .* imageMask         # Set u0 to 0.0 for inter-cellular region
+    u0Tmp1 .*= m                 # Multiply field by amplitude m
+    u0Tmp2 .*= m                 # Multiply field by amplitude m
+    u0Tmp1Mean = sum(u0Tmp1)/length(u0Tmp1[imageMask.!=0]) # Calculate actual mean of this field
+    u0Tmp2Mean = sum(u0Tmp2)/length(u0Tmp2[imageMask.!=0]) # Calculate actual mean of this field
+    u0Tmp1 .+= (ϕ0-u0Tmp1Mean).*imageMask # Offset field to ensure mean of ϕ0
+    u0Tmp2 .+= (ϕ0-u0Tmp2Mean).*imageMask # Offset field to ensure mean of ϕ0
+    u0 = zeros(Float64,2*nX*nY)
+    u0[1:nX*nY] = reshape(u0Tmp1,nX*nY)   # Flatten matrix to vector 
+    u0[1+nX*nY:end] = reshape(u0Tmp2,nX*nY)   # Flatten matrix to vector 
 
     # Pre-allocate additional arrays for use in later calculations
     mat1  = zeros(nX*nY)
