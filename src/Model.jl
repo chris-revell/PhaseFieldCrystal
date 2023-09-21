@@ -22,10 +22,8 @@ function splitNonlinearPart!(du, u, p, t)
     # linearOperator = ((1-r+a)∇² + ∇⁶)
     # f2 = ∇²(u³ - au + 2∇²u)
 
-    c=10.0
-
     # Unpack parameter list
-    ∇²2, linearOperator, mat1, mat2, r, a, divalphagrad2, nXtimesnY = p
+    ∇²2, linearOperator, mat1, mat2, r, a, divalphagrad2, nXtimesnY, c = p
 
     # Find 2nd derivative of u
     mul!(mat1,∇²2,u)
