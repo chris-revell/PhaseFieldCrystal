@@ -19,11 +19,11 @@ using LinearAlgebra
     h = lX/nX    # Spatial separation of grid points in units of q
 
     # Gaussian random field for initial condition 
-    mean = fill(0.0, (nY,nX))
+    mean = fill(0.0, (2*nY,nX))
     cov = CovarianceFunction(2,Gaussian(λ,σ=1.0)) 
     ptsX = range(0, stop=lX, length=nX)
-    ptsY = range(0, stop=h*nY, length=nY)
-    grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsY*2, ptsX) # Gaussian random field with mean 0.0, unit variance, correlation length λ
+    ptsY = range(0, stop=2*h*nY, length=2*nY)
+    grf = GaussianRandomField(mean, cov, CirculantEmbedding(), ptsY, ptsX) # Gaussian random field with mean 0.0, unit variance, correlation length λ
    
     # Set initial order parameter field from sample of Gaussian random field
     u0Tmp = sample(grf)         # Form initial field by sampling Gaussian random field 
@@ -40,8 +40,8 @@ using LinearAlgebra
     u0[1+nX*nY:end] = reshape(u0Tmp2,nX*nY)   # Flatten matrix to vector 
 
     # Pre-allocate additional arrays for use in later calculations
-    mat1  = zeros(nX*nY)
-    mat2  = zeros(nX*nY)
+    mat1  = zeros(2*nX*nY)
+    mat2  = zeros(2*nX*nY)
 
 return u0,mat1,mat2,h
 

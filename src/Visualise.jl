@@ -18,12 +18,14 @@ using DifferentialEquations
 using JLD2
 using DrWatson
 
-function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileName, freeEnergyFlag,freeEnergies)
+function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileName)
     
     fig1 = Figure(figure_padding=0,resolution=(1000,1000),fontsize=64)
     ax1 = CairoMakie.Axis(fig1[1,1],aspect=DataAspect())
-    uInternal = Observable(zeros(nX,nY))
-    heatmap!(ax1,uInternal,colorrange=(-1.0, 1.0),colormap=:bwr)
+    uInternal1 = Observable(zeros(nX,nY))
+    uInternal2 = Observable(zeros(nX,nY))
+    heatmap!(ax1,uInternal1,colorrange=(-1.0, 1.0),colormap=(:bwr,0.5))
+    heatmap!(ax1,uInternal2,colorrange=(-1.0, 1.0),colormap=(:bwr,0.5))
     hidedecorations!(ax1)
     hidespines!(ax1)
     ax1.title = "t=0.0"
@@ -33,29 +35,32 @@ function visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, subFolder, fileNam
     record(fig1,"$subFolder/$(fileName)_u.mp4",tSteps; framerate=10) do i
         display(i)
         ax1.title = "t=$(@sprintf("%.2f", t[i]))"
-        uInternal[] = transpose(reshape(u[i],(nY,nX)))
-        uInternal[] = uInternal[]
+        uInternal1[] = transpose(reshape(u[i][1:nX*nY],(nY,nX)))
+        uInternal1[] = uInternal1[]
+        uInternal2[] = transpose(reshape(u[i][1+nX*nY:end],(nY,nX)))
+        uInternal2[] = uInternal2[]
         save("$subFolder/$(fileName)$i.png",fig1)
     end
 
-    if freeEnergyFlag==1
-        fig2 = Figure(figure_padding=0)
-        ax2 = CairoMakie.Axis(fig2[1,1])
-        lines!(ax2,t,freeEnergies)
-        ax2.xlabel = "Time"
-        ax2.ylabel = "Free Energy"
-        safesave("$subFolder/$(fileName)_freeEnergyVsTime.png",fig2)
-    end
+    # if freeEnergyFlag==1
+    #     fig2 = Figure(figure_padding=0)
+    #     ax2 = CairoMakie.Axis(fig2[1,1])
+    #     lines!(ax2,t,freeEnergies)
+    #     ax2.xlabel = "Time"
+    #     ax2.ylabel = "Free Energy"
+    #     safesave("$subFolder/$(fileName)_freeEnergyVsTime.png",fig2)
+    # end
 
-    fig3 = Figure(figure_padding=0,resolution=(1000,1000))
-    ax3 = CairoMakie.Axis(fig3[1,1],aspect=DataAspect())
-    ax3.yreversed = true
-    heatmap!(ax3,transpose(reshape(u[end],(nY,nX))),colorrange=(-1.0, 1.0),colormap=:bwr)
-    hidedecorations!(ax3)
-    hidespines!(ax3)
-    resize_to_layout!(fig3)
-    # display("$subFolder/$(fileName[1:end-5])_finalState.png")
-    save("$subFolder/$(fileName)_finalState.png",fig3)
+    # fig3 = Figure(figure_padding=0,resolution=(1000,1000))
+    # ax3 = CairoMakie.Axis(fig3[1,1],aspect=DataAspect())
+    # ax3.yreversed = true
+    # heatmap!(ax3,transpose(reshape(u[end][1:nX*nY],(nY,nX))),colorrange=(-1.0, 1.0),colormap=(:bwr,0.5))
+    # heatmap!(ax3,transpose(reshape(u[end][1+nX*nY:end],(nY,nX))),colorrange=(-1.0, 1.0),colormap=(:bwr,0.5))
+    # hidedecorations!(ax3)
+    # hidespines!(ax3)
+    # resize_to_layout!(fig3)
+    # # display("$subFolder/$(fileName[1:end-5])_finalState.png")
+    # save("$subFolder/$(fileName)_finalState.png",fig3)
 
     return nothing
 

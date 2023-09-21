@@ -22,38 +22,43 @@ function splitNonlinearPart!(du, u, p, t)
     # linearOperator = ((1-r+a)∇² + ∇⁶)
     # f2 = ∇²(u³ - au + 2∇²u)
 
+    c=10.0
+
     # Unpack parameter list
-    ∇², linearOperator, mat1, mat2, r, a, divalphagrad = p
+    ∇²2, linearOperator, mat1, mat2, r, a, divalphagrad2, nXtimesnY = p
 
     # Find 2nd derivative of u
-    mul!(mat1,∇²,u)
+    mul!(mat1,∇²2,u)
     # Calculate inner component (u³ - au + 2∇²u)
     # @.. thread=true mat1 .*= 2.0
     @.. thread=false mat1 .*= 2.0
     # @.. thread=true mat1 .+= u.^3 .- a.*u
     @.. thread=false mat1 .+= u.^3 .- a.*u
 
+    @.. thread=false mat1[1:nXtimesnY] .+= c.*u[1+nXtimesnY:end]
+    @.. thread=false mat1[1+nXtimesnY:end] .+= c.*u[1:nXtimesnY]
+
     # Find 2nd derivative of (u³ - au + 2∇²u)
-    mul!(du,divalphagrad,mat1)
+    mul!(du,divalphagrad2,mat1)
 
     return du
 end
 
-function PFC!(du, u, p, t)
-    # Unpack parameter list
-    ∇², linearOperator, mat1, mat2, r, a = p
-    # Find Laplacian of u
-    mul!(mat1,∇²,u)
-    # Calculate inner component (∇²ϕ + q²ϕ)
-    mat1 .+= u
-    # Find Laplacian of (∇²ϕ + q²ϕ)
-    mul!(mat2,∇²,mat1)
-    # Calculate full term within outermost Laplacian (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) = rϕ + ∇²(mat1) + q⁴ + ϕ³
-    mat2 .+= u.^3 .- r.*u
-    mul!(du,∇²,mat2)
-    return du
-end
+# function PFC!(du, u, p, t)
+#     # Unpack parameter list
+#     ∇²2, linearOperator, mat1, mat2, r, a = p
+#     # Find Laplacian of u
+#     mul!(mat1,∇²,u)
+#     # Calculate inner component (∇²ϕ + q²ϕ)
+#     mat1 .+= u
+#     # Find Laplacian of (∇²ϕ + q²ϕ)
+#     mul!(mat2,∇²,mat1)
+#     # Calculate full term within outermost Laplacian (rϕ + ∇²(∇²ϕ + q²ϕ) + q⁴ + ϕ³) = rϕ + ∇²(mat1) + q⁴ + ϕ³
+#     mat2 .+= u.^3 .- r.*u
+#     mul!(du,∇²,mat2)
+#     return du
+# end
 
-export splitNonlinearPart!, PFC!
+export splitNonlinearPart! #, PFC!
 
 end

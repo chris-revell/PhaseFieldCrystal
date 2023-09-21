@@ -80,14 +80,25 @@ function phaseFieldCrystal(;imagePath=datadir("exp_pro","masksCompressed","17tai
 
     # Create finite difference matrices for given system parameters
     ∇² = createLaplacian(nX,nY,h)
+    ∇²2 = spzeros(2*nX*nY,2*nX*nY)
+    ∇²2[1:nX*nY,1:nX*nY] .= ∇²
+    ∇²2[1+nX*nY:end,1+nX*nY:end] .= ∇²
+    dropzeros!(∇²2)
 
     divalphagrad = createDivAlphaGrad(nX,nY,h,α)
+    divalphagrad2 = spzeros(2*nX*nY,2*nX*nY)
+    divalphagrad2[1:nX*nY,1:nX*nY] .= divalphagrad
+    divalphagrad2[1+nX*nY:end,1+nX*nY:end] .= divalphagrad
+    dropzeros!(divalphagrad2)
 
     # Create matrix for linear component of PFC equation
-    linearOperator = divalphagrad.*(1.0-r+a) .+ divalphagrad*∇²*∇²
+    linearOperator = divalphagrad2.*(1.0-r+a) .+ divalphagrad2*∇²2*∇²2
+
+
+    # nXtimesnY = nX*nY
 
     # Array of parameters to pass to solver
-    p = [∇², linearOperator, mat1, mat2, r, a, divalphagrad]
+    p = (∇²2, linearOperator, mat1, mat2, r, a, divalphagrad2, nX*nY)
 
     # Start progress logger if loggerFlag argument is 1
     loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
@@ -97,7 +108,7 @@ function phaseFieldCrystal(;imagePath=datadir("exp_pro","masksCompressed","17tai
     sol = solve(prob, ETDRK2(krylov=true, m=50), dt=δt, saveat=tMax/outCount, reltol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
 
     # Calculate free energy at each time point of solution
-    freeEnergyFlag==1 ? freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nX, nY, lX, r) : nothing
+    # freeEnergyFlag==1 ? freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nX, nY, lX, r) : nothing
 
     # Save results in JLD2 format with unique filename
     if outputFlag==1
@@ -109,10 +120,10 @@ function phaseFieldCrystal(;imagePath=datadir("exp_pro","masksCompressed","17tai
         # Save variables and results to file
         u = sol.u        
         t = sol.t
-        safesave(datadir("sims",subFolder,maskFileName,"$fileName.jld2"),@strdict u t ϕ0 r m λ nX nY lX h a δt tMax maskFileName freeEnergies)
+        safesave(datadir("sims",subFolder,maskFileName,"$fileName.jld2"),@strdict u t ϕ0 r m λ nX nY lX h a δt tMax maskFileName)
         # Plot results as animated gif and free energies as png
         if (visualiseFlag==1)
-            visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, datadir("sims",subFolder,maskFileName), fileName, freeEnergyFlag,freeEnergies)                      
+            visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, datadir("sims",subFolder,maskFileName), fileName)                      
         end
         @info "Saved data to $(datadir("sims",subFolder,maskFileName,"$fileName.jld2"))"
     end
