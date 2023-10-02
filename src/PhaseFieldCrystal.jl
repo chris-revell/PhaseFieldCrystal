@@ -61,6 +61,7 @@ function phaseFieldCrystal(;imagePath=datadir("exp_pro","masksCompressed","17tai
     λ = 10.0,
     δt = 0.1,
     tMax = 1000.0,
+    q2 = 1.0,
     outCount = 100,
     loggerFlag = 1,
     outputFlag = 1,
@@ -85,7 +86,6 @@ function phaseFieldCrystal(;imagePath=datadir("exp_pro","masksCompressed","17tai
     ∇²2[1:nX*nY,1:nX*nY] .= ∇²
     ∇²2[1+nX*nY:end,1+nX*nY:end] .= ∇²
     dropzeros!(∇²2)
-
     divalphagrad = createDivAlphaGrad(nX,nY,h,α)
     divalphagrad2 = spzeros(2*nX*nY,2*nX*nY)
     divalphagrad2[1:nX*nY,1:nX*nY] .= divalphagrad
@@ -94,12 +94,13 @@ function phaseFieldCrystal(;imagePath=datadir("exp_pro","masksCompressed","17tai
 
     # Create matrix for linear component of PFC equation
     linearOperator = divalphagrad2.*(1.0-r+a) .+ divalphagrad2*∇²2*∇²2
-
-
-    # nXtimesnY = nX*nY
+    linearOperator = divalphagrad2*∇²2*∇²2
+    linearOperator[1:nX*nY,1:nX*nY] .+= divalphagrad.*(1.0-r+a)
+    linearOperator[1+nX*nY:end,1+nX*nY:end] .+= divalphagrad.*(q2-r+a)
+    dropzeros!(linearOperator)
 
     # Array of parameters to pass to solver
-    p = (∇²2, linearOperator, mat1, mat2, r, a, divalphagrad2, nX*nY, c)
+    p = (∇²2, linearOperator, mat1, mat2, r, a, divalphagrad2, nX*nY, c, q2)
 
     # Start progress logger if loggerFlag argument is 1
     loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
@@ -115,13 +116,13 @@ function phaseFieldCrystal(;imagePath=datadir("exp_pro","masksCompressed","17tai
     if outputFlag==1
         maskFileName = splitpath(imagePath)[end][1:end-4]
         mkpath(datadir("sims",subFolder,maskFileName))
-        params = @strdict ϕ0 r m λ nX nY lX h a c δt tMax maskFileName
+        params = @strdict ϕ0 r m λ nX nY lX h a c q2 δt tMax maskFileName
         # Create filename from parameters; prefix filename with current data and time
         fileName = savename(params,connector="",ignores=["a"])
         # Save variables and results to file
         u = sol.u        
         t = sol.t
-        safesave(datadir("sims",subFolder,maskFileName,"$fileName.jld2"),@strdict u t ϕ0 r m λ c nX nY lX h a δt tMax maskFileName)
+        safesave(datadir("sims",subFolder,maskFileName,"$fileName.jld2"),@strdict u t ϕ0 r m λ c q2 nX nY lX h a δt tMax maskFileName)
         # Plot results as animated gif and free energies as png
         if (visualiseFlag==1)
             visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, datadir("sims",subFolder,maskFileName), fileName)                      
