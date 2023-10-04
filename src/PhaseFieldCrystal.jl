@@ -51,81 +51,85 @@ using FromFile: @from
 @from "ImportImage.jl" using ImportImage
 @from "SetMobility.jl" using SetMobility
 
-function phaseFieldCrystal(;imagePath=datadir("exp_pro","masksCompressed","17tailT_4800X_HUI_0001_0","17tailT_4800X_HUI_0001_0.png"),
-    lX = 125.61860023932613,
-    r = 0.8,
-    ϕ0 = 0.4,
-    m = 0.1,
-    a = 2.0,
-    c = -0.2,
-    λ = 10.0,
-    δt = 0.1,
-    tMax = 1000.0,
-    q2 = 1.0,
-    outCount = 100,
-    loggerFlag = 1,
-    outputFlag = 1,
-    visualiseFlag = 1,
-    freeEnergyFlag = 0,
-    nBlasThreads = 4,
-    subFolder="",
-    )
+function phaseFieldCrystal(; imagePath=datadir("exp_pro", "masksCompressed", "17tailT_4800X_HUI_0001_0", "17tailT_4800X_HUI_0001_0.png"),
+    lX=125.61860023932613,
+    r1=0.8,
+    r2=0.8,
+    ϕ0_1=0.4,
+    ϕ0_2=0.4,
+    m=0.1,
+    a=2.0,
+    c=-0.2,
+    λ=10.0,
+    δt=0.1,
+    tMax=1000.0,
+    q1=1.0,
+    q2=1.0,
+    outCount=100,
+    loggerFlag=1,
+    outputFlag=1,
+    visualiseFlag=1,
+    freeEnergyFlag=0,
+    nBlasThreads=4,
+    subFolder=""
+)
 
     BLAS.set_num_threads(nBlasThreads)
 
-    imageMask,nX,nY = importImage(imagePath)
+    imageMask, nX, nY = importImage(imagePath)
 
-    α = setMobility(nX,nY,imageMask)
+    α = setMobility(nX, nY, imageMask)
 
     # Set initial conditions: define arrays for calculations and set initial u0 order parameter field
-    u0,mat1,mat2,h = initialConditions(imageMask,lX,nX,nY,ϕ0,λ,m)
+    u0, mat1, mat2, h = initialConditions(imageMask, lX, nX, nY, ϕ0_1, ϕ0_2, λ, m)
 
     # Create finite difference matrices for given system parameters
-    ∇² = createLaplacian(nX,nY,h)
-    ∇²2 = spzeros(2*nX*nY,2*nX*nY)
-    ∇²2[1:nX*nY,1:nX*nY] .= ∇²
-    ∇²2[1+nX*nY:end,1+nX*nY:end] .= ∇²
+    ∇² = createLaplacian(nX, nY, h)
+    ∇²2 = spzeros(2 * nX * nY, 2 * nX * nY)
+    ∇²2[1:nX*nY, 1:nX*nY] .= ∇²
+    ∇²2[1+nX*nY:end, 1+nX*nY:end] .= ∇²
     dropzeros!(∇²2)
-    divalphagrad = createDivAlphaGrad(nX,nY,h,α)
-    divalphagrad2 = spzeros(2*nX*nY,2*nX*nY)
-    divalphagrad2[1:nX*nY,1:nX*nY] .= divalphagrad
-    divalphagrad2[1+nX*nY:end,1+nX*nY:end] .= divalphagrad
+    divalphagrad = createDivAlphaGrad(nX, nY, h, α)
+    divalphagrad2 = spzeros(2 * nX * nY, 2 * nX * nY)
+    divalphagrad2[1:nX*nY, 1:nX*nY] .= divalphagrad
+    divalphagrad2[1+nX*nY:end, 1+nX*nY:end] .= divalphagrad
     dropzeros!(divalphagrad2)
 
     # Create matrix for linear component of PFC equation
-    linearOperator = divalphagrad2.*(1.0-r+a) .+ divalphagrad2*∇²2*∇²2
-    linearOperator = divalphagrad2*∇²2*∇²2
-    linearOperator[1:nX*nY,1:nX*nY] .+= divalphagrad.*(1.0-r+a)
-    linearOperator[1+nX*nY:end,1+nX*nY:end] .+= divalphagrad.*(q2-r+a)
+    # linearOperator = divalphagrad2.*(q-r+a) .+ divalphagrad2*∇²2*∇²2
+    linearOperator = divalphagrad2 * ∇²2 * ∇²2
+    linearOperator[1:nX*nY, 1:nX*nY] .+= divalphagrad .* (q1 - r1 + a)
+    linearOperator[1+nX*nY:end, 1+nX*nY:end] .+= divalphagrad .* (q2 - r2 + a)
     dropzeros!(linearOperator)
 
     # Array of parameters to pass to solver
-    p = (∇²2, linearOperator, mat1, mat2, r, a, divalphagrad2, nX*nY, c, q2)
+    p = (∇²2, linearOperator, mat1, mat2, r1, r2, a, divalphagrad2, nX * nY, c, q1, q2)
 
     # Start progress logger if loggerFlag argument is 1
-    loggerFlag==1 ? global_logger(TerminalLogger()) : nothing
+    loggerFlag == 1 ? global_logger(TerminalLogger()) : nothing
 
     # Define split ODE problem
-    prob = SplitODEProblem(DiffEqArrayOperator(linearOperator),splitNonlinearPart!,u0,(0.0,tMax),p)     #,tstops=tStopsArray)
-    sol = solve(prob, ETDRK2(krylov=true, m=50), dt=δt, saveat=tMax/outCount, reltol=0.001, progress=(loggerFlag==1), progress_steps=10, progress_name="PFC model")
+    prob = SplitODEProblem(DiffEqArrayOperator(linearOperator), splitNonlinearPart!, u0, (0.0, tMax), p)     #,tstops=tStopsArray)
+    sol = solve(prob, ETDRK2(krylov=true, m=50), dt=δt, saveat=tMax / outCount, reltol=0.001, progress=(loggerFlag == 1), progress_steps=10, progress_name="PFC model")
 
     # Calculate free energy at each time point of solution
     # freeEnergyFlag==1 ? freeEnergies = freeEnergy(sol, ∇², mat1, mat2, nX, nY, lX, r) : nothing
 
     # Save results in JLD2 format with unique filename
-    if outputFlag==1
+    if outputFlag == 1
         maskFileName = splitpath(imagePath)[end][1:end-4]
-        mkpath(datadir("sims",subFolder,maskFileName))
-        params = @strdict ϕ0 r m λ nX nY lX h a c q2 δt tMax maskFileName
+        params = @strdict ϕ0_1 ϕ0_2 r1 r2 m λ nX nY lX h a c q2 δt tMax maskFileName
         # Create filename from parameters; prefix filename with current data and time
-        fileName = savename(params,connector="",ignores=["a"])
+        fileName = savename(params, connector="", ignores=["a"])
+        # mkpath(datadir("sims", subFolder, maskFileName, "$fileName-$(Dates.format(Dates.now(), "yyyy-mm-dd-HH-MM-SS"))"))
         # Save variables and results to file
-        u = sol.u        
+        u = sol.u
         t = sol.t
-        safesave(datadir("sims",subFolder,maskFileName,"$fileName.jld2"),@strdict u t ϕ0 r m λ c q2 nX nY lX h a δt tMax maskFileName)
+        # safesave(datadir("sims", subFolder, maskFileName, "$fileName.jld2"), @strdict u t ϕ0_1 ϕ0_2 r1 r2 m λ c q2 nX nY lX h a δt tMax maskFileName)
+        safesave(datadir("sims", subFolder, maskFileName), @strdict u t ϕ0_1 ϕ0_2 r1 r2 m λ c q2 nX nY lX h a δt tMax maskFileName)
         # Plot results as animated gif and free energies as png
-        if (visualiseFlag==1)
-            visualise(u, t, ϕ0, r, m, nX, nY, lX, a, δt, tMax, datadir("sims",subFolder,maskFileName), fileName)                      
+        if (visualiseFlag == 1)
+            visualise(u, t, nX, nY, datadir("sims", subFolder, maskFileName), fileName)
         end
         @info "Saved data to $(datadir("sims",subFolder,maskFileName,"$fileName.jld2"))"
     end
@@ -139,14 +143,14 @@ export phaseFieldCrystal
 end
 
 # Block for adjusting timestep during run
-    # tStopsArray = Float64[]
-    # push!(tStopsArray,0.0)
-    # tTmp = 0.0
-    # while tTmp<100.0
-    #     tTmp += δt
-    #     push!(tStopsArray,tTmp)
-    # end
-    # while tTmp<tMax
-    #     tTmp += 2.0*δt
-    #     push!(tStopsArray,tTmp)
-    # end
+# tStopsArray = Float64[]
+# push!(tStopsArray,0.0)
+# tTmp = 0.0
+# while tTmp<100.0
+#     tTmp += δt
+#     push!(tStopsArray,tTmp)
+# end
+# while tTmp<tMax
+#     tTmp += 2.0*δt
+#     push!(tStopsArray,tTmp)
+# end

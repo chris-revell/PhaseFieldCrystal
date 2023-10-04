@@ -23,13 +23,13 @@ function splitNonlinearPart!(du, u, p, t)
     # f2 = ∇²(u³ - au + 2∇²u)
 
     # Unpack parameter list
-    ∇²2, linearOperator, mat1, mat2, r, a, divalphagrad2, nXtimesnY, c, q2 = p
+    ∇²2, linearOperator, mat1, mat2, r1, r2, a, divalphagrad2, nXtimesnY, c, q1, q2 = p
 
     # Find 2nd derivative of u
     mul!(mat1,∇²2,u)
     # Calculate inner component (u³ - au + 2∇²u)
     # @.. thread=true mat1 .*= 2.0
-    @.. thread=false mat1[1:nXtimesnY] .*= 2.0*1.0
+    @.. thread=false mat1[1:nXtimesnY] .*= 2.0*q1
     @.. thread=false mat1[nXtimesnY+1:end] .*= 2.0*q2
     # @.. thread=true mat1 .+= u.^3 .- a.*u
     @.. thread=false mat1 .+= u.^3 .- a.*u

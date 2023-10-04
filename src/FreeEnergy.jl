@@ -15,7 +15,7 @@ module FreeEnergy
 using LinearAlgebra
 using NumericalIntegration
 
-@inline function freeEnergy(sol, ∇², mat1, mat2, nX, nY, h, r)
+function freeEnergy(sol, ∇², mat1, mat2, nX, nY, h, r)
 
     freeEnergies = zeros(size(sol.u))
 

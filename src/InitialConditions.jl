@@ -14,7 +14,7 @@ using GaussianRandomFields
 using SparseArrays
 using LinearAlgebra
 
-@views function initialConditions(imageMask,lX,nX,nY,ϕ0,λ,m)
+@views function initialConditions(imageMask,lX,nX,nY,ϕ0_1,ϕ0_2,λ,m)
 
     h = lX/nX    # Spatial separation of grid points in units of q
 
@@ -33,8 +33,8 @@ using LinearAlgebra
     u0Tmp2 .*= m                 # Multiply field by amplitude m
     u0Tmp1Mean = sum(u0Tmp1)/length(u0Tmp1[imageMask.!=0]) # Calculate actual mean of this field
     u0Tmp2Mean = sum(u0Tmp2)/length(u0Tmp2[imageMask.!=0]) # Calculate actual mean of this field
-    u0Tmp1 .+= (ϕ0-u0Tmp1Mean).*imageMask # Offset field to ensure mean of ϕ0
-    u0Tmp2 .+= (ϕ0-u0Tmp2Mean).*imageMask # Offset field to ensure mean of ϕ0
+    u0Tmp1 .+= (ϕ0_1-u0Tmp1Mean).*imageMask # Offset field to ensure mean of ϕ0
+    u0Tmp2 .+= (ϕ0_2-u0Tmp2Mean).*imageMask # Offset field to ensure mean of ϕ0
     u0 = zeros(Float64,2*nX*nY)
     u0[1:nX*nY] = reshape(u0Tmp1,nX*nY)   # Flatten matrix to vector 
     u0[1+nX*nY:end] = reshape(u0Tmp2,nX*nY)   # Flatten matrix to vector 

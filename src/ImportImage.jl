@@ -11,7 +11,7 @@ module ImportImage
 
 using Images
 
-@inline function importImage(imagePath)
+function importImage(imagePath)
 
     grayImage = Gray.(load(imagePath))
     imageMask = Float64.(grayImage .> 0.5)
