@@ -40,6 +40,7 @@ using DrWatson
 using Dates
 using Base.Filesystem
 using FromFile: @from
+using PrecompileTools
 
 # Import local files
 @from "Model.jl" using Model
@@ -126,16 +127,22 @@ function phaseFieldCrystal(; imagePath=datadir("exp_pro", "masksCompressed", "17
         u = sol.u
         t = sol.t
         # safesave(datadir("sims", subFolder, maskFileName, "$fileName.jld2"), @strdict u t ϕ0_1 ϕ0_2 r1 r2 m λ c q2 nX nY lX h a δt tMax maskFileName)
-        safesave(datadir("sims", subFolder, maskFileName), @strdict u t ϕ0_1 ϕ0_2 r1 r2 m λ c q2 nX nY lX h a δt tMax maskFileName)
+        # safesave(datadir("sims", subFolder, fileName), )#@strdict u t ϕ0_1 ϕ0_2 r1 r2 m λ c q2 nX nY lX h a δt tMax maskFileName)
+        safesave(datadir("sims", subFolder, "$fileName.jld2"), @strdict u t ϕ0_1 ϕ0_2 r1 r2 m λ c q2 nX nY lX h a δt tMax maskFileName)
         # Plot results as animated gif and free energies as png
         if (visualiseFlag == 1)
-            visualise(u, t, nX, nY, datadir("sims", subFolder, maskFileName), fileName)
+            visualise(u, t, nX, nY, datadir("sims", subFolder), fileName)
         end
-        @info "Saved data to $(datadir("sims",subFolder,maskFileName,"$fileName.jld2"))"
+        @info "Saved data to $(datadir("sims",subFolder,"$fileName.jld2"))"
     end
 
     return nothing
 
+end
+
+# Ensure code is precompiled
+@compile_workload begin
+    phaseFieldCrystal(tMax=10.0, loggerFlag=0, outputFlag=0, visualiseFlag=0, freeEnergyFlag=0)
 end
 
 export phaseFieldCrystal
