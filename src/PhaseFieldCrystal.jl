@@ -52,7 +52,8 @@ using PrecompileTools
 @from "ImportImage.jl" using ImportImage
 @from "SetMobility.jl" using SetMobility
 
-function phaseFieldCrystal(; imagePath=datadir("exp_pro", "masksCompressed", "17tailT_4800X_HUI_0001_0", "17tailT_4800X_HUI_0001_0.png"),
+function phaseFieldCrystal(;
+    imagePath=datadir("exp_pro", "masksCompressed", "17tailT_4800X_HUI_0001_0", "17tailT_4800X_HUI_0001_0.png"),
     lX=125.61860023932613,
     r1=0.8,
     r2=0.8,
@@ -60,7 +61,7 @@ function phaseFieldCrystal(; imagePath=datadir("exp_pro", "masksCompressed", "17
     ϕ0_2=0.4,
     m=0.1,
     a=2.0,
-    c=-0.2,
+    c=0.2,
     λ=10.0,
     δt=0.1,
     tMax=1000.0,
@@ -128,7 +129,7 @@ function phaseFieldCrystal(; imagePath=datadir("exp_pro", "masksCompressed", "17
         t = sol.t
         # safesave(datadir("sims", subFolder, maskFileName, "$fileName.jld2"), @strdict u t ϕ0_1 ϕ0_2 r1 r2 m λ c q2 nX nY lX h a δt tMax maskFileName)
         # safesave(datadir("sims", subFolder, fileName), )#@strdict u t ϕ0_1 ϕ0_2 r1 r2 m λ c q2 nX nY lX h a δt tMax maskFileName)
-        safesave(datadir("sims", subFolder, "$fileName.jld2"), @strdict u t ϕ0_1 ϕ0_2 r1 r2 m λ c q2 nX nY lX h a δt tMax maskFileName)
+        safesave(datadir("sims", subFolder, "$fileName.jld2"), @strdict u t ϕ0_1 ϕ0_2 r1 r2 m λ c q1 q2 nX nY lX h a δt tMax maskFileName)
         # Plot results as animated gif and free energies as png
         if (visualiseFlag == 1)
             visualise(u, t, nX, nY, datadir("sims", subFolder), fileName)
