@@ -13,6 +13,7 @@ data/testinputs
 papers/*
 #notebooks
 _research
+supplementary/
 *.png
 
 ################################################################################
